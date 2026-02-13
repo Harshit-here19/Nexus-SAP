@@ -17,6 +17,7 @@ import UserProfileScreen from './components/Screens/UserProfileScreen';
 import { initializeData } from './utils/storage';
 import './styles/sap-theme.css';
 import DashboardScreen from './components/Screens/DashboardScreen';
+import EntertainmentWishlistScreen from './components/Screens/EntertainmentWishlistScreen';
 
 
 // Wrapper component to connect transaction tracking with favorites
@@ -96,7 +97,15 @@ const AppContent = () => {
       case 'SU01':
         return <UserProfileScreen />;
 
-      case 'FB01':
+      case 'WS01':
+        return <EntertainmentWishlistScreen mode='create'/>;
+
+      case 'WS02':
+        return <EntertainmentWishlistScreen mode='change'/>;
+
+      case 'WS03':
+        return <EntertainmentWishlistScreen mode='display'/>;
+
       case 'FB03':
         return (
           <div className="sap-panel">

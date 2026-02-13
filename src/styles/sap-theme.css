@@ -213,11 +213,12 @@ body {
   align-items: center;
   font-size: 12px;
   transition: background 0.15s;
+  color: var(--sap-text-primary);
 }
 
 .sap-menu-dropdown-item:hover {
   background: var(--sap-highlight);
-  color: var(--sap-brand);
+  color: var(--sap-text-primary);
 }
 
 .sap-menu-dropdown-item .shortcut {

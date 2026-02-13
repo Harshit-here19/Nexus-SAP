@@ -1,5 +1,5 @@
 // src/components/Common/ImportExportModal.jsx
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import SapModal from './SapModal';
 import SapButton from './SapButton';
 import SapSelect from './SapSelect';
@@ -26,8 +26,9 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
 
   const tables = [
     { value: 'all', label: 'All Data (Full Backup)' },
+    { value: 'entertainment_wishlist', label: 'Wishlist Items' },
     { value: 'materials', label: 'Materials (MARA)' },
-    { value: 'salesOrders', label: 'Sales Orders (VBAK)' },
+    { value: 'expenses', label: 'Expenses (KONV)' },
     { value: 'customers', label: 'Customers (KNA1)' },
     { value: 'vendors', label: 'Vendors (LFA1)' },
     { value: 'plants', label: 'Plants (T001W)' },

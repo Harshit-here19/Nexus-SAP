@@ -88,12 +88,13 @@ const TreeMenu = () => {
           ]
         },
         {
-          id: 'finance',
-          label: 'Financial Accounting',
-          icon: '💰',
+          id: 'wishlist',
+          label: 'Entertainment Wishlist',
+          icon: '🎬',
           children: [
-            { id: 'fb01', label: 'FB01 - Post Document', icon: '📄', tcode: 'FB01' },
-            { id: 'fb03', label: 'FB03 - Display Document', icon: '👁️', tcode: 'FB03' },
+            { id: 'ws01', label: 'WS01 - Add to Wishlist', icon: '➕', tcode: 'WS01' },
+            { id: 'ws02', label: 'WS02 - Change Wishlist Item', icon: '✏️', tcode: 'WS02' },
+            { id: 'ws03', label: 'WS03 - Display Wishlist Item', icon: '👁️', tcode: 'WS03' },
           ]
         },
         {

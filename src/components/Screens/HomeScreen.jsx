@@ -3,6 +3,7 @@ import React from 'react';
 import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
 import SapButton from '../Common/SapButton';
+import QuickTips from '../Layout/QuickTips';
 
 const HomeScreen = () => {
   const { navigateToTransaction } = useTransaction();
@@ -56,42 +57,17 @@ const HomeScreen = () => {
             📋 Available Transactions:
           </h3>
           <ul style={{ paddingLeft: '20px', lineHeight: '1.6', fontSize: '12px' }}>
-            <li><strong>ZDASH</strong> - Expense Dashboard & Analytics</li>
-            <li><strong>VA01</strong> - Add New Expense</li>
-            <li><strong>VA02</strong> - Edit Existing Expense</li>
-            <li><strong>VA03</strong> - View All Expenses</li>
+            <li><strong>VA01-03</strong> - Expense Management</li>
             <li><strong>MM01-03</strong> - Material Management</li>
+            <li><strong>WS01-03</strong> - Wishlist Management</li>
             <li><strong>SE16</strong> - Data Browser</li>
             <li><strong>SU01</strong> - User Profile & Settings</li>
+            <li><strong>ZDASH</strong> - Expense Dashboard & Analytics</li>
             {checkIsAdmin() && <li><strong>ZADMIN</strong> - User Administration</li>}
           </ul>
 
-          <h3 style={{ marginTop: '20px', marginBottom: '10px', fontSize: '13px' }}>
-            💡 Quick Tips:
-          </h3>
-          <ul style={{ paddingLeft: '20px', lineHeight: '1.6', fontSize: '12px' }}>
-            <li>Use <strong>VA01</strong> to quickly add new expenses</li>
-            <li>View spending trends in the <strong>Dashboard</strong></li>
-            <li>Categorize expenses for better tracking</li>
-            <li>Export your data using the <strong>Extras</strong> menu</li>
-            <li>Press <strong>F3</strong> to go back from any screen</li>
-          </ul>
+          <QuickTips />
 
-          {/* Quick Action Buttons */}
-          <div style={{ marginTop: '20px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <SapButton onClick={() => navigateToTransaction('ZDASH')} type="primary" icon="📊">
-              Dashboard
-            </SapButton>
-            <SapButton onClick={() => navigateToTransaction('VA01')} icon="➕">
-              Add Expense
-            </SapButton>
-            <SapButton onClick={() => navigateToTransaction('VA03')} icon="👁️">
-              View Expenses
-            </SapButton>
-            <SapButton onClick={() => navigateToTransaction('SE16')} icon="🔍">
-              Data Browser
-            </SapButton>
-          </div>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 // src/components/Common/NavigationLockWarning.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const NavigationLockWarning = ({ show, message }) => {
   const [visible, setVisible] = useState(false);
