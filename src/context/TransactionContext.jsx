@@ -37,14 +37,16 @@ export const TransactionProvider = ({ children }) => {
   const [pendingTransaction, setPendingTransaction] = useState(null);
   const [statusMessage, setStatusMessage] = useState('Ready');
   const [statusType, setStatusType] = useState('info');
-  
+  const [customBackHandler, setCustomBackHandler] = useState(null);
+
+
   // Callback for adding to favorites history (set by App)
   const [onTransactionExecute, setOnTransactionExecute] = useState(null);
 
   // Navigate to transaction
   const navigateToTransaction = useCallback((tcode) => {
     const cleanTcode = tcode.replace(/^\/n/i, '').toUpperCase();
-    
+
     // If already in a transaction (not HOME), show warning
     if (isTransactionActive && currentTransaction !== 'HOME' && cleanTcode !== currentTransaction) {
       if (hasUnsavedChanges) {
@@ -69,39 +71,57 @@ export const TransactionProvider = ({ children }) => {
     setTransactionHistory(prev => [...prev, cleanTcode]);
     setStatusMessage(`Transaction ${cleanTcode} started`);
     setStatusType('success');
-    
+
     // Call the history callback if set
     if (onTransactionExecute && cleanTcode !== 'HOME') {
       onTransactionExecute(cleanTcode, transactionDescriptions[cleanTcode] || '');
     }
-    
+
     setTimeout(() => {
       setStatusMessage('Ready');
       setStatusType('info');
     }, 3000);
-    
+
     return true;
   }, [currentTransaction, isTransactionActive, hasUnsavedChanges, onTransactionExecute]);
 
   // Go back to previous screen or HOME
   const goBack = useCallback(() => {
+    // If screen has its own back logic → use it first
+    if (customBackHandler) {
+      const handled = customBackHandler();
+      if (handled) return;
+    }
+
     if (hasUnsavedChanges) {
       setPendingTransaction('BACK');
       setShowExitConfirm(true);
       return;
     }
 
-    setCurrentTransaction('HOME');
-    setIsTransactionActive(false);
-    setHasUnsavedChanges(false);
-    setStatusMessage('Back to main menu');
-    setStatusType('info');
-    
-    setTimeout(() => {
-      setStatusMessage('Ready');
-      setStatusType('info');
-    }, 2000);
-  }, [hasUnsavedChanges]);
+    // Default transaction-level back
+    setTransactionHistory(prev => {
+      if (prev.length <= 1) return ['HOME'];
+
+      const newHistory = [...prev];
+      newHistory.pop();
+      const previous = newHistory[newHistory.length - 1];
+
+      setCurrentTransaction(previous);
+      setIsTransactionActive(previous !== 'HOME');
+      return newHistory;
+    });
+
+  }, [hasUnsavedChanges, customBackHandler]);
+
+  const registerBackHandler = useCallback((handler) => {
+    setCustomBackHandler(() => handler);
+  }, []);
+
+  const clearBackHandler = useCallback(() => {
+    setCustomBackHandler(null);
+  }, []);
+
 
   // Exit transaction
   const exitTransaction = useCallback(() => {
@@ -116,7 +136,7 @@ export const TransactionProvider = ({ children }) => {
     setHasUnsavedChanges(false);
     setStatusMessage('Transaction ended');
     setStatusType('info');
-    
+
     setTimeout(() => {
       setStatusMessage('Ready');
       setStatusType('info');
@@ -130,7 +150,7 @@ export const TransactionProvider = ({ children }) => {
       setShowExitConfirm(true);
       return;
     }
-    
+
     setStatusMessage('Operation cancelled');
     setStatusType('info');
   }, [hasUnsavedChanges]);
@@ -149,15 +169,15 @@ export const TransactionProvider = ({ children }) => {
       setIsTransactionActive(pendingTransaction !== 'HOME');
       setTransactionHistory(prev => [...prev, pendingTransaction]);
       setStatusMessage(`Transaction ${pendingTransaction} started`);
-      
+
       if (onTransactionExecute && pendingTransaction !== 'HOME') {
         onTransactionExecute(pendingTransaction, transactionDescriptions[pendingTransaction] || '');
       }
     }
-    
+
     setPendingTransaction(null);
     setStatusType('info');
-    
+
     setTimeout(() => {
       setStatusMessage('Ready');
       setStatusType('info');
@@ -186,7 +206,7 @@ export const TransactionProvider = ({ children }) => {
   const updateStatus = useCallback((message, type = 'info') => {
     setStatusMessage(message);
     setStatusType(type);
-    
+
     if (type !== 'error') {
       setTimeout(() => {
         setStatusMessage('Ready');
@@ -210,6 +230,8 @@ export const TransactionProvider = ({ children }) => {
     statusType,
     navigateToTransaction,
     goBack,
+    registerBackHandler,
+    clearBackHandler,
     exitTransaction,
     cancelOperation,
     confirmExit,

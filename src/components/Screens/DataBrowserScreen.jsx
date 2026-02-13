@@ -84,7 +84,7 @@ const tableColumns = {
 };
 
 const DataBrowserScreen = () => {
-  const { updateStatus } = useTransaction();
+  const { updateStatus, registerBackHandler, clearBackHandler } = useTransaction();
   const [selectedTable, setSelectedTable] = useState('');
   const [tableData, setTableData] = useState([]);
   const [columns, setColumns] = useState([]);
@@ -97,6 +97,50 @@ const DataBrowserScreen = () => {
   const [activeFilterColumn, setActiveFilterColumn] = useState('');
   const [filterValue, setFilterValue] = useState('');
 
+  // Handle back navigation
+//   const handleBack = () => {
+//   if (isTableLoaded) {
+//     // Go back to SE16 initial screen
+//     setIsTableLoaded(false);
+//     setSelectedTable('');
+//     setTableData([]);
+//     setColumns([]);
+//     setSearchTerm('');
+//     setFilters({});
+//     setSelectedRows([]);
+//     setCurrentPage(1);
+//     updateStatus('Back to table selection', 'info');
+//   } else {
+//     // Exit transaction
+//     goBack();
+//   }
+// };
+
+useEffect(() => {
+  const backHandler = () => {
+    if (isTableLoaded) {
+      setIsTableLoaded(false);
+      setSelectedTable('');
+      setTableData([]);
+      setColumns([]);
+      setSearchTerm('');
+      setFilters({});
+      setSelectedRows([]);
+      setCurrentPage(1);
+      updateStatus('Back to table selection', 'info');
+      return true; // handled internally
+    }
+
+    return false; // let transaction handle it
+  };
+
+  registerBackHandler(backHandler);
+
+  return () => clearBackHandler();
+}, [isTableLoaded]);
+
+
+  
   // Sort state
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 

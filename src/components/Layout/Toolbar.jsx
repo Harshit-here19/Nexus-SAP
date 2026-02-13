@@ -138,192 +138,227 @@ const Toolbar = ({ children }) => {
         .sap-toolbar {
           display: flex;
           align-items: center;
-          height: 26px;
-          background: linear-gradient(to bottom, #ECE9D8 0%, #D4CFC0 100%);
+          height: 28px;
+          background: linear-gradient(to bottom, 
+            #F0F4F7 0%, 
+            #D9E4EC 45%, 
+            #C7D9E8 50%, 
+            #B5CEDF 100%);
           border-top: 1px solid #FFFFFF;
-          border-bottom: 1px solid #716F64;
+          border-bottom: 1px solid #7B9BC3;
           padding: 0 2px;
-          font-family: 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+          font-family: 'Segoe UI', 'Microsoft Sans Serif', Tahoma, sans-serif;
           font-size: 11px;
         }
 
         .sap-toolbar-separator {
           width: 1px;
-          height: 20px;
-          margin: 0 2px;
-          background: linear-gradient(to right, 
+          height: 22px;
+          margin: 0 3px;
+          background: linear-gradient(to bottom, 
             transparent 0%, 
-            #716F64 20%, 
-            #716F64 40%, 
-            #FFFFFF 60%, 
-            #FFFFFF 80%, 
+            #8FA7C0 20%, 
+            #8FA7C0 80%, 
             transparent 100%);
+          box-shadow: 1px 0 0 rgba(255, 255, 255, 0.8);
         }
 
         .sap-toolbar-button {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: 23px;
-          height: 22px;
+          min-width: 24px;
+          height: 24px;
           margin: 0 1px;
-          padding: 0 3px;
-          background: linear-gradient(to bottom, #FFFFFF 0%, #ECE9D8 50%, #D4CFC0 100%);
+          padding: 0 4px;
+          background: linear-gradient(to bottom, 
+            #FFFFFF 0%, 
+            #F4F7FA 40%, 
+            #E8EFF5 60%, 
+            #D6E3ED 100%);
           border: 1px solid;
-          border-color: #FFFFFF #716F64 #716F64 #FFFFFF;
+          border-color: #C5D7E8 #8FA7C0 #8FA7C0 #C5D7E8;
+          border-radius: 2px;
           cursor: pointer;
-          font-size: 12px;
-          transition: none;
+          font-size: 13px;
+          transition: all 0.1s ease;
           position: relative;
         }
 
         .sap-toolbar-button:hover:not(:disabled) {
-          background: linear-gradient(to bottom, #FFF8DC 0%, #F0E68C 50%, #DAA520 100%);
-          border-color: #F0E68C #8B7355 #8B7355 #F0E68C;
+          background: linear-gradient(to bottom, 
+            #FFFFFF 0%, 
+            #E8F4FF 40%, 
+            #C9E3FB 60%, 
+            #A8CEED 100%);
+          border-color: #5B9BD5 #4A84C1 #4A84C1 #5B9BD5;
+          box-shadow: 0 0 3px rgba(91, 155, 213, 0.3);
         }
 
         .sap-toolbar-button:active:not(:disabled) {
-          background: linear-gradient(to bottom, #D4CFC0 0%, #ECE9D8 50%, #FFFFFF 100%);
-          border-color: #716F64 #FFFFFF #FFFFFF #716F64;
+          background: linear-gradient(to bottom, 
+            #B5CEDF 0%, 
+            #C7D9E8 40%, 
+            #D9E4EC 60%, 
+            #F0F4F7 100%);
+          border-color: #4A84C1 #C5D7E8 #C5D7E8 #4A84C1;
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
           padding-top: 1px;
-          padding-left: 4px;
         }
 
         .sap-toolbar-button:focus {
-          outline: 1px dotted #000000;
-          outline-offset: -3px;
+          outline: 2px solid #4A84C1;
+          outline-offset: -2px;
         }
 
         .sap-toolbar-button.disabled {
-          opacity: 0.5;
+          opacity: 0.4;
           cursor: default;
-          background: linear-gradient(to bottom, #F5F5F5 0%, #E8E8E8 50%, #D0D0D0 100%);
-          border-color: #E8E8E8 #A0A0A0 #A0A0A0 #E8E8E8;
+          background: linear-gradient(to bottom, 
+            #F8F9FA 0%, 
+            #E8EBF0 50%, 
+            #D8DCE3 100%);
+          border-color: #C0C8D0 #A0A8B0 #A0A8B0 #C0C8D0;
         }
 
         .sap-toolbar-button.highlighted {
-          background: linear-gradient(to bottom, #FFE4B5 0%, #FFD700 50%, #FFA500 100%);
-          border-color: #FFD700 #B8860B #B8860B #FFD700;
+          background: linear-gradient(to bottom, 
+            #FFF4E6 0%, 
+            #FFE0B2 40%, 
+            #FFCC80 60%, 
+            #FFB74D 100%);
+          border-color: #FFA726 #F57C00 #F57C00 #FFA726;
+          box-shadow: 0 0 4px rgba(255, 152, 0, 0.4);
         }
 
         .sap-toolbar-button.highlighted:hover:not(:disabled) {
-          background: linear-gradient(to bottom, #FFF8DC 0%, #FFE4B5 50%, #FFD700 100%);
-          border-color: #FFE4B5 #B8860B #B8860B #FFE4B5;
+          background: linear-gradient(to bottom, 
+            #FFF8E1 0%, 
+            #FFE0B2 40%, 
+            #FFD54F 60%, 
+            #FFC107 100%);
+          border-color: #FFB300 #FF8F00 #FF8F00 #FFB300;
+          box-shadow: 0 0 5px rgba(255, 152, 0, 0.6);
         }
 
         .button-icon {
           display: inline-block;
           font-size: 14px;
           line-height: 1;
-          filter: drop-shadow(1px 1px 0px rgba(255, 255, 255, 0.8));
+          text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
         }
 
-        /* Classic Windows tooltip style */
-        .sap-toolbar-button:hover::after {
+        /* SAP Blue theme tooltip style */
+        .sap-toolbar-button[title]:hover::after {
           content: attr(title);
           position: absolute;
-          top: 100%;
+          top: calc(100% + 4px);
           left: 50%;
           transform: translateX(-50%);
-          margin-top: 4px;
-          padding: 2px 4px;
-          background: #FFFFE1;
-          border: 1px solid #000000;
+          padding: 4px 8px;
+          background: linear-gradient(to bottom, #F8F9FA 0%, #E8EBF0 100%);
+          border: 1px solid #8FA7C0;
+          border-radius: 2px;
           font-size: 11px;
+          font-family: 'Segoe UI', Tahoma, sans-serif;
+          color: #1E3A5F;
           white-space: nowrap;
           z-index: 1000;
           pointer-events: none;
-          box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
         }
 
-        .sap-toolbar-button:hover::before {
-          content: '';
-          position: absolute;
-          top: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 0;
-          height: 0;
-          border-style: solid;
-          border-width: 0 3px 4px 3px;
-          border-color: transparent transparent #000000 transparent;
-          z-index: 1001;
-        }
-
-        /* Specific button styles */
+        /* Specific button colors for Blue theme */
         .sap-toolbar-button[title*="Enter"] .button-icon,
         .sap-toolbar-button[title*="Save"] .button-icon {
-          color: #006400;
-          font-weight: bold;
+          color: #0F7938;
+          filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.8));
         }
 
         .sap-toolbar-button[title*="Back"] .button-icon,
         .sap-toolbar-button[title*="Exit"] .button-icon {
-          color: #4169E1;
+          color: #1565C0;
         }
 
         .sap-toolbar-button[title*="Cancel"] .button-icon,
         .sap-toolbar-button[title*="Delete"] .button-icon {
-          color: #DC143C;
+          color: #C62828;
         }
 
         .sap-toolbar-button[title*="Create"] .button-icon {
-          color: #228B22;
+          color: #2E7D32;
         }
 
         .sap-toolbar-button[title*="Change"] .button-icon {
-          color: #FF8C00;
+          color: #E65100;
         }
 
         .sap-toolbar-button[title*="Display"] .button-icon {
-          color: #4682B4;
+          color: #0277BD;
+        }
+
+        .sap-toolbar-button[title*="Print"] .button-icon,
+        .sap-toolbar-button[title*="Find"] .button-icon {
+          color: #424242;
+        }
+
+        .sap-toolbar-button[title*="Page"] .button-icon {
+          color: #1976D2;
         }
 
         .sap-toolbar-button[title*="Favorite"] .button-icon {
-          color: #FFD700;
-          text-shadow: 0 0 2px #FFA500;
+          color: #FFA000;
+          filter: drop-shadow(0 0 2px rgba(255, 193, 7, 0.5));
+        }
+
+        .sap-toolbar-button[title="Home"] .button-icon {
+          color: #1565C0;
+          font-size: 15px;
         }
 
         /* Animation for highlighted buttons */
-        @keyframes sap-pulse {
+        @keyframes sap-glow {
           0%, 100% { 
-            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+            box-shadow: 0 0 4px rgba(255, 152, 0, 0.4);
           }
           50% { 
-            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0);
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.6);
           }
         }
 
         .sap-toolbar-button.highlighted {
-          animation: sap-pulse 2s infinite;
+          animation: sap-glow 1.5s ease-in-out infinite;
         }
 
-        /* Classic SAP pressed effect */
+        /* Group styling for navigation buttons */
+        .sap-toolbar-button[title*="Page"] {
+          min-width: 22px;
+          padding: 0 2px;
+        }
+
+        /* Active transaction indicator */
+        .sap-toolbar-button.highlighted:not([title*="Favorite"]) {
+          background: linear-gradient(to bottom, 
+            #E3F2FD 0%, 
+            #BBDEFB 40%, 
+            #90CAF9 60%, 
+            #64B5F6 100%);
+          border-color: #42A5F5 #1E88E5 #1E88E5 #42A5F5;
+        }
+
+        /* Pressed effect */
         .sap-toolbar-button:active:not(:disabled) .button-icon {
-          transform: translate(1px, 1px);
+          transform: translateY(1px);
         }
 
-        /* Group hover effect for navigation buttons */
-        .sap-toolbar-button[title*="Page"]:hover:not(:disabled) {
-          background: linear-gradient(to bottom, #E6F3FF 0%, #B3D9FF 50%, #80BFFF 100%);
-        }
-
-        /* Print and Find buttons special style */
-        .sap-toolbar-button[title*="Print"]:hover:not(:disabled),
-        .sap-toolbar-button[title*="Find"]:hover:not(:disabled) {
-          background: linear-gradient(to bottom, #F0F0F0 0%, #E0E0E0 50%, #D0D0D0 100%);
-          border-color: #E0E0E0 #808080 #808080 #E0E0E0;
-        }
-
-        /* Home button special style */
-        .sap-toolbar-button[title="Home"] {
-          min-width: 28px;
-          font-weight: bold;
-        }
-
+        /* Home button special styling */
         .sap-toolbar-button[title="Home"]:not(:disabled):hover {
-          background: linear-gradient(to bottom, #E8F5E9 0%, #A5D6A7 50%, #66BB6A 100%);
-          border-color: #A5D6A7 #2E7D32 #2E7D32 #A5D6A7;
+          background: linear-gradient(to bottom, 
+            #E8F5E9 0%, 
+            #C8E6C9 40%, 
+            #A5D6A7 60%, 
+            #81C784 100%);
+          border-color: #66BB6A #43A047 #43A047 #66BB6A;
         }
       `}</style>
     </>

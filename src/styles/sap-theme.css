@@ -2077,6 +2077,7 @@ body {
 }
 
 /* ========== DARK THEME ========== */
+/* ========== DARK THEME - IMPROVED CONTRAST ========== */
 [data-theme="dark"] {
   --sap-content-bg: #1a1a2e;
   --sap-base: #16213e;
@@ -2097,13 +2098,59 @@ body {
   color: #eaeaea;
 }
 
+/* Headings */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: #eaeaea;
+}
+
 [data-theme="dark"] .sap-window {
   background: #1a1a2e;
+}
+
+/* Window title bar */
+[data-theme="dark"] .sap-window-titlebar,
+[data-theme="dark"] .sap-title-bar {
+  background: linear-gradient(135deg, #2a3f5f 0%, #1e2f45 100%);
+  color: #eaeaea;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+[data-theme="dark"] .sap-window-title,
+[data-theme="dark"] .sap-title-bar .title {
+  color: #eaeaea;
+}
+
+/* Title bar buttons - FIXED */
+[data-theme="dark"] .sap-title-bar .window-controls button {
+  background: rgba(255, 255, 255, 0.15);
+  color: #eaeaea;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .sap-title-bar .window-controls button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
 }
 
 [data-theme="dark"] .sap-panel {
   background: #1f1f3a;
   border-color: #2a2a4a;
+}
+
+/* Panel headers */
+[data-theme="dark"] .sap-panel-header {
+  background: linear-gradient(135deg, #2a4a7a 0%, #1e3860 100%);
+  color: #eaeaea;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+[data-theme="dark"] .sap-panel-title {
+  color: #eaeaea;
 }
 
 [data-theme="dark"] .sap-panel-content {
@@ -2115,8 +2162,32 @@ body {
   border-color: #2a2a4a;
 }
 
+/* Sidebar headers */
+[data-theme="dark"] .sap-sidebar-header,
+[data-theme="dark"] .sap-tree-header {
+  color: #b0b0b0;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+[data-theme="dark"] .sap-tree-item {
+  color: #d0d0d0;
+}
+
 [data-theme="dark"] .sap-tree-item:hover {
   background: #2a2a4a;
+  color: #eaeaea;
+}
+
+[data-theme="dark"] .sap-tree-item.selected {
+  background: #0a6ed1;
+  color: #ffffff;
+}
+
+/* Labels and form text */
+[data-theme="dark"] label,
+[data-theme="dark"] .sap-label,
+[data-theme="dark"] .sap-form-label {
+  color: #b0b0b0;
 }
 
 [data-theme="dark"] .sap-input,
@@ -2127,15 +2198,26 @@ body {
   color: #eaeaea;
 }
 
+[data-theme="dark"] .sap-input::placeholder,
+[data-theme="dark"] .sap-textarea::placeholder {
+  color: #666;
+}
+
 [data-theme="dark"] .sap-input:focus,
-[data-theme="dark"] .sap-select:focus {
+[data-theme="dark"] .sap-select:focus,
+[data-theme="dark"] .sap-textarea:focus {
   border-color: var(--sap-brand);
   box-shadow: 0 0 0 2px rgba(10, 110, 209, 0.3);
+  background: #1a2740;
 }
 
 [data-theme="dark"] .sap-input:disabled,
-[data-theme="dark"] .sap-input:read-only {
+[data-theme="dark"] .sap-input:read-only,
+[data-theme="dark"] .sap-select:disabled,
+[data-theme="dark"] .sap-textarea:disabled {
   background: #252540;
+  color: #808080;
+  border-color: #2a2a4a;
 }
 
 [data-theme="dark"] .sap-button {
@@ -2146,8 +2228,21 @@ body {
 
 [data-theme="dark"] .sap-button:hover {
   background: linear-gradient(180deg, #3a3a5a 0%, #2a2a4a 100%);
+  border-color: #4a4a6a;
+  color: #ffffff;
 }
 
+[data-theme="dark"] .sap-button.primary {
+  background: linear-gradient(180deg, #0a6ed1 0%, #0854a0 100%);
+  color: #ffffff;
+  border-color: #074a8a;
+}
+
+[data-theme="dark"] .sap-button.primary:hover {
+  background: linear-gradient(180deg, #1a9fff 0%, #0a6ed1 100%);
+}
+
+/* Table improvements */
 [data-theme="dark"] .sap-table-container,
 [data-theme="dark"] .dashboard-card,
 [data-theme="dark"] .chart-container {
@@ -2155,110 +2250,88 @@ body {
   border-color: #2a2a4a;
 }
 
+[data-theme="dark"] .sap-table {
+  background: #1f1f3a;
+  color: #eaeaea;
+}
+
+[data-theme="dark"] .sap-table thead {
+  background: linear-gradient(180deg, #2a3f5f 0%, #1e2f45 100%);
+}
+
+[data-theme="dark"] .sap-table th {
+  background: transparent;
+  color: #d0d0d0;
+  border-color: #2a2a4a;
+  font-weight: 600;
+}
+
 [data-theme="dark"] .sap-table td {
   border-color: #2a2a4a;
+  color: #d0d0d0;
 }
 
 [data-theme="dark"] .sap-table tbody tr:hover td {
   background: #2a2a4a;
+  color: #eaeaea;
 }
 
 [data-theme="dark"] .sap-table tbody tr:nth-child(even) {
-  background: #252540;
+  background: #1a1f35;
 }
 
+[data-theme="dark"] .sap-table tbody tr.selected {
+  background: rgba(10, 110, 209, 0.3);
+  color: #ffffff;
+}
+
+/* Section headers */
+[data-theme="dark"] .sap-section-header,
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .content-header {
+  color: #eaeaea;
+  border-bottom-color: #2a2a4a;
+}
+
+/* TOOLBAR - FIXED FOR BETTER CONTRAST */
 [data-theme="dark"] .sap-toolbar {
   background: linear-gradient(180deg, #252540 0%, #1f1f3a 100%);
   border-color: #2a2a4a;
 }
 
 [data-theme="dark"] .sap-toolbar-button {
-  color: #eaeaea;
+  background: linear-gradient(180deg, #2a2a4a 0%, #252540 100%);
+  border-color: #3a3a5a;
+  color: #d0d0d0;
 }
 
 [data-theme="dark"] .sap-toolbar-button:hover {
-  background: #2a2a4a;
+  background: linear-gradient(180deg, #3a3a5a 0%, #2a2a4a 100%);
+  border-color: #0a6ed1;
+  color: #ffffff;
 }
 
-[data-theme="dark"] .sap-menu-bar {
-  background: #1f1f3a;
-  border-color: #2a2a4a;
+[data-theme="dark"] .sap-toolbar-button.highlighted {
+  background: linear-gradient(180deg, #3a4a70 0%, #2a3a60 100%);
+  border-color: #0a6ed1;
+  color: #ffffff;
 }
 
-[data-theme="dark"] .sap-menu-item {
-  color: #eaeaea;
+[data-theme="dark"] .sap-toolbar-button:disabled {
+  opacity: 0.3;
+  color: #606060;
 }
 
-[data-theme="dark"] .sap-menu-dropdown {
-  background: #1f1f3a;
-  border-color: #2a2a4a;
+[data-theme="dark"] .sap-toolbar-separator {
+  background: linear-gradient(to bottom, 
+    transparent 0%, 
+    #3a3a5a 20%, 
+    #3a3a5a 80%, 
+    transparent 100%);
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.05);
 }
 
-[data-theme="dark"] .sap-menu-dropdown-item {
-  color: #eaeaea;
-}
-
-[data-theme="dark"] .sap-menu-dropdown-item:hover {
-  background: #2a2a4a;
-}
-
-[data-theme="dark"] .sap-tabs-header {
-  background: linear-gradient(180deg, #252540 0%, #1f1f3a 100%);
-}
-
-[data-theme="dark"] .sap-tab {
-  color: #a0a0a0;
-}
-
-[data-theme="dark"] .sap-tab.active {
-  background: #1f1f3a;
-  color: var(--sap-brand-light);
-}
-
-[data-theme="dark"] .sap-tab-content {
-  background: #1f1f3a;
-  border-color: #2a2a4a;
-}
-
-[data-theme="dark"] .sap-modal {
-  background: #1f1f3a;
-}
-
-[data-theme="dark"] .sap-modal-body {
-  background: #1f1f3a;
-  color: #eaeaea;
-}
-
-[data-theme="dark"] .sap-modal-footer {
-  background: #252540;
-  border-color: #2a2a4a;
-}
-
-[data-theme="dark"] .sap-message-strip.info {
-  background: rgba(10, 110, 209, 0.2);
-  border-color: var(--sap-brand);
-}
-
-[data-theme="dark"] .sap-message-strip.success {
-  background: rgba(16, 126, 62, 0.2);
-  border-color: var(--sap-positive);
-}
-
-[data-theme="dark"] .sap-message-strip.warning {
-  background: rgba(233, 115, 12, 0.2);
-  border-color: var(--sap-critical);
-}
-
-[data-theme="dark"] .sap-message-strip.error {
-  background: rgba(187, 0, 0, 0.2);
-  border-color: var(--sap-negative);
-}
-
-[data-theme="dark"] .sap-table-toolbar,
-[data-theme="dark"] .sap-table-footer {
-  background: #252540;
-}
-
+/* TRANSACTION CODE INPUT - FIXED */
 [data-theme="dark"] .sap-tcode-container {
   background: #16213e;
   border-color: #3a3a5a;
@@ -2266,7 +2339,183 @@ body {
 
 [data-theme="dark"] .sap-tcode-input {
   background: transparent;
+  color: #000;
+}
+
+[data-theme="dark"] .sap-tcode-input::placeholder {
+  color: #666666;
+}
+
+[data-theme="dark"] .sap-tcode-container:focus-within {
+  border-color: #0a6ed1;
+  box-shadow: 0 0 0 2px rgba(10, 110, 209, 0.3);
+}
+
+/* Menu Bar */
+[data-theme="dark"] .sap-menu-bar {
+  background: #1f1f3a;
+  border-color: #2a2a4a;
+}
+
+[data-theme="dark"] .sap-menu-item {
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .sap-menu-item:hover {
+  background: #0a6ed1;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .sap-menu-dropdown {
+  background: #1f1f3a;
+  border-color: #2a2a4a;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .sap-menu-dropdown-item {
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .sap-menu-dropdown-item:hover {
+  background: #2a2a4a;
   color: #eaeaea;
+}
+
+[data-theme="dark"] .sap-menu-dropdown-item .shortcut {
+  color: #808080;
+}
+
+/* Tabs */
+[data-theme="dark"] .sap-tabs-header {
+  background: linear-gradient(180deg, #252540 0%, #1f1f3a 100%);
+  border-bottom: 1px solid #2a2a4a;
+}
+
+[data-theme="dark"] .sap-tab {
+  color: #808080;
+  background: transparent;
+  border-color: #2a2a4a;
+}
+
+[data-theme="dark"] .sap-tab.active {
+  background: #1f1f3a;
+  color: #eaeaea;
+  border-bottom-color: #0a6ed1;
+}
+
+[data-theme="dark"] .sap-tab:hover:not(.active) {
+  background: #252540;
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .sap-tab-content {
+  background: #1f1f3a;
+  border-color: #2a2a4a;
+}
+
+/* Modal */
+[data-theme="dark"] .sap-modal {
+  background: #1f1f3a;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .sap-modal-header {
+  background: linear-gradient(135deg, #2a4a7a 0%, #1e3860 100%);
+  border-bottom: 1px solid #2a2a4a;
+  color: #eaeaea;
+}
+
+[data-theme="dark"] .sap-modal-title {
+  color: #eaeaea;
+}
+
+[data-theme="dark"] .sap-modal-close {
+  background: rgba(255, 255, 255, 0.15);
+  color: #eaeaea;
+}
+
+[data-theme="dark"] .sap-modal-close:hover {
+  background: var(--sap-negative);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .sap-modal-body {
+  background: #1f1f3a;
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .sap-modal-footer {
+  background: #1a1f35;
+  border-color: #2a2a4a;
+}
+
+/* Card headers */
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .sap-card-header,
+[data-theme="dark"] .dashboard-card-header {
+  background: linear-gradient(180deg, #252540 0%, #1f1f3a 100%);
+  color: #d0d0d0;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+[data-theme="dark"] .card-title,
+[data-theme="dark"] .sap-card-title,
+[data-theme="dark"] .dashboard-card-title {
+  color: #d0d0d0;
+}
+
+/* Subtitle and secondary text */
+[data-theme="dark"] .subtitle,
+[data-theme="dark"] .sap-subtitle,
+[data-theme="dark"] .secondary-text {
+  color: #a0a0a0;
+}
+
+/* Message Strips - FIXED */
+[data-theme="dark"] .sap-message-strip.info {
+  background: rgba(10, 110, 209, 0.25);
+  border-left-color: #1a9fff;
+  color: #a8d5ff;
+}
+
+[data-theme="dark"] .sap-message-strip.success {
+  background: rgba(16, 126, 62, 0.25);
+  border-left-color: #12a150;
+  color: #8fd9b0;
+}
+
+[data-theme="dark"] .sap-message-strip.warning {
+  background: rgba(233, 115, 12, 0.25);
+  border-left-color: #ff9933;
+  color: #ffb366;
+}
+
+[data-theme="dark"] .sap-message-strip.error {
+  background: rgba(187, 0, 0, 0.25);
+  border-left-color: #ff3333;
+  color: #ff9999;
+}
+
+/* Table toolbar and footer */
+[data-theme="dark"] .sap-table-toolbar,
+[data-theme="dark"] .sap-table-footer {
+  background: #1a1f35;
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .sap-table-search {
+  background: #16213e;
+  border-color: #3a3a5a;
+  color: #eaeaea;
+}
+
+[data-theme="dark"] .sap-table-search::placeholder {
+  color: #666;
+}
+
+[data-theme="dark"] .sap-table-search:focus {
+  border-color: #0a6ed1;
+  background: #1a2740;
 }
 
 [data-theme="dark"] .bar-chart-bar-container {
@@ -2287,10 +2536,130 @@ body {
   border-color: #2a2a4a;
 }
 
+[data-theme="dark"] .sap-table-card-label {
+  color: #a0a0a0;
+}
+
 [data-theme="dark"] .sap-table-card-value {
+  color: #d0d0d0;
+}
+
+/* Links */
+[data-theme="dark"] a {
+  color: #5b9bd5;
+}
+
+[data-theme="dark"] a:hover {
+  color: #70aae6;
+}
+
+/* Breadcrumbs */
+[data-theme="dark"] .breadcrumb,
+[data-theme="dark"] .sap-breadcrumb {
+  color: #a0a0a0;
+}
+
+[data-theme="dark"] .breadcrumb-item.active,
+[data-theme="dark"] .sap-breadcrumb-item.active {
   color: #eaeaea;
 }
 
+/* Status indicators */
+[data-theme="dark"] .status-text,
+[data-theme="dark"] .sap-status {
+  color: #b0b0b0;
+}
+
+/* Help text */
+[data-theme="dark"] .help-text,
+[data-theme="dark"] .sap-help-text,
+[data-theme="dark"] small {
+  color: #909090;
+}
+
+/* Placeholder text */
+[data-theme="dark"] ::placeholder {
+  color: #666;
+  opacity: 1;
+}
+
+/* Status Bar - FIXED */
+[data-theme="dark"] .sap-status-bar {
+  background: #2a3f5f;
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .sap-status-message {
+  background: rgba(255, 255, 255, 0.1);
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .sap-status-message.success {
+  background: rgba(16, 126, 62, 0.3);
+  color: #8fd9b0;
+}
+
+[data-theme="dark"] .sap-status-message.error {
+  background: rgba(187, 0, 0, 0.3);
+  color: #ff9999;
+}
+
+[data-theme="dark"] .sap-status-message.warning {
+  background: rgba(233, 115, 12, 0.3);
+  color: #ffb366;
+}
+
+/* Session Tabs - FIXED */
+[data-theme="dark"] .sap-session-tabs {
+  background: #2a3f5f;
+}
+
+[data-theme="dark"] .sap-session-tab {
+  background: rgba(255, 255, 255, 0.05);
+  color: #a0a0a0;
+}
+
+[data-theme="dark"] .sap-session-tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .sap-session-tab.active {
+  background: #1a1a2e;
+  color: #eaeaea;
+}
+
+[data-theme="dark"] .sap-session-tab-close {
+  color: #d0d0d0;
+}
+
+[data-theme="dark"] .sap-session-tab-close:hover {
+  background: var(--sap-negative);
+  color: #ffffff;
+}
+
+/* Badges - FIXED */
+[data-theme="dark"] .sap-badge.info {
+  background: rgba(10, 110, 209, 0.3);
+  color: #a8d5ff;
+}
+
+[data-theme="dark"] .sap-badge.success {
+  background: rgba(16, 126, 62, 0.3);
+  color: #8fd9b0;
+}
+
+[data-theme="dark"] .sap-badge.warning {
+  background: rgba(233, 115, 12, 0.3);
+  color: #ffb366;
+}
+
+[data-theme="dark"] .sap-badge.error {
+  background: rgba(187, 0, 0, 0.3);
+  color: #ff9999;
+}
+
+/* Scrollbar */
 [data-theme="dark"] ::-webkit-scrollbar-track {
   background: #1a1a2e;
 }
@@ -2303,7 +2672,46 @@ body {
   background: #4a4a6a;
 }
 
-/* Dark theme responsive adjustments */
+/* Sidebar overlay */
 [data-theme="dark"] .sap-sidebar-overlay.visible {
   background: rgba(0, 0, 0, 0.7);
+}
+
+/* Transaction titles */
+[data-theme="dark"] .transaction-title,
+[data-theme="dark"] .sap-transaction-title {
+  color: #eaeaea;
+  border-bottom-color: #2a2a4a;
+}
+
+/* Field groups */
+[data-theme="dark"] .field-group-title,
+[data-theme="dark"] .sap-field-group-title {
+  color: #b0b0b0;
+  border-bottom-color: #2a2a4a;
+}
+
+/* Loading spinner - FIXED */
+[data-theme="dark"] .sap-spinner {
+  border-color: #3a3a5a;
+  border-top-color: #0a6ed1;
+}
+
+/* Tooltips - FIXED */
+[data-theme="dark"] .sap-toolbar-button[title]:hover::after {
+  background: #2a3f5f;
+  border-color: #3a3a5a;
+  color: #eaeaea;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Chart legend - FIXED */
+[data-theme="dark"] .pie-chart-legend-label,
+[data-theme="dark"] .bar-chart-label {
+  color: #a0a0a0;
+}
+
+[data-theme="dark"] .pie-chart-legend-value,
+[data-theme="dark"] .bar-chart-value {
+  color: #d0d0d0;
 }

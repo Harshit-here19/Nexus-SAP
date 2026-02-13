@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTransaction } from '../../context/TransactionContext';
 import { useSettings } from '../../context/SettingsContext';
+import './UserProfileDropdown.css';
 
 const UserProfileDropdown = () => {
   const { user, logout } = useAuth();
@@ -152,7 +153,7 @@ const UserProfileDropdown = () => {
           </div>
 
           {/* Quick Settings */}
-          <div style={{ 
+          <div style={{
             padding: '12px 16px',
             background: '#f5f6f7',
             borderBottom: '1px solid #e5e5e5',
@@ -163,19 +164,14 @@ const UserProfileDropdown = () => {
             <span style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>Quick Settings</span>
             <button
               onClick={handleThemeToggle}
-              style={{
-                background: settings.theme === 'dark' ? '#1a1a2e' : '#fff',
-                border: '1px solid #ccc',
-                borderRadius: '16px',
-                padding: '4px 12px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
+              className="theme-switch"
+              aria-label={`Switch to ${settings.theme === 'dark' ? 'Light' : 'Dark'} mode`}
             >
-              {settings.theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
+              <span className="theme-switch-track">
+                <span className="theme-switch-thumb">
+                  {settings.theme === 'dark' ? '🌙' : '☀️'}
+                </span>
+              </span>
             </button>
           </div>
 
