@@ -4,19 +4,20 @@ import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
 import { useFavorites } from '../../context/FavoritesContext';
 
-// Transaction definitions
+// Transaction definitions - UPDATE THIS SECTION
 const transactionDefinitions = {
+  'ZDASH': { label: 'Dashboard', icon: '📊', description: 'Expense Dashboard' },
   'MM01': { label: 'Create Material', icon: '➕', description: 'Create Material Master' },
   'MM02': { label: 'Change Material', icon: '✏️', description: 'Change Material Master' },
   'MM03': { label: 'Display Material', icon: '👁️', description: 'Display Material Master' },
-  'VA01': { label: 'Create Sales Order', icon: '➕', description: 'Create Sales Order' },
-  'VA02': { label: 'Change Sales Order', icon: '✏️', description: 'Change Sales Order' },
-  'VA03': { label: 'Display Sales Order', icon: '👁️', description: 'Display Sales Order' },
+  'VA01': { label: 'Add Expense', icon: '➕', description: 'Record New Expense' },
+  'VA02': { label: 'Edit Expense', icon: '✏️', description: 'Edit Existing Expense' },
+  'VA03': { label: 'View Expenses', icon: '👁️', description: 'View All Expenses' },
   'SE16': { label: 'Data Browser', icon: '🔍', description: 'General Table Display' },
   'FB01': { label: 'Post Document', icon: '📄', description: 'Post Document' },
   'FB03': { label: 'Display Document', icon: '👁️', description: 'Display Document' },
   'SM37': { label: 'Job Overview', icon: '📋', description: 'Background Job Overview' },
-  'SU01': { label: 'User Maintenance', icon: '👤', description: 'User Maintenance' },
+  'SU01': { label: 'User Profile', icon: '👤', description: 'User Maintenance' },
   'ZADMIN': { label: 'User Admin', icon: '👥', description: 'User Administration', adminOnly: true }
 };
 
@@ -25,7 +26,7 @@ const TreeMenu = () => {
   const { user, checkIsAdmin } = useAuth();
   const { favorites, history, removeFromFavorites, clearHistory } = useFavorites();
   const [expandedNodes, setExpandedNodes] = useState(['sap-menu', 'favorites', 'history']);
-  
+
   const isAdmin = checkIsAdmin();
 
   const treeData = [
@@ -58,6 +59,7 @@ const TreeMenu = () => {
       label: 'SAP Menu',
       icon: '📁',
       children: [
+        { id: 'zdash', label: 'ZDASH - Dashboard', icon: '📊', tcode: 'ZDASH' },
         {
           id: 'logistics',
           label: 'Logistics',
@@ -75,12 +77,12 @@ const TreeMenu = () => {
             },
             {
               id: 'sd',
-              label: 'Sales & Distribution',
-              icon: '🛒',
+              label: 'Expense Tracker',
+              icon: '💰',
               children: [
-                { id: 'va01', label: 'VA01 - Create Sales Order', icon: '➕', tcode: 'VA01' },
-                { id: 'va02', label: 'VA02 - Change Sales Order', icon: '✏️', tcode: 'VA02' },
-                { id: 'va03', label: 'VA03 - Display Sales Order', icon: '👁️', tcode: 'VA03' },
+                { id: 'va01', label: 'VA01 - Add Expense', icon: '➕', tcode: 'VA01' },
+                { id: 'va02', label: 'VA02 - Edit Expense', icon: '✏️', tcode: 'VA02' },
+                { id: 'va03', label: 'VA03 - View Expenses', icon: '👁️', tcode: 'VA03' },
               ]
             }
           ]
@@ -118,8 +120,8 @@ const TreeMenu = () => {
   ];
 
   const toggleNode = (nodeId) => {
-    setExpandedNodes(prev => 
-      prev.includes(nodeId) 
+    setExpandedNodes(prev =>
+      prev.includes(nodeId)
         ? prev.filter(id => id !== nodeId)
         : [...prev, nodeId]
     );
@@ -144,9 +146,9 @@ const TreeMenu = () => {
 
     return (
       <div>
-        <div 
+        <div
           className={`sap-tree-item ${isTransactionActive ? 'disabled' : ''}`}
-          style={{ 
+          style={{
             paddingLeft: `${level * 16 + 8}px`,
             opacity: isTransactionActive && node.tcode ? 0.5 : 1,
             cursor: isTransactionActive && node.tcode ? 'not-allowed' : 'pointer',
@@ -164,7 +166,7 @@ const TreeMenu = () => {
             <span className="sap-tree-icon">{node.icon}</span>
             <span style={{ flex: 1 }}>{node.label}</span>
           </div>
-          
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {node.adminOnly && (
               <span style={{
@@ -198,7 +200,7 @@ const TreeMenu = () => {
             )}
           </div>
         </div>
-        
+
         {isExpanded && hasChildren && (
           <div className="sap-tree-children">
             {/* Show empty message for empty folders */}
@@ -216,15 +218,15 @@ const TreeMenu = () => {
               </div>
             )}
             {node.children.map((child) => (
-              <TreeNode 
-                key={child.id} 
-                node={child} 
+              <TreeNode
+                key={child.id}
+                node={child}
                 level={level + 1}
               />
             ))}
             {/* Clear history button */}
             {node.id === 'history' && node.children.length > 0 && (
-              <div 
+              <div
                 style={{
                   paddingLeft: `${(level + 1) * 16 + 8}px`,
                   padding: '8px',
@@ -299,8 +301,8 @@ const TreeMenu = () => {
       </div>
 
       {treeData.map((node) => (
-        <TreeNode 
-          key={node.id} 
+        <TreeNode
+          key={node.id}
           node={node}
         />
       ))}

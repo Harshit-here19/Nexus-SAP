@@ -705,3 +705,136 @@ export const clearTransactionHistory = (userId = null) => {
 export const initializeData = () => {
   initializeUsers();
 };
+
+// ========== EXPENSE TRACKER ==========
+
+// Get expense categories
+export const getExpenseCategories = () => [
+  { value: 'food', label: '🍔 Food & Dining', color: '#e91e63' },
+  { value: 'travel', label: '✈️ Travel & Transport', color: '#9c27b0' },
+  { value: 'shopping', label: '🛍️ Shopping', color: '#3f51b5' },
+  { value: 'bills', label: '📄 Bills & Utilities', color: '#00bcd4' },
+  { value: 'entertainment', label: '🎬 Entertainment', color: '#ff9800' },
+  { value: 'healthcare', label: '🏥 Healthcare', color: '#4caf50' },
+  { value: 'education', label: '📚 Education', color: '#795548' },
+  { value: 'groceries', label: '🛒 Groceries', color: '#607d8b' },
+  { value: 'rent', label: '🏠 Rent & Housing', color: '#f44336' },
+  { value: 'insurance', label: '🛡️ Insurance', color: '#673ab7' },
+  { value: 'personal', label: '💄 Personal Care', color: '#e91e63' },
+  { value: 'gifts', label: '🎁 Gifts & Donations', color: '#ff5722' },
+  { value: 'investment', label: '📈 Investment', color: '#2196f3' },
+  { value: 'other', label: '📦 Other', color: '#9e9e9e' }
+];
+
+// Get payment methods
+export const getPaymentMethods = () => [
+  { value: 'cash', label: '💵 Cash' },
+  { value: 'credit_card', label: '💳 Credit Card' },
+  { value: 'debit_card', label: '💳 Debit Card' },
+  { value: 'upi', label: '📱 UPI' },
+  { value: 'bank_transfer', label: '🏦 Bank Transfer' },
+  { value: 'wallet', label: '👛 Digital Wallet' },
+  { value: 'cheque', label: '📝 Cheque' }
+];
+
+// Get expense statistics
+export const getExpenseStats = (userId = null) => {
+  const expenses = getTableData('expenses', userId);
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  // This month's expenses
+  const thisMonthExpenses = expenses.filter(e => {
+    const date = new Date(e.date);
+    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+  });
+
+  // Last month's expenses
+  const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  const lastMonthExpenses = expenses.filter(e => {
+    const date = new Date(e.date);
+    return date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear;
+  });
+
+  // This year's expenses
+  const thisYearExpenses = expenses.filter(e => {
+    const date = new Date(e.date);
+    return date.getFullYear() === currentYear;
+  });
+
+  // Calculate totals
+  const totalThisMonth = thisMonthExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+  const totalLastMonth = lastMonthExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+  const totalThisYear = thisYearExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+  const totalAllTime = expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+
+  // Category breakdown
+  const categories = getExpenseCategories();
+  const categoryBreakdown = categories.map(cat => {
+    const catExpenses = thisMonthExpenses.filter(e => e.category === cat.value);
+    const total = catExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+    return {
+      ...cat,
+      total,
+      count: catExpenses.length,
+      percentage: totalThisMonth > 0 ? Math.round((total / totalThisMonth) * 100) : 0
+    };
+  }).filter(c => c.total > 0).sort((a, b) => b.total - a.total);
+
+  // Monthly trend (last 6 months)
+  const monthlyTrend = [];
+  for (let i = 5; i >= 0; i--) {
+    const month = new Date(currentYear, currentMonth - i, 1);
+    const monthExpenses = expenses.filter(e => {
+      const date = new Date(e.date);
+      return date.getMonth() === month.getMonth() && date.getFullYear() === month.getFullYear();
+    });
+    const total = monthExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+    monthlyTrend.push({
+      month: month.toLocaleString('default', { month: 'short' }),
+      year: month.getFullYear(),
+      total,
+      count: monthExpenses.length
+    });
+  }
+
+  // Payment method breakdown
+  const paymentMethods = getPaymentMethods();
+  const paymentBreakdown = paymentMethods.map(method => {
+    const methodExpenses = thisMonthExpenses.filter(e => e.paymentMethod === method.value);
+    const total = methodExpenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+    return {
+      ...method,
+      total,
+      count: methodExpenses.length,
+      percentage: totalThisMonth > 0 ? Math.round((total / totalThisMonth) * 100) : 0
+    };
+  }).filter(m => m.total > 0).sort((a, b) => b.total - a.total);
+
+  // Recent expenses
+  const recentExpenses = [...expenses]
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 10);
+
+  // Month over month change
+  const monthChange = totalLastMonth > 0 
+    ? Math.round(((totalThisMonth - totalLastMonth) / totalLastMonth) * 100) 
+    : 0;
+
+  return {
+    totalThisMonth,
+    totalLastMonth,
+    totalThisYear,
+    totalAllTime,
+    expenseCount: expenses.length,
+    thisMonthCount: thisMonthExpenses.length,
+    monthChange,
+    categoryBreakdown,
+    monthlyTrend,
+    paymentBreakdown,
+    recentExpenses,
+    averageExpense: expenses.length > 0 ? totalAllTime / expenses.length : 0
+  };
+};

@@ -9,12 +9,15 @@ import MainLayout from './components/Layout/MainLayout';
 import LoginScreen from './components/Auth/LoginScreen';
 import HomeScreen from './components/Screens/HomeScreen';
 import MaterialMasterScreen from './components/Screens/MaterialMasterScreen';
+import ExpenseTrackerScreen from './components/Screens/ExpenseTrackerScreen';
 import SalesOrderScreen from './components/Screens/SalesOrderScreen';
 import DataBrowserScreen from './components/Screens/DataBrowserScreen';
 import AdminUserScreen from './components/Screens/AdminUserScreen';
 import UserProfileScreen from './components/Screens/UserProfileScreen';
 import { initializeData } from './utils/storage';
 import './styles/sap-theme.css';
+import DashboardScreen from './components/Screens/DashboardScreen';
+
 
 // Wrapper component to connect transaction tracking with favorites
 const TransactionTracker = ({ children }) => {
@@ -65,34 +68,34 @@ const AppContent = () => {
     switch (currentTransaction) {
       case 'HOME':
         return <HomeScreen />;
-      
+
       case 'MM01':
         return <MaterialMasterScreen mode="create" />;
-      
+
       case 'MM02':
         return <MaterialMasterScreen mode="change" />;
-      
+
       case 'MM03':
         return <MaterialMasterScreen mode="display" />;
-      
+
       case 'VA01':
-        return <SalesOrderScreen mode="create" />;
-      
+        return <ExpenseTrackerScreen mode="create" />;
+
       case 'VA02':
-        return <SalesOrderScreen mode="change" />;
-      
+        return <ExpenseTrackerScreen mode="change" />;
+
       case 'VA03':
-        return <SalesOrderScreen mode="display" />;
-      
+        return <ExpenseTrackerScreen mode="display" />;
+
       case 'SE16':
         return <DataBrowserScreen />;
-      
+
       case 'ZADMIN':
         return <AdminUserScreen />;
-      
+
       case 'SU01':
         return <UserProfileScreen />;
-      
+
       case 'FB01':
       case 'FB03':
         return (
@@ -108,7 +111,7 @@ const AppContent = () => {
             </div>
           </div>
         );
-      
+
       case 'SM37':
         return (
           <div className="sap-panel">
@@ -123,7 +126,10 @@ const AppContent = () => {
             </div>
           </div>
         );
-      
+
+      case 'ZDASH':
+        return <DashboardScreen />;
+
       default:
         return (
           <div className="sap-panel">

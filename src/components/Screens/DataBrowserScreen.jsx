@@ -9,6 +9,7 @@ import { getAllData } from '../../utils/storage';
 
 // Define available tables
 const availableTables = [
+  { value: 'expenses', label: 'ZEXP - Expenses', icon: '💰' },
   { value: 'materials', label: 'MARA - Material Master', icon: '📦' },
   { value: 'salesOrders', label: 'VBAK - Sales Order Header', icon: '🛒' },
   { value: 'customers', label: 'KNA1 - Customer Master', icon: '👥' },
@@ -20,6 +21,18 @@ const availableTables = [
 
 // Column definitions for each table
 const tableColumns = {
+  expenses: [
+    { key: 'expenseNumber', label: 'Expense ID', width: '120px' },
+    { key: 'date', label: 'Date', width: '100px' },
+    { key: 'category', label: 'Category', width: '100px' },
+    { key: 'description', label: 'Description', width: '200px' },
+    { key: 'amount', label: 'Amount', width: '100px', align: 'right' },
+    { key: 'currency', label: 'Curr', width: '60px' },
+    { key: 'paymentMethod', label: 'Payment', width: '100px' },
+    { key: 'vendor', label: 'Vendor', width: '150px' },
+    { key: 'status', label: 'Status', width: '100px' },
+    { key: 'createdAt', label: 'Created', width: '150px' }
+  ],
   materials: [
     { key: 'materialNumber', label: 'Material', width: '120px' },
     { key: 'description', label: 'Description', width: '200px' },
