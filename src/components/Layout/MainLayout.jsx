@@ -102,7 +102,7 @@ const MainLayout = ({ children }) => {
       </div>
 
       {/* Session Tabs */}
-      <SessionTabs />
+      {/* <SessionTabs /> */}
 
       {/* Menu Bar */}
       <MenuBar 
