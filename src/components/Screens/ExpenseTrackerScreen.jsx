@@ -44,7 +44,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
     category: '',
     description: '',
     amount: '',
-    currency: 'USD',
+    currency: 'INR',
     paymentMethod: '',
     vendor: '',
     receiptNumber: '',
@@ -225,7 +225,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
   deleteRef.current = async () => {
     if (!formData.id) return;
 
-    const confirmed = await confirm('Are you sure you want to delete this expense?');
+    const confirmed = await confirm('Are you sure you want to delete this expense?','danger');
     if (confirmed) {
       const expenses = getTableData('expenses');
       const filtered = expenses.filter(e => e.id !== formData.id);

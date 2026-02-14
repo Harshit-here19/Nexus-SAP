@@ -171,7 +171,7 @@ export const TransactionProvider = ({ children }) => {
     }
 
     setStatusMessage("Operation cancelled");
-    setStatusType("info");
+    setStatusType("danger");
   }, [hasUnsavedChanges]);
 
   // Confirm exit

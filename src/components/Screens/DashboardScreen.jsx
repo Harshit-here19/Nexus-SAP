@@ -46,14 +46,14 @@ const DashboardScreen = () => {
     if (compact && value >= 1000) {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'INR',
         notation: 'compact',
         maximumFractionDigits: 1
       }).format(value);
     }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 2
     }).format(value);
   };

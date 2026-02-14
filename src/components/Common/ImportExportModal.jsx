@@ -523,7 +523,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
                       onStatusMessage(result.message, 'success');
                       onClose();
                       // Suggest page refresh
-                      const confirmed = await confirm('Backup restored! Refresh the page to see changes?');
+                      const confirmed = await confirm('Backup restored! Refresh the page to see changes?','success');
                       if (confirmed) {
                         window.location.reload();
                       }

@@ -47,7 +47,7 @@ const SalesOrderScreen = ({ mode = 'create' }) => {
     shippingCondition: '01',
     paymentTerms: 'NT30',
     incoterms: 'EXW',
-    currency: 'USD',
+    currency: 'INR',
     status: 'Open',
     createdBy: user?.username || 'SAPUSER',
     createdAt: new Date().toISOString()
@@ -299,7 +299,7 @@ const SalesOrderScreen = ({ mode = 'create' }) => {
       shippingCondition: '01',
       paymentTerms: 'NT30',
       incoterms: 'EXW',
-      currency: 'USD',
+      currency: 'INR',
       status: 'Open',
       createdBy: user?.username || 'SAPUSER',
       createdAt: new Date().toISOString()

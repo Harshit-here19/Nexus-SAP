@@ -40,7 +40,7 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
     distributionChannel: '',
     division: '',
     salesPrice: '',
-    currency: 'USD',
+    currency: 'INR',
     plant: '',
     storageLocation: '',
     mrpType: '',

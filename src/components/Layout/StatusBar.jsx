@@ -29,10 +29,13 @@ const StatusBar = ({ message = 'Ready', type = 'info', user }) => {
     });
   };
 
+  console.log(type, message);
+  
+
   return (
     <div className={styles.sapStatusBar}>
       <div className={styles.sapStatusLeft}>
-        <div className={`${styles.sapStatusMessage} ${type}`}>
+        <div className={`${styles.sapStatusMessage} ${styles[type]}`}>
           {type === 'success' && '✓ '}
           {type === 'error' && '✗ '}
           {type === 'warning' && '⚠ '}

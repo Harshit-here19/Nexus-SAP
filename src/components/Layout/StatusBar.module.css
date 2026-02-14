@@ -5,117 +5,129 @@
   left: 0;
   right: 0;
   z-index: 9999;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--sap-shell-bg); /* keep your current theme color */
+
+  background: var(--sap-shell-bg);
   color: var(--sap-shell-text);
-  font-family: "72", "SAP Fiori", "Arial", sans-serif; /* classic SAP font feel */
+
   font-size: 12px;
+
   padding: 4px 8px;
   min-height: 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1); /* subtle top border like SAP GUI */
-  flex-wrap: wrap;
-  gap: 6px;
+
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  /* font-family: "72", "SAP Fiori", "Segoe UI", Arial, sans-serif; */
 }
 
+/* Left & Right Sections */
 .sapStatusLeft {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .sapStatusRight {
   display: flex;
-  align-items: center;
   gap: 12px;
   opacity: 0.9;
   flex-shrink: 0;
 }
 
+/* ========== STATUS MESSAGE ========== */
 .sapStatusMessage {
   padding: 2px 6px;
-  background: transparent; /* classic SAP GUI usually no colored background */
-  border-radius: 0; /* remove rounded corners */
-  min-width: 80px;
-  max-width: 100%;
-  font-size: 12px;
-  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: inherit; /* use inherited text color */
+
+  background: transparent;
+  color: #222;
+
+  border-radius: 2px;
+
+  animation: slideIn 0.3s ease;
 }
 
+/* Single smooth left → right animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ========== STATUS TYPES ========== */
+
+/* Default / Info */
+.sapStatusMessage.info {
+  background: transparent;
+  color: #fff;
+}
+
+/* Success */
 .sapStatusMessage.success {
-  color: #107e3e; /* green like SAP success */
   background: transparent;
+  color: #107e3e;
+  border-color: #107e3e;
 }
 
+/* Error */
 .sapStatusMessage.error {
-  color: #bb0000; /* red */
   background: transparent;
+  color: #bb0000;
+  border-color: #bb0000;
 }
 
+/* Warning (same red as requested) */
 .sapStatusMessage.warning {
-  color: #e9730c; /* orange */
   background: transparent;
-}
-
-/* ========== RESPONSIVE BREAKPOINTS ========== */
-@media (max-width: 991px) {
-  .sapStatusBar {
-    padding: 4px 8px;
-    font-size: 11px;
-    min-height: 22px;
-  }
-  .sapStatusMessage {
-    padding: 2px 6px;
-  }
-}
-
-@media (max-width: 767px) {
-  .sapStatusBar {
-    padding: 3px 6px;
-    font-size: 10px;
-    min-height: 20px;
-  }
-  .sapStatusMessage {
-    min-width: auto;
-    flex: 1;
-  }
-}
-
-@media (max-height: 500px) and (orientation: landscape) {
-  .sapStatusBar {
-    min-height: 18px;
-    padding: 2px 6px;
-  }
-}
-
-/* Print Styles */
-@media print {
-  .sapStatusBar {
-    display: none !important;
-  }
+  color: #bb0000;
+  border-color: #bb0000;
 }
 
 /* ========== DARK THEME ========== */
 [data-theme="dark"] .sapStatusBar {
-  background: var(--sap-shell-bg); /* keep your dark theme background */
+  background: var(--sap-shell-bg);
   color: var(--sap-shell-text);
 }
 
+[data-theme="dark"] .sapStatusMessage {
+  background: #2a2a2a;
+  color: #e5e5e5;
+  border-color: #555;
+}
+
 [data-theme="dark"] .sapStatusMessage.success {
+  background: #143d2a;
   color: #8fd9b0;
+  border-color: #4ade80;
 }
 
-[data-theme="dark"] .sapStatusMessage.error {
-  color: #ff9999;
-}
-
+[data-theme="dark"] .sapStatusMessage.error,
 [data-theme="dark"] .sapStatusMessage.warning {
-  color: #ffb366;
+  background: #3d1a1a;
+  color: #ff9999;
+  border-color: #ff6b6b;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .sapStatusBar {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+}
+
+/* Print */
+@media print {
+  .sapStatusBar {
+    display: none !important;
+  }
 }

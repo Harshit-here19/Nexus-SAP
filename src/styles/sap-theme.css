@@ -888,30 +888,6 @@ body {
   flex-shrink: 0;
 }
 
-.sap-status-message {
-  padding: 3px 10px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 3px;
-  min-width: 100px;
-  max-width: 100%;
-  font-size: 11px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sap-status-message.success {
-  background: var(--sap-positive);
-}
-
-.sap-status-message.error {
-  background: var(--sap-negative);
-}
-
-.sap-status-message.warning {
-  background: var(--sap-critical);
-}
-
 /* ========== PANELS ========== */
 .sap-panel {
   background: var(--sap-panel-bg);
@@ -2298,12 +2274,6 @@ body {
     min-height: 24px;
   }
   
-  .sap-status-message {
-    padding: 2px 6px;
-    min-width: auto;
-    flex: 1;
-  }
-  
   .dashboard-card {
     padding: 10px;
   }
@@ -3406,26 +3376,6 @@ body {
 [data-theme="dark"] .sap-status-bar {
   background: #2a3f5f;
   color: #d0d0d0;
-}
-
-[data-theme="dark"] .sap-status-message {
-  background: rgba(255, 255, 255, 0.1);
-  color: #d0d0d0;
-}
-
-[data-theme="dark"] .sap-status-message.success {
-  background: rgba(16, 126, 62, 0.3);
-  color: #8fd9b0;
-}
-
-[data-theme="dark"] .sap-status-message.error {
-  background: rgba(187, 0, 0, 0.3);
-  color: #ff9999;
-}
-
-[data-theme="dark"] .sap-status-message.warning {
-  background: rgba(233, 115, 12, 0.3);
-  color: #ffb366;
 }
 
 /* Session Tabs - FIXED */

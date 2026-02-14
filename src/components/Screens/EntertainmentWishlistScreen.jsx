@@ -369,7 +369,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   deleteRef.current = async () => {
     if (!formData.id) return;
     
-    const confirmed = await confirm('Are you sure you want to delete this item from your wishlist?');
+    const confirmed = await confirm('Are you sure you want to delete this item from your wishlist?','danger');
     if (confirmed) {
       const allData = getAllData();
       allData.entertainment_wishlist = (allData.entertainment_wishlist || []).filter(
