@@ -1,5 +1,5 @@
 // src/components/Screens/EntertainmentWishlistScreen.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import SapButton from '../Common/SapButton';
 import SapInput from '../Common/SapInput';
 import SapSelect from '../Common/SapSelect';
@@ -7,6 +7,7 @@ import SapTabs from '../Common/SapTabs';
 import SapModal from '../Common/SapModal';
 import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
+import { useAction } from '../../context/ActionContext';
 import {
   getTableData,
   addRecord,
@@ -82,8 +83,13 @@ const PLATFORM_OPTIONS = [
 ];
 
 const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
-  const { updateStatus, markAsChanged, markAsSaved } = useTransaction();
+  const { updateStatus, markAsChanged, markAsSaved, goBack } = useTransaction();
   const { user } = useAuth();
+  const { registerAction, clearAction } = useAction();
+
+  const saveRef = useRef(null);
+  const clearRef = useRef(null);
+  const deleteRef = useRef(null);
   
   const [itemId, setItemId] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -260,7 +266,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   };
 
   // Save item
-  const handleSave = () => {
+  saveRef.current = () => {
     if (!validateForm()) {
       updateStatus('Please fill in all required fields', 'error');
       return;
@@ -304,7 +310,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   };
 
   // Clear form
-  const handleClear = () => {
+  clearRef.current = () => {
     setFormData({
       itemNumber: '',
       category: '',
@@ -344,8 +350,20 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
     updateStatus('Form cleared', 'info');
   };
 
+  useEffect(() => {
+    registerAction("SAVE",()=>{saveRef.current?.()});
+    registerAction("CLEAR",()=>{clearRef.current?.()});
+    registerAction("DELETE",()=>{deleteRef.current?.()});
+
+    return () => {
+      clearAction("SAVE");
+      clearAction("CLEAR");
+      clearAction("DELETE");
+    };
+    },[]);
+
   // Delete item
-  const handleDelete = () => {
+  deleteRef.current = () => {
     if (!formData.id) return;
     
     if (window.confirm('Are you sure you want to delete this item from your wishlist?')) {
@@ -354,7 +372,8 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
         i => i.id !== formData.id
       );
       saveAllData(allData);
-      handleClear();
+      clearRef.current?.();
+      goBack();
       updateStatus('Item deleted successfully', 'success');
     }
   };
@@ -1237,25 +1256,6 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
             </div>
           ) : (
             <>
-              {/* Action Buttons */}
-              <div className="sap-button-group" style={{ marginBottom: '16px' }}>
-                {!isReadOnly && (
-                  <>
-                    <SapButton onClick={handleSave} type="primary" icon="💾">
-                      Save
-                    </SapButton>
-                    {mode === 'change' && formData.id && (
-                      <SapButton onClick={handleDelete} type="danger" icon="🗑️">
-                        Delete
-                      </SapButton>
-                    )}
-                  </>
-                )}
-                <SapButton onClick={handleClear} icon="🔄">
-                  {mode === 'create' ? 'Clear' : 'New Item'}
-                </SapButton>
-              </div>
-
               <SapTabs tabs={tabs} />
             </>
           )}

@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { TransactionProvider, useTransaction } from './context/TransactionContext';
 import { SessionProvider } from './context/SessionContext';
@@ -10,7 +10,6 @@ import LoginScreen from './components/Auth/LoginScreen';
 import HomeScreen from './components/Screens/HomeScreen';
 import MaterialMasterScreen from './components/Screens/MaterialMasterScreen';
 import ExpenseTrackerScreen from './components/Screens/ExpenseTrackerScreen';
-import SalesOrderScreen from './components/Screens/SalesOrderScreen';
 import DataBrowserScreen from './components/Screens/DataBrowserScreen';
 import AdminUserScreen from './components/Screens/AdminUserScreen';
 import UserProfileScreen from './components/Screens/UserProfileScreen';
@@ -18,6 +17,7 @@ import { initializeData } from './utils/storage';
 import './styles/sap-theme.css';
 import DashboardScreen from './components/Screens/DashboardScreen';
 import EntertainmentWishlistScreen from './components/Screens/EntertainmentWishlistScreen';
+import { ActionProvider } from './context/ActionContext';
 
 
 // Wrapper component to connect transaction tracking with favorites
@@ -193,7 +193,9 @@ function App() {
   return (
     <AuthProvider>
       <TransactionProvider>
+      <ActionProvider>
         <AppContent />
+        </ActionProvider>
       </TransactionProvider>
     </AuthProvider>
   );

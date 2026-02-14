@@ -1,11 +1,12 @@
 // src/components/Screens/MaterialMasterScreen.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import SapInput from '../Common/SapInput';
 import SapSelect from '../Common/SapSelect';
 import SapButton from '../Common/SapButton';
 import SapTabs from '../Common/SapTabs';
 import SapModal from '../Common/SapModal';
 import { useTransaction } from '../../context/TransactionContext';
+import { useAction } from '../../context/ActionContext';
 import {
   getTableData,
   addRecord,
@@ -15,27 +16,25 @@ import {
 } from '../../utils/storage';
 
 const MaterialMasterScreen = ({ mode = 'create' }) => {
-  const { updateStatus, markAsChanged, markAsSaved } = useTransaction();
-  
+  const { updateStatus, markAsChanged, markAsSaved, goBack } = useTransaction();
+  const { registerAction, clearAction } = useAction();
+
+  const saveRef = useRef(null);
+  const clearRef = useRef(null);
+
   const [materialNumber, setMaterialNumber] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   const [formData, setFormData] = useState({
     materialNumber: '',
     description: '',
     materialType: '',
     materialGroup: '',
     baseUnit: '',
-    grossWeight: '',
-    netWeight: '',
-    weightUnit: 'KG',
-    volume: '',
-    volumeUnit: 'L',
     purchasingGroup: '',
-    purchaseOrderText: '',
     plannedDeliveryTime: '',
     salesOrg: '',
     distributionChannel: '',
@@ -117,7 +116,7 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.description?.trim()) {
       newErrors.description = 'Description is required';
     }
@@ -132,7 +131,7 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
+  saveRef.current = () => {
     if (!validateForm()) {
       updateStatus('Please fill in all required fields', 'error');
       return;
@@ -147,6 +146,7 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
         });
         setFormData(prev => ({ ...prev, materialNumber: matNumber }));
         markAsSaved();
+        goBack();
         updateStatus(`Material ${matNumber} created successfully`, 'success');
       } else if (mode === 'change') {
         updateRecord('materials', formData.id, formData);
@@ -158,20 +158,22 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
     }
   };
 
-  const handleClear = () => {
+  useEffect(() => {
+    registerAction('SAVE', () => { saveRef.current?.() });
+
+    return () => {
+      clearAction('SAVE');
+    }
+  }, []);
+
+  clearRef.current = () => {
     setFormData({
       materialNumber: '',
       description: '',
       materialType: '',
       materialGroup: '',
       baseUnit: '',
-      grossWeight: '',
-      netWeight: '',
-      weightUnit: 'KG',
-      volume: '',
-      volumeUnit: 'L',
       purchasingGroup: '',
-      purchaseOrderText: '',
       plannedDeliveryTime: '',
       salesOrg: '',
       distributionChannel: '',
@@ -194,7 +196,15 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
     setErrors({});
     markAsSaved();
     updateStatus('Form cleared', 'info');
-  };
+    };
+
+  useEffect(() => {
+    registerAction('CLEAR', () => { clearRef.current?.() });
+
+    return () => {
+      clearAction('CLEAR');
+    }
+  }, []);
 
   const isReadOnly = mode === 'display';
   const needsLoad = (mode === 'change' || mode === 'display') && !isLoaded;
@@ -238,62 +248,6 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
         required={true}
         disabled={isReadOnly}
       />
-      
-      <div style={{ borderTop: '1px solid var(--sap-border)', margin: '20px 0', paddingTop: '20px' }}>
-        <h4 style={{ marginBottom: '16px', color: 'var(--sap-brand)' }}>📦 Dimensions</h4>
-      </div>
-      
-      <div className="sap-form-row" style={{ display: 'flex', gap: '20px' }}>
-        <SapInput
-          label="Gross Weight"
-          value={formData.grossWeight}
-          onChange={(val) => handleChange('grossWeight', val)}
-          type="number"
-          disabled={isReadOnly}
-          width="150px"
-        />
-        <SapInput
-          label="Net Weight"
-          value={formData.netWeight}
-          onChange={(val) => handleChange('netWeight', val)}
-          type="number"
-          disabled={isReadOnly}
-          width="150px"
-        />
-        <SapSelect
-          label="Weight Unit"
-          value={formData.weightUnit}
-          onChange={(val) => handleChange('weightUnit', val)}
-          options={[
-            { value: 'KG', label: 'KG' },
-            { value: 'G', label: 'G' },
-            { value: 'LB', label: 'LB' }
-          ]}
-          disabled={isReadOnly}
-        />
-      </div>
-      
-      <div className="sap-form-row" style={{ display: 'flex', gap: '20px' }}>
-        <SapInput
-          label="Volume"
-          value={formData.volume}
-          onChange={(val) => handleChange('volume', val)}
-          type="number"
-          disabled={isReadOnly}
-          width="150px"
-        />
-        <SapSelect
-          label="Volume Unit"
-          value={formData.volumeUnit}
-          onChange={(val) => handleChange('volumeUnit', val)}
-          options={[
-            { value: 'L', label: 'L - Liter' },
-            { value: 'ML', label: 'ML - Milliliter' },
-            { value: 'M3', label: 'M3 - Cubic Meter' }
-          ]}
-          disabled={isReadOnly}
-        />
-      </div>
     </div>
   );
 
@@ -313,19 +267,6 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
         placeholder="Days"
         disabled={isReadOnly}
       />
-      <div className="sap-form-group">
-        <label className="sap-form-label">Purchase Order Text</label>
-        <div className="sap-form-field">
-          <textarea
-            className="sap-textarea"
-            value={formData.purchaseOrderText || ''}
-            onChange={(e) => handleChange('purchaseOrderText', e.target.value)}
-            disabled={isReadOnly}
-            rows={4}
-            style={{ width: '100%', maxWidth: '400px' }}
-          />
-        </div>
-      </div>
     </div>
   );
 
@@ -349,11 +290,11 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
         onChange={(val) => handleChange('division', val)}
         disabled={isReadOnly}
       />
-      
+
       <div style={{ borderTop: '1px solid var(--sap-border)', margin: '20px 0', paddingTop: '20px' }}>
         <h4 style={{ marginBottom: '16px', color: 'var(--sap-brand)' }}>💰 Pricing</h4>
       </div>
-      
+
       <div className="sap-form-row" style={{ display: 'flex', gap: '20px' }}>
         <SapInput
           label="Sales Price"
@@ -401,11 +342,11 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
         }))}
         disabled={isReadOnly}
       />
-      
+
       <div style={{ borderTop: '1px solid var(--sap-border)', margin: '20px 0', paddingTop: '20px' }}>
         <h4 style={{ marginBottom: '16px', color: 'var(--sap-brand)' }}>📊 MRP Data</h4>
       </div>
-      
+
       <SapSelect
         label="MRP Type"
         value={formData.mrpType}
@@ -523,7 +464,7 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
                 <span className="sap-message-strip-icon">ℹ️</span>
                 <span>Enter a material number to load or search for existing materials.</span>
               </div>
-              
+
               <div className="sap-form-row" style={{ display: 'flex', alignItems: 'flex-end', gap: '12px' }}>
                 <SapInput
                   label="Material Number"
@@ -543,16 +484,16 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
             </div>
           ) : (
             <>
-              <div className="sap-button-group" style={{ marginBottom: '20px' }}>
+              {/* <div className="sap-button-group" style={{ marginBottom: '20px' }}>
                 {!isReadOnly && (
-                  <SapButton onClick={handleSave} type="primary" icon="💾">
+                  <SapButton type="primary" icon="💾">
                     Save
                   </SapButton>
                 )}
                 <SapButton onClick={handleClear} icon="🗑️">
                   Clear
                 </SapButton>
-              </div>
+              </div> */}
 
               <SapTabs tabs={tabs} />
             </>
@@ -589,7 +530,7 @@ const MaterialMasterScreen = ({ mode = 'create' }) => {
             style={{ width: '100%' }}
           />
         </div>
-        
+
         <div style={{ maxHeight: '300px', overflow: 'auto' }}>
           <table className="sap-table">
             <thead>

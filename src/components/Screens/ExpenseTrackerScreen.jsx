@@ -1,5 +1,5 @@
 // src/components/Screens/ExpenseTrackerScreen.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import SapButton from '../Common/SapButton';
 import SapInput from '../Common/SapInput';
 import SapSelect from '../Common/SapSelect';
@@ -7,6 +7,7 @@ import SapTabs from '../Common/SapTabs';
 import SapModal from '../Common/SapModal';
 import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
+import { useAction } from '../../context/ActionContext';
 import {
   getTableData,
   addRecord,
@@ -18,9 +19,14 @@ import {
 } from '../../utils/storage';
 
 const ExpenseTrackerScreen = ({ mode = 'create' }) => {
-  const { updateStatus, markAsChanged, markAsSaved } = useTransaction();
+  const { updateStatus, markAsChanged, markAsSaved, goBack } = useTransaction();
   const { user } = useAuth();
-  
+  const { registerAction, clearAction } = useAction();
+
+  const saveRef = useRef(null);
+  const clearRef = useRef(null);
+  const deleteRef = useRef(null);
+
   const [expenseId, setExpenseId] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -81,7 +87,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
   // Search expenses
   const handleSearch = () => {
     let expenses = getTableData('expenses');
-    
+
     // Apply filters
     if (searchTerm) {
       expenses = expenses.filter(e =>
@@ -90,11 +96,11 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
         e.vendor?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
     if (filterCategory !== 'all') {
       expenses = expenses.filter(e => e.category === filterCategory);
     }
-    
+
     if (filterMonth !== 'all') {
       const [year, month] = filterMonth.split('-');
       expenses = expenses.filter(e => {
@@ -102,10 +108,10 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
         return date.getFullYear() === parseInt(year) && date.getMonth() === parseInt(month) - 1;
       });
     }
-    
+
     // Sort by date descending
     expenses = expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
+
     setSearchResults(expenses);
     setShowSearchModal(true);
   };
@@ -122,7 +128,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
   // Validate form
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.date) {
       newErrors.date = 'Date is required';
     }
@@ -144,7 +150,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
   };
 
   // Save expense
-  const handleSave = () => {
+  saveRef.current = () => {
     if (!validateForm()) {
       updateStatus('Please fill in all required fields', 'error');
       return;
@@ -160,6 +166,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
         });
         setFormData(prev => ({ ...prev, expenseNumber: expNumber }));
         markAsSaved();
+        clearRef.current?.();
         updateStatus(`Expense ${expNumber} created successfully`, 'success');
       } else if (mode === 'change') {
         updateRecord('expenses', formData.id, {
@@ -172,17 +179,17 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
     } catch (error) {
       updateStatus(`Error saving expense: ${error.message}`, 'error');
     }
-  };
+  }
 
   // Clear form
-  const handleClear = () => {
+  clearRef.current = () => {
     setFormData({
       expenseNumber: '',
       date: new Date().toISOString().split('T')[0],
       category: '',
       description: '',
       amount: '',
-      currency: 'USD',
+      currency: 'INR',
       paymentMethod: '',
       vendor: '',
       receiptNumber: '',
@@ -198,19 +205,32 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
     setErrors({});
     markAsSaved();
     updateStatus('Form cleared', 'info');
-  };
+  }
+
+  useEffect(() => {
+    registerAction('SAVE', ()=>{saveRef.current?.()});
+    registerAction('CLEAR', ()=>{clearRef.current?.()});
+    registerAction('DELETE', ()=>{deleteRef.current?.()});
+
+    return () => {
+      clearAction('SAVE');
+      clearAction('CLEAR');
+      clearAction('DELETE');
+    };
+  }, []);
 
   // Delete expense
-  const handleDelete = () => {
+  deleteRef.current = () => {
     if (!formData.id) return;
-    
+
     if (window.confirm('Are you sure you want to delete this expense?')) {
       const expenses = getTableData('expenses');
       const filtered = expenses.filter(e => e.id !== formData.id);
       const allData = getAllData();
       allData.expenses = filtered;
       saveAllData(allData);
-      handleClear();
+      clearRef.current?.();
+      goBack();
       updateStatus('Expense deleted successfully', 'success');
     }
   };
@@ -246,14 +266,14 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
           <h4 style={{ marginBottom: '14px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
             <span>📝</span> Expense Details
           </h4>
-          
+
           <SapInput
             label="Expense ID"
             value={formData.expenseNumber}
             readOnly={true}
             placeholder="Auto-generated"
           />
-          
+
           <SapInput
             label="Date"
             value={formData.date}
@@ -263,7 +283,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
             disabled={isReadOnly}
             error={errors.date}
           />
-          
+
           <SapSelect
             label="Category"
             value={formData.category}
@@ -273,7 +293,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
             disabled={isReadOnly}
             placeholder="Select category..."
           />
-          
+
           <SapInput
             label="Description"
             value={formData.description}
@@ -283,7 +303,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
             error={errors.description}
             placeholder="What was this expense for?"
           />
-          
+
           <SapInput
             label="Vendor/Merchant"
             value={formData.vendor}
@@ -298,7 +318,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
           <h4 style={{ marginBottom: '14px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
             <span>💰</span> Payment Information
           </h4>
-          
+
           <div className="sap-form-group">
             <label className="sap-form-label required">Amount</label>
             <div className="sap-form-field" style={{ display: 'flex', gap: '8px' }}>
@@ -333,7 +353,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
               </div>
             )}
           </div>
-          
+
           <SapSelect
             label="Payment Method"
             value={formData.paymentMethod}
@@ -343,7 +363,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
             disabled={isReadOnly}
             placeholder="How did you pay?"
           />
-          
+
           <SapInput
             label="Receipt Number"
             value={formData.receiptNumber}
@@ -351,7 +371,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
             disabled={isReadOnly}
             placeholder="Optional receipt/invoice number"
           />
-          
+
           <SapSelect
             label="Status"
             value={formData.status}
@@ -415,7 +435,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
           />
         </div>
       </div>
-      
+
       <SapInput
         label="Tags"
         value={formData.tags}
@@ -425,9 +445,9 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
       />
 
       <div style={{ marginTop: '16px' }}>
-        <label style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+        <label style={{
+          display: 'flex',
+          alignItems: 'center',
           gap: '10px',
           padding: '12px',
           background: 'var(--sap-content-bg)',
@@ -472,10 +492,10 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
         <span>Administrative information about this expense record.</span>
       </div>
 
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-        gap: '16px' 
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: '16px'
       }}>
         <div style={{
           padding: '16px',
@@ -487,7 +507,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
           </div>
           <div style={{ fontWeight: '600', fontSize: '13px' }}>{formData.createdBy || '-'}</div>
         </div>
-        
+
         <div style={{
           padding: '16px',
           background: 'var(--sap-content-bg)',
@@ -500,7 +520,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
             {formData.createdAt ? new Date(formData.createdAt).toLocaleString() : '-'}
           </div>
         </div>
-        
+
         <div style={{
           padding: '16px',
           background: 'var(--sap-content-bg)',
@@ -513,7 +533,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
             {formData.updatedAt ? new Date(formData.updatedAt).toLocaleString() : '-'}
           </div>
         </div>
-        
+
         <div style={{
           padding: '16px',
           background: 'var(--sap-content-bg)',
@@ -523,12 +543,11 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
             Status
           </div>
           <div>
-            <span className={`sap-badge ${
-              formData.status === 'approved' ? 'success' :
-              formData.status === 'rejected' ? 'error' :
-              formData.status === 'reimbursed' ? 'success' :
-              formData.status === 'pending' ? 'warning' : 'info'
-            }`}>
+            <span className={`sap-badge ${formData.status === 'approved' ? 'success' :
+                formData.status === 'rejected' ? 'error' :
+                  formData.status === 'reimbursed' ? 'success' :
+                    formData.status === 'pending' ? 'warning' : 'info'
+              }`}>
               {formData.status || 'recorded'}
             </span>
           </div>
@@ -574,7 +593,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
               {mode === 'create' ? 'NEW' : mode === 'change' ? 'EDIT' : 'VIEW'}
             </span>
             {formData.amount && (
-              <span className="sap-badge" style={{ 
+              <span className="sap-badge" style={{
                 marginLeft: '8px',
                 background: getCategoryInfo(formData.category).color,
                 color: 'white'
@@ -591,7 +610,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
                 <span className="sap-message-strip-icon">ℹ️</span>
                 <span>Enter an expense ID to load or search for existing expenses.</span>
               </div>
-              
+
               <div className="sap-form-row" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
                 <SapInput
                   label="Expense ID"
@@ -612,25 +631,7 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
             </div>
           ) : (
             <>
-              {/* Action Buttons */}
-              <div className="sap-button-group" style={{ marginBottom: '16px' }}>
-                {!isReadOnly && (
-                  <>
-                    <SapButton onClick={handleSave} type="primary" icon="💾">
-                      Save
-                    </SapButton>
-                    {mode === 'change' && formData.id && (
-                      <SapButton onClick={handleDelete} type="danger" icon="🗑️">
-                        Delete
-                      </SapButton>
-                    )}
-                  </>
-                )}
-                <SapButton onClick={handleClear} icon="🔄">
-                  {mode === 'create' ? 'Clear' : 'New Expense'}
-                </SapButton>
-              </div>
-
+              
               <SapTabs tabs={tabs} />
             </>
           )}
@@ -650,9 +651,9 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
         }
       >
         {/* Filters */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '10px', 
+        <div style={{
+          display: 'flex',
+          gap: '10px',
           marginBottom: '16px',
           flexWrap: 'wrap'
         }}>
@@ -737,11 +738,10 @@ const ExpenseTrackerScreen = ({ mode = 'create' }) => {
                       {expense.currency} {parseFloat(expense.amount).toFixed(2)}
                     </td>
                     <td>
-                      <span className={`sap-badge ${
-                        expense.status === 'approved' || expense.status === 'reimbursed' ? 'success' :
-                        expense.status === 'rejected' ? 'error' :
-                        expense.status === 'pending' ? 'warning' : 'info'
-                      }`}>
+                      <span className={`sap-badge ${expense.status === 'approved' || expense.status === 'reimbursed' ? 'success' :
+                          expense.status === 'rejected' ? 'error' :
+                            expense.status === 'pending' ? 'warning' : 'info'
+                        }`}>
                         {expense.status || 'recorded'}
                       </span>
                     </td>

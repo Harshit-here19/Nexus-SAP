@@ -23,7 +23,7 @@ const getCurrentUserId = () => {
 export const getAllData = (userId = null) => {
   try {
     const uid = userId || getCurrentUserId();
-    
+
     if (!uid) {
       return getDefaultData();
     }
@@ -41,7 +41,7 @@ export const getAllData = (userId = null) => {
 export const saveAllData = (data, userId = null) => {
   try {
     const uid = userId || getCurrentUserId();
-    
+
     if (!uid) {
       console.error('No user ID provided for saving data');
       return false;
@@ -124,11 +124,11 @@ export const generateNextNumber = (tableName, field, prefix = '', userId = null)
   if (tableData.length === 0) {
     return `${prefix}100000001`;
   }
-  
+
   const numbers = tableData
     .map(r => parseInt(r[field]?.replace(prefix, '') || '0'))
     .filter(n => !isNaN(n));
-  
+
   const maxNumber = Math.max(...numbers, 100000000);
   return `${prefix}${maxNumber + 1}`;
 };
@@ -326,14 +326,14 @@ export const resetUsersToDefault = () => {
 // Authenticate user
 export const authenticateUser = (username, password) => {
   const users = getUsers();
-  
+
   console.log('Authenticating:', username); // Debug log
   console.log('Available users:', users.map(u => u.username)); // Debug log
-  
+
   const user = users.find(
     u => u.username.toUpperCase() === username.toUpperCase()
   );
-  
+
   if (!user) {
     console.log('User not found'); // Debug log
     return { success: false, message: 'User does not exist' };
@@ -357,28 +357,28 @@ export const authenticateUser = (username, password) => {
     }
     const updatedUsers = users.map(u => u.id === user.id ? user : u);
     saveUsers(updatedUsers);
-    
-    return { 
-      success: false, 
-      message: user.isLocked 
-        ? 'Account locked due to too many failed attempts' 
+
+    return {
+      success: false,
+      message: user.isLocked
+        ? 'Account locked due to too many failed attempts'
         : `Invalid password. ${5 - user.failedAttempts} attempts remaining.`
     };
   }
-  
+
   // Successful login - reset failed attempts
   user.lastLogin = new Date().toISOString();
   user.failedAttempts = 0;
   const updatedUsers = users.map(u => u.id === user.id ? user : u);
   saveUsers(updatedUsers);
-  
+
   // Initialize user data if first login
   initializeUserData(user.id);
-  
+
   // Create session (without password)
   // IMPORTANT: Check role to set isAdmin
   const isAdmin = user.role === 'Admin';
-  
+
   const session = {
     userId: user.id,
     username: user.username,
@@ -392,26 +392,26 @@ export const authenticateUser = (username, password) => {
     loginTime: new Date().toISOString(),
     isAdmin: isAdmin // This is critical!
   };
-  
+
   console.log('Login successful, isAdmin:', isAdmin); // Debug log
-  
+
   return { success: true, user: session };
 };
 
 // Register new user
 export const registerUser = (userData) => {
   const users = getUsers();
-  
+
   // Check if username exists
   if (users.find(u => u.username.toUpperCase() === userData.username.toUpperCase())) {
     return { success: false, message: 'Username already exists' };
   }
-  
+
   // Check if email exists
   if (users.find(u => u.email.toLowerCase() === userData.email.toLowerCase())) {
     return { success: false, message: 'Email already registered' };
   }
-  
+
   const newUser = {
     id: `user_${Date.now()}`,
     username: userData.username.toUpperCase(),
@@ -431,13 +431,13 @@ export const registerUser = (userData) => {
     isLocked: false,
     failedAttempts: 0
   };
-  
+
   users.push(newUser);
   saveUsers(users);
-  
+
   // Initialize user data
   initializeUserData(newUser.id);
-  
+
   return { success: true, message: 'User registered successfully', user: newUser };
 };
 
@@ -445,39 +445,39 @@ export const registerUser = (userData) => {
 export const updateUser = (userId, updates) => {
   const users = getUsers();
   const index = users.findIndex(u => u.id === userId);
-  
+
   if (index !== -1) {
-    users[index] = { 
-      ...users[index], 
-      ...updates, 
-      updatedAt: new Date().toISOString() 
+    users[index] = {
+      ...users[index],
+      ...updates,
+      updatedAt: new Date().toISOString()
     };
     saveUsers(users);
     return { success: true, user: users[index] };
   }
-  
+
   return { success: false, message: 'User not found' };
 };
 
 // Delete user (admin function)
 export const deleteUser = (userId) => {
   const users = getUsers();
-  
+
   // Prevent deleting the last admin
   const admins = users.filter(u => u.role === 'Admin');
   const userToDelete = users.find(u => u.id === userId);
-  
+
   if (userToDelete?.role === 'Admin' && admins.length <= 1) {
     return { success: false, message: 'Cannot delete the last admin user' };
   }
-  
+
   const filtered = users.filter(u => u.id !== userId);
   saveUsers(filtered);
-  
+
   // Also delete user's data
   const userDataKey = getUserStorageKey(userId);
   localStorage.removeItem(userDataKey);
-  
+
   return { success: true, message: 'User deleted successfully' };
 };
 
@@ -485,16 +485,16 @@ export const deleteUser = (userId) => {
 export const resetUserPassword = (userId, newPassword) => {
   const users = getUsers();
   const user = users.find(u => u.id === userId);
-  
+
   if (!user) {
     return { success: false, message: 'User not found' };
   }
-  
+
   user.password = newPassword;
   user.isLocked = false;
   user.failedAttempts = 0;
   saveUsers(users);
-  
+
   return { success: true, message: 'Password reset successfully' };
 };
 
@@ -502,15 +502,15 @@ export const resetUserPassword = (userId, newPassword) => {
 export const unlockUser = (userId) => {
   const users = getUsers();
   const user = users.find(u => u.id === userId);
-  
+
   if (!user) {
     return { success: false, message: 'User not found' };
   }
-  
+
   user.isLocked = false;
   user.failedAttempts = 0;
   saveUsers(users);
-  
+
   return { success: true, message: 'User unlocked successfully' };
 };
 
@@ -545,7 +545,7 @@ export const clearSession = () => {
 export const updateUserProfile = (userId, updates) => {
   const users = getUsers();
   const index = users.findIndex(u => u.id === userId);
-  
+
   if (index !== -1) {
     // Don't allow changing role through profile update
     const { role, ...safeUpdates } = updates;
@@ -553,7 +553,7 @@ export const updateUserProfile = (userId, updates) => {
     saveUsers(users);
     return { success: true, user: users[index] };
   }
-  
+
   return { success: false, message: 'User not found' };
 };
 
@@ -561,18 +561,18 @@ export const updateUserProfile = (userId, updates) => {
 export const changePassword = (userId, currentPassword, newPassword) => {
   const users = getUsers();
   const user = users.find(u => u.id === userId);
-  
+
   if (!user) {
     return { success: false, message: 'User not found' };
   }
-  
+
   if (user.password !== currentPassword) {
     return { success: false, message: 'Current password is incorrect' };
   }
-  
+
   user.password = newPassword;
   saveUsers(users);
-  
+
   return { success: true, message: 'Password changed successfully' };
 };
 
@@ -583,7 +583,7 @@ export const getFavorites = (userId = null) => {
   try {
     const uid = userId || getCurrentUserId();
     if (!uid) return [];
-    
+
     const key = `${FAVORITES_KEY}_${uid}`;
     const favorites = localStorage.getItem(key);
     return favorites ? JSON.parse(favorites) : [];
@@ -597,7 +597,7 @@ export const saveFavorites = (favorites, userId = null) => {
   try {
     const uid = userId || getCurrentUserId();
     if (!uid) return false;
-    
+
     const key = `${FAVORITES_KEY}_${uid}`;
     localStorage.setItem(key, JSON.stringify(favorites));
     return true;
@@ -609,17 +609,17 @@ export const saveFavorites = (favorites, userId = null) => {
 // Add to favorites
 export const addToFavorites = (transaction, userId = null) => {
   const favorites = getFavorites(userId);
-  
+
   // Check if already exists
   if (favorites.some(f => f.tcode === transaction.tcode)) {
     return { success: false, message: 'Already in favorites' };
   }
-  
+
   favorites.push({
     ...transaction,
     addedAt: new Date().toISOString()
   });
-  
+
   saveFavorites(favorites, userId);
   return { success: true, message: 'Added to favorites' };
 };
@@ -645,7 +645,7 @@ export const getTransactionHistory = (userId = null) => {
   try {
     const uid = userId || getCurrentUserId();
     if (!uid) return [];
-    
+
     const key = `${HISTORY_KEY}_${uid}`;
     const history = localStorage.getItem(key);
     return history ? JSON.parse(history) : [];
@@ -659,7 +659,7 @@ export const saveTransactionHistory = (history, userId = null) => {
   try {
     const uid = userId || getCurrentUserId();
     if (!uid) return false;
-    
+
     const key = `${HISTORY_KEY}_${uid}`;
     localStorage.setItem(key, JSON.stringify(history));
     return true;
@@ -671,20 +671,20 @@ export const saveTransactionHistory = (history, userId = null) => {
 // Add to transaction history
 export const addToHistory = (tcode, description = '', userId = null) => {
   const history = getTransactionHistory(userId);
-  
+
   // Remove if already exists (to move to top)
   const filtered = history.filter(h => h.tcode !== tcode);
-  
+
   // Add to beginning
   filtered.unshift({
     tcode,
     description,
     accessedAt: new Date().toISOString()
   });
-  
+
   // Keep only last 20 entries
   const trimmed = filtered.slice(0, 20);
-  
+
   saveTransactionHistory(trimmed, userId);
   return { success: true };
 };
@@ -693,7 +693,7 @@ export const addToHistory = (tcode, description = '', userId = null) => {
 export const clearTransactionHistory = (userId = null) => {
   const uid = userId || getCurrentUserId();
   if (!uid) return false;
-  
+
   const key = `${HISTORY_KEY}_${uid}`;
   localStorage.removeItem(key);
   return true;
@@ -723,7 +723,9 @@ export const getExpenseCategories = () => [
   { value: 'personal', label: '💄 Personal Care', color: '#e91e63' },
   { value: 'gifts', label: '🎁 Gifts & Donations', color: '#ff5722' },
   { value: 'investment', label: '📈 Investment', color: '#2196f3' },
-  { value: 'other', label: '📦 Other', color: '#9e9e9e' }
+  { value: 'other', label: '📦 Other', color: '#9e9e9e' },
+  { value: 'alcohol', label: '🍺 Alcohol & Beverages', color: '#9c27b0' },
+  { value: 'cigarette-pan', label: '🚬 Cigarette & 🌿 Pan', color: '#795548' }
 ];
 
 // Get payment methods
@@ -733,7 +735,6 @@ export const getPaymentMethods = () => [
   { value: 'debit_card', label: '💳 Debit Card' },
   { value: 'upi', label: '📱 UPI' },
   { value: 'bank_transfer', label: '🏦 Bank Transfer' },
-  { value: 'wallet', label: '👛 Digital Wallet' },
   { value: 'cheque', label: '📝 Cheque' }
 ];
 
@@ -819,8 +820,8 @@ export const getExpenseStats = (userId = null) => {
     .slice(0, 10);
 
   // Month over month change
-  const monthChange = totalLastMonth > 0 
-    ? Math.round(((totalThisMonth - totalLastMonth) / totalLastMonth) * 100) 
+  const monthChange = totalLastMonth > 0
+    ? Math.round(((totalThisMonth - totalLastMonth) / totalLastMonth) * 100)
     : 0;
 
   return {
