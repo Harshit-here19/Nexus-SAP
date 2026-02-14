@@ -1,6 +1,7 @@
 // src/components/Layout/MenuBar.jsx
 import React, { useState } from 'react';
 import { useTransaction } from '../../context/TransactionContext';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const menuItems = [
   {
@@ -71,6 +72,8 @@ const MenuBar = ({ onNewSession, onToggleSidebar, onOpenImportExport }) => {
   const [activeMenu, setActiveMenu] = useState(null);
   const { isTransactionActive, updateStatus } = useTransaction();
 
+  const confirm = useConfirm();
+
   const handleMenuClick = (index) => {
     setActiveMenu(activeMenu === index ? null : index);
   };
@@ -96,7 +99,7 @@ const MenuBar = ({ onNewSession, onToggleSidebar, onOpenImportExport }) => {
         }
         break;
       case 'about':
-        alert('SAP GUI Clone v1.0\n\nBuilt with React.js\nNo backend required - uses localStorage');
+        confirm('SAP GUI Clone v1.0\n\nBuilt with React.js\nNo backend required - uses localStorage');
         break;
       default:
         console.log('Menu action:', action);

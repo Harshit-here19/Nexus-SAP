@@ -22,6 +22,7 @@ import DashboardScreen from "./components/Screens/DashboardScreen";
 import EntertainmentWishlistScreen from "./components/Screens/EntertainmentWishlistScreen";
 import { ActionProvider } from "./context/ActionContext";
 import { ConfirmProvider } from "./context/ConfirmContext";
+import { NotesScreen } from "./components/Screens/Notes";
 
 // Wrapper component to connect transaction tracking with favorites
 const TransactionTracker = ({ children }) => {
@@ -111,23 +112,14 @@ const AppContent = () => {
       case "WS03":
         return <EntertainmentWishlistScreen mode="display" />;
 
-      case "FB03":
-        return (
-          <div className="sap-panel">
-            <div className="sap-panel-header">
-              <span>💰 Financial Document - {currentTransaction}</span>
-            </div>
-            <div className="sap-panel-content">
-              <div className="sap-message-strip info">
-                <span className="sap-message-strip-icon">ℹ️</span>
-                <span>
-                  Financial Document screen will be implemented in future
-                  modules
-                </span>
-              </div>
-            </div>
-          </div>
-        );
+      case "NT01":
+        return <NotesScreen mode="create"/>;
+
+      case "NT02":
+        return <NotesScreen mode="change"/>;
+
+      case "NT03":
+        return <NotesScreen mode="display"/>;
 
       case "SM37":
         return (
@@ -183,13 +175,22 @@ const AppContent = () => {
                   <strong>MM03</strong> - Display Material
                 </li>
                 <li>
-                  <strong>VA01</strong> - Create Sales Order
+                  <strong>VA01</strong> - Create Expense Order
                 </li>
                 <li>
-                  <strong>VA02</strong> - Change Sales Order
+                  <strong>VA02</strong> - Change Expense Order
                 </li>
                 <li>
-                  <strong>VA03</strong> - Display Sales Order
+                  <strong>VA03</strong> - Display Expense Order
+                </li>
+                <li>
+                  <strong>WS01</strong> - Create Entertainment Wishlist Order
+                </li>
+                <li>
+                  <strong>WS02</strong> - Change Entertainment Wishlist Order
+                </li>
+                <li>
+                  <strong>WS03</strong> - Display Entertainment Wishlist Order
                 </li>
                 <li>
                   <strong>SE16</strong> - Data Browser

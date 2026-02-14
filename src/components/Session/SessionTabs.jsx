@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useSession } from '../../context/SessionContext';
 import { useTransaction } from '../../context/TransactionContext';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const SessionTabs = () => {
   const { 
@@ -15,9 +16,11 @@ const SessionTabs = () => {
   const { isTransactionActive, currentTransaction } = useTransaction();
   const [showContextMenu, setShowContextMenu] = useState(null);
 
-  const handleCreateSession = () => {
+  const confirm = useConfirm();
+
+  const handleCreateSession =  () => {
     if (sessions.length >= 6) {
-      alert('Maximum 6 sessions allowed');
+      confirm('Maximum 6 sessions allowed','warning');
       return;
     }
     createSession();
@@ -27,12 +30,12 @@ const SessionTabs = () => {
     e.stopPropagation();
     
     if (sessions.length === 1) {
-      alert('Cannot close the last session');
+      confirm('Cannot close the last session','warning');
       return;
     }
     
     if (isTransactionActive && sessionId === activeSessionId) {
-      alert('Please exit current transaction before closing session');
+      confirm('Please exit current transaction before closing session','warning');
       return;
     }
     
@@ -41,7 +44,7 @@ const SessionTabs = () => {
 
   const handleSwitchSession = (sessionId) => {
     if (isTransactionActive && sessionId !== activeSessionId) {
-      alert('Please exit current transaction before switching sessions');
+      confirm('Please exit current transaction before switching sessions','warning');
       return;
     }
     switchSession(sessionId);

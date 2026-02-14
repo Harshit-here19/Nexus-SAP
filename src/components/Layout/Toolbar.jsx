@@ -42,7 +42,7 @@ const Toolbar = ({ children }) => {
       always: true,
       highlight:
         isTransactionActive &&
-        ["MM01", "VA01", "WS01", "MM02", "VA02", "WS02"].includes(
+        ["MM01", "VA01", "WS01","NT01","MM02", "VA02", "WS02","NT02"].includes(
           currentTransaction,
         ),
     },
@@ -65,7 +65,7 @@ const Toolbar = ({ children }) => {
       action: "clear",
       highlight:
         isTransactionActive &&
-        ["MM01", "VA01", "WS01", "MM02", "VA02", "WS02"].includes(
+        ["MM01", "VA01", "WS01","NT01", "MM02", "VA02", "WS02","NT02"].includes(
           currentTransaction,
         ),
     },
@@ -88,7 +88,7 @@ const Toolbar = ({ children }) => {
       action: "delete",
       highlight:
         isTransactionActive &&
-        ["VA02", "WS02"].includes(currentTransaction),
+        ["VA02", "WS02","NT02"].includes(currentTransaction),
       disabled: !isTransactionActive,
     },
     { separator: true },

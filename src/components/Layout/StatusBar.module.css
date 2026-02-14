@@ -19,7 +19,7 @@
   min-height: 24px;
 
   border-top: 1px solid rgba(0, 0, 0, 0.15);
-  /* font-family: "72", "SAP Fiori", "Segoe UI", Arial, sans-serif; */
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* Left & Right Sections */
@@ -38,20 +38,42 @@
 
 /* ========== STATUS MESSAGE ========== */
 .sapStatusMessage {
-  padding: 2px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  
+  padding: 4px 10px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  background: transparent;
-  color: #222;
-
-  border-radius: 2px;
-
+  
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.4;
+  
+  border-radius: 3px;
+  border: 1px solid transparent;
+  
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  
+  transition: all 0.2s ease;
   animation: slideIn 0.3s ease;
 }
 
-/* Single smooth left → right animation */
+/* Icon prefix support (optional) */
+.sapStatusMessage::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Smooth animation */
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -67,54 +89,121 @@
 
 /* Default / Info */
 .sapStatusMessage.info {
-  background: transparent;
+  background: linear-gradient(135deg, rgba(14, 110, 184, 0.08) 0%, rgba(14, 110, 184, 0.04) 100%);
   color: #fff;
+  border-color: rgba(14, 110, 184, 0.3);
+}
+
+.sapStatusMessage.info::before {
+  content: 'ℹ';
+  font-style: normal;
+  color: #fff;
+  width: auto;
+  height: auto;
+  background: none;
 }
 
 /* Success */
 .sapStatusMessage.success {
-  background: transparent;
-  color: #107e3e;
-  border-color: #107e3e;
+  background: linear-gradient(135deg, rgba(16, 126, 62, 0.1) 0%, rgba(16, 126, 62, 0.05) 100%);
+  color: #8ce4b3;
+  border-color: rgba(16, 126, 62, 0.4);
+  font-weight: 600;
+}
+
+.sapStatusMessage.success::before {
+  content: '✓';
+  font-style: normal;
+  color: #8ce4b3;
+  width: auto;
+  height: auto;
+  background: none;
+  font-weight: bold;
 }
 
 /* Error */
 .sapStatusMessage.error {
-  background: transparent;
-  color: #bb0000;
-  border-color: #bb0000;
+  background: linear-gradient(135deg, rgba(187, 0, 0, 0.1) 0%, rgba(187, 0, 0, 0.05) 100%);
+  color: #f56b6b;
+  border-color: rgba(187, 0, 0, 0.4);
+  font-weight: 600;
 }
 
-/* Warning (same red as requested) */
+.sapStatusMessage.error::before {
+  content: '✕';
+  font-style: normal;
+  color: #f56b6b;
+  width: auto;
+  height: auto;
+  background: none;
+  font-weight: bold;
+}
+
+/* Warning */
 .sapStatusMessage.warning {
-  background: transparent;
-  color: #bb0000;
-  border-color: #bb0000;
+  background: linear-gradient(135deg, rgba(187, 0, 0, 0.1) 0%, rgba(187, 0, 0, 0.05) 100%);
+  color: #f56b6b;
+  border-color: rgba(187, 0, 0, 0.4);
+  font-weight: 600;
+}
+
+.sapStatusMessage.warning::before {
+  content: '⚠';
+  font-style: normal;
+  color: #f56b6b;
+  width: auto;
+  height: auto;
+  background: none;
+}
+
+/* Hover effect */
+.sapStatusMessage:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* ========== DARK THEME ========== */
 [data-theme="dark"] .sapStatusBar {
   background: var(--sap-shell-bg);
   color: var(--sap-shell-text);
+  border-top-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="dark"] .sapStatusMessage {
-  background: #2a2a2a;
-  color: #e5e5e5;
-  border-color: #555;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .sapStatusMessage.info {
+  background: linear-gradient(135deg, rgba(91, 172, 255, 0.15) 0%, rgba(91, 172, 255, 0.08) 100%);
+  color: #fff;
+  border-color: rgba(91, 172, 255, 0.4);
+}
+
+[data-theme="dark"] .sapStatusMessage.info::before {
+  color: #fff;
 }
 
 [data-theme="dark"] .sapStatusMessage.success {
-  background: #143d2a;
+  background: linear-gradient(135deg, rgba(143, 217, 176, 0.15) 0%, rgba(143, 217, 176, 0.08) 100%);
   color: #8fd9b0;
-  border-color: #4ade80;
+  border-color: rgba(143, 217, 176, 0.4);
+}
+
+[data-theme="dark"] .sapStatusMessage.success::before {
+  color: #8fd9b0;
 }
 
 [data-theme="dark"] .sapStatusMessage.error,
 [data-theme="dark"] .sapStatusMessage.warning {
-  background: #3d1a1a;
+  background: linear-gradient(135deg, rgba(255, 153, 153, 0.15) 0%, rgba(255, 153, 153, 0.08) 100%);
   color: #ff9999;
-  border-color: #ff6b6b;
+  border-color: rgba(255, 153, 153, 0.4);
+}
+
+[data-theme="dark"] .sapStatusMessage.error::before,
+[data-theme="dark"] .sapStatusMessage.warning::before {
+  color: #ff9999;
 }
 
 /* ========== RESPONSIVE ========== */
@@ -122,6 +211,16 @@
   .sapStatusBar {
     font-size: 11px;
     padding: 3px 6px;
+  }
+  
+  .sapStatusMessage {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+  
+  .sapStatusMessage::before {
+    width: 12px;
+    height: 12px;
   }
 }
 

@@ -35,10 +35,10 @@ const UserProfileDropdown = () => {
     
   };
 
-  const handleNavigateToProfile = () => {
+  const handleNavigateToProfile = async () => {
     setShowDropdown(false);
     if (isTransactionActive) {
-      alert('Please exit current transaction before navigating');
+      await confirm('Please exit current transaction before navigating','danger');   
       return;
     }
     navigateToTransaction('SU01');

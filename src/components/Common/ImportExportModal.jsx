@@ -33,6 +33,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
     { value: 'entertainment_wishlist', label: 'Wishlist Items' },
     { value: 'materials', label: 'Materials (MARA)' },
     { value: 'expenses', label: 'Expenses (KONV)' },
+    { value: 'notes', label: 'Notes (NT)' },
     { value: 'customers', label: 'Customers (KNA1)' },
     { value: 'vendors', label: 'Vendors (LFA1)' },
     { value: 'plants', label: 'Plants (T001W)' },

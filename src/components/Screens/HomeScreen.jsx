@@ -74,6 +74,7 @@ const HomeScreen = () => {
               <li><strong>VA01-03</strong> - Expense Management</li>
               <li><strong>MM01-03</strong> - Material Management</li>
               <li><strong>WS01-03</strong> - Wishlist Management</li>
+              <li><strong>NT01-03</strong> - Notes Management</li>
               <li><strong>SE16</strong> - Data Browser</li>
               <li><strong>SU01</strong> - User Profile & Settings</li>
               <li><strong>ZDASH</strong> - Expense Dashboard & Analytics</li>
