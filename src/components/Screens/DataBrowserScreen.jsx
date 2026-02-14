@@ -97,25 +97,6 @@ const DataBrowserScreen = () => {
   const [activeFilterColumn, setActiveFilterColumn] = useState('');
   const [filterValue, setFilterValue] = useState('');
 
-  // Handle back navigation
-//   const handleBack = () => {
-//   if (isTableLoaded) {
-//     // Go back to SE16 initial screen
-//     setIsTableLoaded(false);
-//     setSelectedTable('');
-//     setTableData([]);
-//     setColumns([]);
-//     setSearchTerm('');
-//     setFilters({});
-//     setSelectedRows([]);
-//     setCurrentPage(1);
-//     updateStatus('Back to table selection', 'info');
-//   } else {
-//     // Exit transaction
-//     goBack();
-//   }
-// };
-
 useEffect(() => {
   const backHandler = () => {
     if (isTableLoaded) {
