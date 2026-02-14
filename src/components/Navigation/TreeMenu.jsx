@@ -274,32 +274,7 @@ const TreeMenu = () => {
         }}>
           🔒 Navigation locked. Press F3 to go back.
         </div>
-      )}
-
-      {/* User info badge */}
-      <div style={{
-        padding: '12px',
-        marginBottom: '12px',
-        background: 'linear-gradient(135deg, var(--sap-brand) 0%, var(--sap-brand-dark) 100%)',
-        borderRadius: '8px',
-        color: 'white'
-      }}>
-        <div style={{ fontSize: '11px', opacity: 0.9 }}>Logged in as</div>
-        <div style={{ fontWeight: '600' }}>{user?.fullName}</div>
-        <div style={{ fontSize: '11px', opacity: 0.8, marginTop: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>{user?.department}</span>
-          {isAdmin && (
-            <span style={{
-              background: 'rgba(255,255,255,0.2)',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              fontSize: '10px'
-            }}>
-              🔐 Admin
-            </span>
-          )}
-        </div>
-      </div>
+      )}      
 
       {treeData.map((node) => (
         <TreeNode

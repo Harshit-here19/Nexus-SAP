@@ -117,7 +117,7 @@ const MainLayout = ({ children }) => {
       </Toolbar>
 
       {/* Transaction Lock Indicator */}
-      {isTransactionActive && (
+      {/* {isTransactionActive && (
         <div style={{
           background: 'linear-gradient(90deg, var(--sap-critical) 0%, #c45c00 100%)',
           color: 'white',
@@ -134,7 +134,7 @@ const MainLayout = ({ children }) => {
             Press <strong>F3</strong> (Back) or <strong>Shift+F3</strong> (Exit) to leave.
           </span>
         </div>
-      )}
+      )} */}
 
       {/* Main Content */}
       <div className="sap-main-container">

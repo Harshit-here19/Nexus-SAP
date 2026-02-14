@@ -1,5 +1,6 @@
 // src/components/Layout/StatusBar.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import styles from './StatusBar.module.css';
 
 const StatusBar = ({ message = 'Ready', type = 'info', user }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -29,16 +30,16 @@ const StatusBar = ({ message = 'Ready', type = 'info', user }) => {
   };
 
   return (
-    <div className="sap-status-bar">
-      <div className="sap-status-left">
-        <div className={`sap-status-message ${type}`}>
+    <div className={styles.sapStatusBar}>
+      <div className={styles.sapStatusLeft}>
+        <div className={`${styles.sapStatusMessage} ${type}`}>
           {type === 'success' && '✓ '}
           {type === 'error' && '✗ '}
           {type === 'warning' && '⚠ '}
           {message}
         </div>
       </div>
-      <div className="sap-status-right">
+      <div className={styles.sapStatusRight}>
         <span>System: DEV (100)</span>
         <span>Client: {user?.client || '001'}</span>
         <span>User: {user?.username || 'GUEST'}</span>

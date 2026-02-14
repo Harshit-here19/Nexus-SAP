@@ -1,0 +1,698 @@
+/* ToolBar Module Styles - Enhanced Version */
+
+/* ========== BASE TOOLBAR ========== */
+.sapToolbar {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  background: linear-gradient(
+    180deg,
+    #f8fafb 0%,
+    #eef2f5 40%,
+    #e4eaef 60%,
+    #dae2e8 100%
+  );
+  border-top: 1px solid #ffffff;
+  border-bottom: 1px solid #c5d0d8;
+  padding: 0 6px;
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 11px;
+  gap: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ========== SEPARATOR ========== */
+.sapToolbarSeparator {
+  width: 1px;
+  height: 24px;
+  margin: 0 6px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    #b8c4ce 15%,
+    #a0b0bc 50%,
+    #b8c4ce 85%,
+    transparent 100%
+  );
+  position: relative;
+}
+
+.sapToolbarSeparator::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.8) 15%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(255, 255, 255, 0.8) 85%,
+    transparent 100%
+  );
+}
+
+/* ========== TOOLBAR BUTTON ========== */
+.sapToolbarButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  margin: 0 1px;
+  padding: 0 6px;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f8f9fa 30%,
+    #f0f2f4 70%,
+    #e8ebee 100%
+  );
+  border: 1px solid #c0c8d0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Subtle inner highlight */
+.sapToolbarButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  border-radius: 3px 3px 0 0;
+}
+
+/* Hover State */
+.sapToolbarButton:hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f0f7ff 30%,
+    #e0efff 70%,
+    #d0e5f9 100%
+  );
+  border-color: #5b9bd5;
+  box-shadow: 0 2px 6px rgba(91, 155, 213, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+/* Active/Pressed State */
+.sapToolbarButton:active:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    #d8e4ee 0%,
+    #e0eaf2 30%,
+    #e8f0f6 70%,
+    #f0f5f9 100%
+  );
+  border-color: #4a84c1;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+}
+
+/* Focus State */
+.sapToolbarButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.35);
+}
+
+.sapToolbarButton:focus-visible {
+  outline: 2px solid #4a84c1;
+  outline-offset: 1px;
+}
+
+/* Disabled State */
+.sapToolbarButton.disabled,
+.sapToolbarButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: linear-gradient(
+    180deg,
+    #f5f5f5 0%,
+    #ebebeb 50%,
+    #e0e0e0 100%
+  );
+  border-color: #d0d0d0;
+  box-shadow: none;
+  transform: none;
+}
+
+.sapToolbarButton.disabled::before,
+.sapToolbarButton:disabled::before {
+  display: none;
+}
+
+/* ========== HIGHLIGHTED STATES ========== */
+
+/* Orange Highlight (Active/Warning) */
+.sapToolbarButton.highlighted {
+  background: linear-gradient(
+    180deg,
+    #fff8e6 0%,
+    #ffe8b8 30%,
+    #ffd580 70%,
+    #ffc44d 100%
+  );
+  border-color: #f59f00;
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  animation: highlightPulse 2s ease-in-out infinite;
+}
+
+.sapToolbarButton.highlighted:hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    #fffbf0 0%,
+    #ffedcc 30%,
+    #ffdd99 70%,
+    #ffcc66 100%
+  );
+  border-color: #e68a00;
+  box-shadow: 0 3px 10px rgba(255, 152, 0, 0.45),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transform: translateY(-1px);
+}
+
+/* Blue Highlight (Transaction Active) */
+.sapToolbarButton.highlightedBlue {
+  background: linear-gradient(
+    180deg,
+    #f0f8ff 0%,
+    #d6ebff 30%,
+    #b8dcff 70%,
+    #99cdff 100%
+  );
+  border-color: #4a9eff;
+  box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.sapToolbarButton.highlightedBlue:hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #e6f2ff 30%,
+    #cce5ff 70%,
+    #b3d9ff 100%
+  );
+  border-color: #2d8cf0;
+  box-shadow: 0 3px 10px rgba(45, 140, 240, 0.4);
+}
+
+/* Green Highlight (Success) */
+.sapToolbarButton.highlightedGreen {
+  background: linear-gradient(
+    180deg,
+    #f0fff4 0%,
+    #c6f6d5 30%,
+    #9ae6b4 70%,
+    #68d391 100%
+  );
+  border-color: #38a169;
+  box-shadow: 0 2px 8px rgba(56, 161, 105, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Red Highlight (Danger/Delete) */
+.sapToolbarButton.highlightedRed {
+  background: linear-gradient(
+    180deg,
+    #fff5f5 0%,
+    #fed7d7 30%,
+    #feb2b2 70%,
+    #fc8181 100%
+  );
+  border-color: #e53e3e;
+  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* ========== BUTTON ICON ========== */
+.buttonIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  transition: transform 0.1s ease;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.8));
+}
+
+.sapToolbarButton:active:not(:disabled) .buttonIcon {
+  transform: translateY(1px) scale(0.95);
+}
+
+.sapToolbarButton:hover:not(:disabled) .buttonIcon {
+  transform: scale(1.1);
+}
+
+/* ========== ICON COLORS ========== */
+
+/* Enter/Save - Green */
+.sapToolbarButton[title*="Enter"] .buttonIcon,
+.sapToolbarButton[title*="Save"] .buttonIcon {
+  color: #0f9d58;
+  filter: drop-shadow(0 1px 1px rgba(15, 157, 88, 0.3));
+}
+
+/* Back/Exit - Blue */
+.sapToolbarButton[title*="Back"] .buttonIcon,
+.sapToolbarButton[title*="Exit"] .buttonIcon {
+  color: #1a73e8;
+  filter: drop-shadow(0 1px 1px rgba(26, 115, 232, 0.3));
+}
+
+/* Cancel/Delete - Red */
+.sapToolbarButton[title*="Cancel"] .buttonIcon,
+.sapToolbarButton[title*="Delete"] .buttonIcon {
+  color: #d93025;
+  filter: drop-shadow(0 1px 1px rgba(217, 48, 37, 0.3));
+}
+
+/* Create - Green */
+.sapToolbarButton[title*="Create"] .buttonIcon {
+  color: #1e8e3e;
+  filter: drop-shadow(0 1px 1px rgba(30, 142, 62, 0.3));
+}
+
+/* Change - Orange */
+.sapToolbarButton[title*="Change"] .buttonIcon {
+  color: #e65100;
+  filter: drop-shadow(0 1px 1px rgba(230, 81, 0, 0.3));
+}
+
+/* Display - Blue */
+.sapToolbarButton[title*="Display"] .buttonIcon {
+  color: #0288d1;
+  filter: drop-shadow(0 1px 1px rgba(2, 136, 209, 0.3));
+}
+
+/* Print/Find - Gray */
+.sapToolbarButton[title*="Print"] .buttonIcon,
+.sapToolbarButton[title*="Find"] .buttonIcon {
+  color: #5f6368;
+  filter: drop-shadow(0 1px 1px rgba(95, 99, 104, 0.3));
+}
+
+/* Page Navigation - Blue */
+.sapToolbarButton[title*="Page"] .buttonIcon {
+  color: #1976d2;
+}
+
+.sapToolbarButton[title*="Page"] {
+  min-width: 26px;
+  padding: 0 4px;
+}
+
+/* Favorite - Gold */
+.sapToolbarButton[title*="Favorite"] .buttonIcon {
+  color: #f9a825;
+  filter: drop-shadow(0 0 3px rgba(249, 168, 37, 0.5));
+}
+
+/* Home - Blue */
+.sapToolbarButton[title="Home"] .buttonIcon {
+  color: #1565c0;
+  font-size: 16px;
+}
+
+.sapToolbarButton[title="Home"]:not(:disabled):hover {
+  background: linear-gradient(
+    180deg,
+    #f0fff4 0%,
+    #d4edda 30%,
+    #b8e0c0 70%,
+    #9cd3a8 100%
+  );
+  border-color: #4caf50;
+}
+
+/* ========== TOOLTIP ========== */
+.sapToolbarButton[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+  border: 1px solid #1a252f;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  color: #ffffff;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+.sapToolbarButton[title]:hover::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 5px solid #2c3e50;
+  z-index: 1001;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes highlightPulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  50% {
+    box-shadow: 0 2px 12px rgba(255, 152, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* Button group spacing */
+.sapToolbarGroup {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .sapToolbar {
+    height: 40px;
+    padding: 0 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sapToolbarButton {
+    min-width: 36px;
+    height: 32px;
+    padding: 0 8px;
+  }
+
+  .buttonIcon {
+    font-size: 18px;
+  }
+
+  .sapToolbarSeparator {
+    margin: 0 4px;
+    height: 26px;
+  }
+
+  /* Hide tooltips on mobile */
+  .sapToolbarButton[title]:hover::after,
+  .sapToolbarButton[title]:hover::before {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .sapToolbar {
+    height: 44px;
+  }
+
+  .sapToolbarButton {
+    min-width: 40px;
+    height: 36px;
+  }
+
+  .buttonIcon {
+    font-size: 20px;
+  }
+}
+
+/* ========== DARK THEME ========== */
+[data-theme="dark"] .sapToolbar {
+  background: linear-gradient(
+    180deg,
+    #2a3a4a 0%,
+    #243342 40%,
+    #1e2d3a 60%,
+    #182530 100%
+  );
+  border-top-color: rgba(255, 255, 255, 0.1);
+  border-bottom-color: #0f1a24;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .sapToolbarSeparator {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    #3a4a5a 15%,
+    #4a5a6a 50%,
+    #3a4a5a 85%,
+    transparent 100%
+  );
+}
+
+[data-theme="dark"] .sapToolbarSeparator::after {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 15%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.1) 85%,
+    transparent 100%
+  );
+}
+
+[data-theme="dark"] .sapToolbarButton {
+  background: linear-gradient(
+    180deg,
+    #3a4a5a 0%,
+    #334455 30%,
+    #2d3e4f 70%,
+    #273848 100%
+  );
+  border-color: #4a5a6a;
+  color: #e0e0e0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .sapToolbarButton::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+[data-theme="dark"] .sapToolbarButton:hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    #4a5a6a 0%,
+    #3d4d5d 30%,
+    #354555 70%,
+    #2f3f4f 100%
+  );
+  border-color: #5b9bd5;
+  box-shadow: 0 2px 8px rgba(91, 155, 213, 0.3);
+}
+
+[data-theme="dark"] .sapToolbarButton:active:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    #273848 0%,
+    #2d3e4f 30%,
+    #334455 70%,
+    #3a4a5a 100%
+  );
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .sapToolbarButton.disabled,
+[data-theme="dark"] .sapToolbarButton:disabled {
+  background: linear-gradient(
+    180deg,
+    #2a3440 0%,
+    #252f3a 50%,
+    #202a35 100%
+  );
+  border-color: #3a4450;
+  opacity: 0.4;
+}
+
+/* Dark theme highlighted states */
+[data-theme="dark"] .sapToolbarButton.highlighted {
+  background: linear-gradient(
+    180deg,
+    #5a4520 0%,
+    #4d3a1a 30%,
+    #403015 70%,
+    #332510 100%
+  );
+  border-color: #d98c00;
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+}
+
+[data-theme="dark"] .sapToolbarButton.highlightedBlue {
+  background: linear-gradient(
+    180deg,
+    #1e3a5f 0%,
+    #183050 30%,
+    #122640 70%,
+    #0c1c30 100%
+  );
+  border-color: #4a9eff;
+  box-shadow: 0 0 10px rgba(74, 158, 255, 0.3);
+}
+
+[data-theme="dark"] .sapToolbarButton.highlightedGreen {
+  background: linear-gradient(
+    180deg,
+    #1a4030 0%,
+    #153528 30%,
+    #102a20 70%,
+    #0a1f18 100%
+  );
+  border-color: #48bb78;
+  box-shadow: 0 0 10px rgba(72, 187, 120, 0.3);
+}
+
+[data-theme="dark"] .sapToolbarButton.highlightedRed {
+  background: linear-gradient(
+    180deg,
+    #4a1a1a 0%,
+    #3d1515 30%,
+    #301010 70%,
+    #230a0a 100%
+  );
+  border-color: #fc8181;
+  box-shadow: 0 0 10px rgba(252, 129, 129, 0.3);
+}
+
+/* Dark theme icon colors */
+[data-theme="dark"] .buttonIcon {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+}
+
+[data-theme="dark"] .sapToolbarButton[title*="Enter"] .buttonIcon,
+[data-theme="dark"] .sapToolbarButton[title*="Save"] .buttonIcon {
+  color: #4ade80;
+}
+
+[data-theme="dark"] .sapToolbarButton[title*="Back"] .buttonIcon,
+[data-theme="dark"] .sapToolbarButton[title*="Exit"] .buttonIcon {
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .sapToolbarButton[title*="Cancel"] .buttonIcon,
+[data-theme="dark"] .sapToolbarButton[title*="Delete"] .buttonIcon {
+  color: #f87171;
+}
+
+[data-theme="dark"] .sapToolbarButton[title*="Create"] .buttonIcon {
+  color: #34d399;
+}
+
+[data-theme="dark"] .sapToolbarButton[title*="Change"] .buttonIcon {
+  color: #fb923c;
+}
+
+[data-theme="dark"] .sapToolbarButton[title*="Display"] .buttonIcon {
+  color: #38bdf8;
+}
+
+[data-theme="dark"] .sapToolbarButton[title*="Print"] .buttonIcon,
+[data-theme="dark"] .sapToolbarButton[title*="Find"] .buttonIcon {
+  color: #a0aec0;
+}
+
+[data-theme="dark"] .sapToolbarButton[title*="Page"] .buttonIcon {
+  color: #63b3ed;
+}
+
+[data-theme="dark"] .sapToolbarButton[title*="Favorite"] .buttonIcon {
+  color: #fbbf24;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.5));
+}
+
+[data-theme="dark"] .sapToolbarButton[title="Home"] .buttonIcon {
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .sapToolbarButton[title="Home"]:not(:disabled):hover {
+  background: linear-gradient(
+    180deg,
+    #1a4030 0%,
+    #153528 30%,
+    #102a20 70%,
+    #0a1f18 100%
+  );
+  border-color: #48bb78;
+}
+
+/* Dark theme tooltip */
+[data-theme="dark"] .sapToolbarButton[title]:hover::after {
+  background: linear-gradient(180deg, #f8f9fa 0%, #e8ebee 100%);
+  border-color: #d0d5dc;
+  color: #1a252f;
+}
+
+[data-theme="dark"] .sapToolbarButton[title]:hover::before {
+  border-bottom-color: #f8f9fa;
+}
+
+/* ========== REDUCED MOTION ========== */
+@media (prefers-reduced-motion: reduce) {
+  .sapToolbarButton {
+    transition: none;
+  }
+  
+  .sapToolbarButton.highlighted {
+    animation: none;
+  }
+
+  .sapToolbarButton[title]:hover::after,
+  .sapToolbarButton[title]:hover::before {
+    animation: none;
+  }
+  
+  .sapToolbarButton:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ========== PRINT ========== */
+@media print {
+  .sapToolbar {
+    display: none !important;
+  }
+}

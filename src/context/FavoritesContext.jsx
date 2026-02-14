@@ -79,7 +79,17 @@ export const FavoritesProvider = ({ children }) => {
     if (!user?.userId) return;
     
     addToHistory(tcode, description, user.userId);
-    setHistory(getTransactionHistory(user.userId));
+
+    const fullHistory = getTransactionHistory(user.userId);
+    const latestHistory = fullHistory.slice(-5); // Keep only last 5 entries
+
+    if(fullHistory.length > 5) {
+      // Clear older history entries if we exceed 5
+      clearTransactionHistory(user.userId);
+      latestHistory.forEach(entry => addToHistory(entry.tcode, entry.description, user.userId));
+    }
+    
+    setHistory(latestHistory);
   }, [user?.userId]);
 
   // Clear history

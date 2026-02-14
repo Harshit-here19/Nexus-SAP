@@ -291,6 +291,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
         saveAllData(allData);
         setFormData(prev => ({ ...prev, itemNumber, id: newItem.id }));
         markAsSaved();
+        clearRef.current?.();
         updateStatus(`Item ${itemNumber} created successfully`, 'success');
       } else if (mode === 'change') {
         const index = allData.entertainment_wishlist.findIndex(i => i.id === formData.id);
