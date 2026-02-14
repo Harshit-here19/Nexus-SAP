@@ -8,6 +8,7 @@ import SapModal from '../Common/SapModal';
 import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import { 
   getUsers, 
   updateUserProfile, 
@@ -18,6 +19,7 @@ const UserProfileScreen = () => {
   const { updateStatus, markAsChanged, markAsSaved } = useTransaction();
   const { user } = useAuth();
   const { settings, updateSetting, saveSettings, resetSettings } = useSettings();
+  const confirm = useConfirm();
   
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -456,8 +458,9 @@ const UserProfileScreen = () => {
         gap: '12px'
       }}>
         <SapButton 
-          onClick={() => {
-            if (window.confirm('Reset all settings to default?')) {
+          onClick={async () => {
+            const confirmed = await confirm('Reset all settings to default? This action cannot be undone.');
+            if (confirmed) {
               resetSettings();
               updateStatus('Settings reset to default', 'success');
             }

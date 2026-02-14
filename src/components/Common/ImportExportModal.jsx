@@ -15,6 +15,8 @@ import {
 } from '../../utils/fileSystem';
 import { getAllData, saveAllData, getTableData, saveTableData } from '../../utils/storage';
 
+import { useConfirm } from '../../context/ConfirmContext';
+
 const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
   const [activeTab, setActiveTab] = useState('export');
   const [selectedTable, setSelectedTable] = useState('');
@@ -23,6 +25,8 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
   const [importPreview, setImportPreview] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef(null);
+
+  const confirm = useConfirm();
 
   const tables = [
     { value: 'all', label: 'All Data (Full Backup)' },
@@ -519,7 +523,8 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
                       onStatusMessage(result.message, 'success');
                       onClose();
                       // Suggest page refresh
-                      if (window.confirm('Backup restored! Refresh the page to see changes?')) {
+                      const confirmed = await confirm('Backup restored! Refresh the page to see changes?');
+                      if (confirmed) {
                         window.location.reload();
                       }
                     } catch (error) {

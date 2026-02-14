@@ -8,7 +8,7 @@ import TransactionInput from '../Navigation/TransactionInput';
 import ExitConfirmModal from '../Common/ExitConfirmModal';
 import ImportExportModal from '../Common/ImportExportModal';
 import UserProfileDropdown from '../Auth/UserProfileDropdown';
-import SessionTabs from '../Session/SessionTabs';
+import { useConfirm } from '../../context/ConfirmContext';
 import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
 import { createBackup } from '../../utils/fileSystem';
@@ -16,6 +16,8 @@ import { createBackup } from '../../utils/fileSystem';
 const MainLayout = ({ children }) => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [showImportExport, setShowImportExport] = useState(false);
+
+  const confirm = useConfirm();
   
   const { 
     currentTransaction, 
@@ -45,7 +47,8 @@ const MainLayout = ({ children }) => {
             const { restoreBackup } = await import('../../utils/fileSystem');
             const result = await restoreBackup(file);
             updateStatus(result.message, 'success');
-            if (window.confirm('Backup restored! Refresh the page to see changes?')) {
+            const confirmed = await confirm('Backup restored! Refresh the page to see changes?');
+            if (confirmed) {
               window.location.reload();
             }
           } catch (error) {

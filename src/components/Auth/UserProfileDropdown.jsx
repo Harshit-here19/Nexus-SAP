@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTransaction } from '../../context/TransactionContext';
 import { useSettings } from '../../context/SettingsContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import './UserProfileDropdown.css';
 
 const UserProfileDropdown = () => {
@@ -11,6 +12,8 @@ const UserProfileDropdown = () => {
   const { settings, updateSetting } = useSettings();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+
+  const confirm = useConfirm();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -24,10 +27,12 @@ const UserProfileDropdown = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    if (window.confirm('Are you sure you want to log out?')) {
+  const handleLogout = async () => {
+    const confirmed = await confirm('Are you sure you want to log out?','danger');
+    if (confirmed) {
       logout();
     }
+    
   };
 
   const handleNavigateToProfile = () => {

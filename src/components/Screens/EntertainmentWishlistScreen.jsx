@@ -8,6 +8,7 @@ import SapModal from '../Common/SapModal';
 import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
 import { useAction } from '../../context/ActionContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import {
   getTableData,
   addRecord,
@@ -86,6 +87,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   const { updateStatus, markAsChanged, markAsSaved, goBack } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
+  const confirm = useConfirm();
 
   const saveRef = useRef(null);
   const clearRef = useRef(null);
@@ -364,10 +366,11 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
     },[]);
 
   // Delete item
-  deleteRef.current = () => {
+  deleteRef.current = async () => {
     if (!formData.id) return;
     
-    if (window.confirm('Are you sure you want to delete this item from your wishlist?')) {
+    const confirmed = await confirm('Are you sure you want to delete this item from your wishlist?');
+    if (confirmed) {
       const allData = getAllData();
       allData.entertainment_wishlist = (allData.entertainment_wishlist || []).filter(
         i => i.id !== formData.id

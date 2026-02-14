@@ -4,6 +4,8 @@ import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
 import { useFavorites } from '../../context/FavoritesContext';
 
+import { useConfirm } from '../../context/ConfirmContext';
+
 // Transaction definitions - UPDATE THIS SECTION
 const transactionDefinitions = {
   'ZDASH': { label: 'Dashboard', icon: '📊', description: 'Expense Dashboard' },
@@ -28,6 +30,7 @@ const TreeMenu = () => {
   const [expandedNodes, setExpandedNodes] = useState(['sap-menu', 'favorites', 'history']);
 
   const isAdmin = checkIsAdmin();
+  const confirm = useConfirm();
 
   const treeData = [
     {
@@ -235,9 +238,10 @@ const TreeMenu = () => {
                 }}
               >
                 <button
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
-                    if (window.confirm('Clear all transaction history?')) {
+                    const confirmed = await confirm('Clear all transaction history?');
+                    if (confirmed) {
                       clearHistory();
                     }
                   }}

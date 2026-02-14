@@ -7,6 +7,7 @@ import SapTabs from '../Common/SapTabs';
 import SapModal from '../Common/SapModal';
 import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import {
   getTableData,
   addRecord,
@@ -18,6 +19,7 @@ import {
 const SalesOrderScreen = ({ mode = 'create' }) => {
   const { updateStatus, markAsChanged, markAsSaved } = useTransaction();
   const { user } = useAuth();
+  const confirm = useConfirm();
   
   const [orderNumber, setOrderNumber] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -164,8 +166,9 @@ const SalesOrderScreen = ({ mode = 'create' }) => {
   };
 
   // Delete line item
-  const handleDeleteLine = (index) => {
-    if (window.confirm('Delete this line item?')) {
+  const handleDeleteLine = async (index) => {
+    const confirmed = await confirm('Delete this line item?');
+    if (confirmed) {
       setLineItems(prev => prev.filter((_, i) => i !== index));
       markAsChanged();
       updateStatus('Line item deleted', 'info');
