@@ -51,8 +51,14 @@ export const TransactionProvider = ({ children }) => {
       const newSession = tcode.startsWith("/n")|| tcode.startsWith("/N");
       const cleanTcode = tcode.replace(/^\/n/i, "").toUpperCase();
 
+      const readOnlyTransactions = ["MM03", "VA03", "FB03", "WS03", "SE16","Home"];
+
+      if(readOnlyTransactions.includes(cleanTcode)){
+        setHasUnsavedChanges(false);
+      }
+      
       // If already in a transaction (not HOME), show warning
-      if (
+      else if (
         isTransactionActive &&
         currentTransaction !== "HOME" &&
         cleanTcode !== currentTransaction &&
@@ -107,7 +113,7 @@ export const TransactionProvider = ({ children }) => {
   );
 
   // Go back to previous screen or HOME
-  const goBack = useCallback((hasUnsavedChanges=true) => {
+  const goBack = useCallback((hasUnsavedChanges=false) => {
     // If screen has its own back logic → use it first
     if (customBackHandler) {
       const handled = customBackHandler();

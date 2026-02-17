@@ -1,113 +1,113 @@
 // src/components/Screens/EntertainmentWishlistScreen.jsx
-import { useState, useEffect, useRef } from 'react';
-import SapButton from '../Common/SapButton';
-import SapInput from '../Common/SapInput';
-import SapSelect from '../Common/SapSelect';
-import SapTabs from '../Common/SapTabs';
-import SapModal from '../Common/SapModal';
-import { useTransaction } from '../../context/TransactionContext';
-import { useAuth } from '../../context/AuthContext';
-import { useAction } from '../../context/ActionContext';
-import { useConfirm } from '../../context/ConfirmContext';
+import { useState, useEffect, useRef } from "react";
+import SapButton from "../Common/SapButton";
+import SapInput from "../Common/SapInput";
+import SapSelect from "../Common/SapSelect";
+import SapTabs from "../Common/SapTabs";
+import SapModal from "../Common/SapModal";
+import { useTransaction } from "../../context/TransactionContext";
+import { useAuth } from "../../context/AuthContext";
+import { useAction } from "../../context/ActionContext";
+import { useConfirm } from "../../context/ConfirmContext";
 import {
   getTableData,
   addRecord,
   updateRecord,
   findRecord,
   getAllData,
-  saveAllData
-} from '../../utils/storage';
+  saveAllData,
+} from "../../utils/storage";
 
 // Entertainment Categories with prefixes
 const ENTERTAINMENT_CATEGORIES = [
-  { value: 'MO', label: '🎬 Movies', color: '#e91e63', icon: '🎬' },
-  { value: 'SE', label: '📺 Series', color: '#9c27b0', icon: '📺' },
-  { value: 'AN', label: '🎌 Anime', color: '#2196f3', icon: '🎌' },
-  { value: 'WE', label: '📖 Webtoon/Manhwa', color: '#4caf50', icon: '📖' },
-  { value: 'HE', label: '🔞 Hentai', color: '#f44336', icon: '🔞' },
-  { value: 'GA', label: '🎮 Games', color: '#ff9800', icon: '🎮' },
-  { value: 'PO', label: '🎥 Adult Films', color: '#795548', icon: '🎥' }
+  { value: "MO", label: "🎬 Movies", color: "#e91e63", icon: "🎬" },
+  { value: "SE", label: "📺 Series", color: "#9c27b0", icon: "📺" },
+  { value: "AN", label: "🎌 Anime", color: "#2196f3", icon: "🎌" },
+  { value: "WE", label: "📖 Webtoon/Manhwa", color: "#4caf50", icon: "📖" },
+  { value: "HE", label: "🔞 Hentai", color: "#f44336", icon: "🔞" },
+  { value: "GA", label: "🎮 Games", color: "#ff9800", icon: "🎮" },
+  { value: "PO", label: "🎥 Adult Films", color: "#795548", icon: "🎥" },
 ];
 
 // Watch/Read/Play Status
 const STATUS_OPTIONS = [
-  { value: 'planned', label: '📋 Planned', color: '#9e9e9e' },
-  { value: 'in_progress', label: '▶️ In Progress', color: '#2196f3' },
-  { value: 'completed', label: '✅ Completed', color: '#4caf50' },
-  { value: 'on_hold', label: '⏸️ On Hold', color: '#ff9800' },
-  { value: 'dropped', label: '❌ Dropped', color: '#f44336' },
-  { value: 'rewatching', label: '🔄 Re-watching', color: '#9c27b0' }
+  { value: "planned", label: "📋 Planned", color: "#9e9e9e" },
+  { value: "in_progress", label: "▶️ In Progress", color: "#2196f3" },
+  { value: "completed", label: "✅ Completed", color: "#4caf50" },
+  { value: "on_hold", label: "⏸️ On Hold", color: "#ff9800" },
+  { value: "dropped", label: "❌ Dropped", color: "#f44336" },
+  { value: "rewatching", label: "🔄 Re-watching", color: "#9c27b0" },
 ];
 
 // Priority Levels
 const PRIORITY_OPTIONS = [
-  { value: 'low', label: '🟢 Low', color: '#4caf50' },
-  { value: 'medium', label: '🟡 Medium', color: '#ff9800' },
-  { value: 'high', label: '🔴 High', color: '#f44336' },
-  { value: 'must_watch', label: '⭐ Must Watch/Play', color: '#e91e63' }
+  { value: "low", label: "🟢 Low", color: "#4caf50" },
+  { value: "medium", label: "🟡 Medium", color: "#ff9800" },
+  { value: "high", label: "🔴 High", color: "#f44336" },
+  { value: "must_watch", label: "⭐ Must Watch/Play", color: "#e91e63" },
 ];
 
 // Genres
 const GENRE_OPTIONS = [
   // ========== MAIN GENRES ==========
-  { value: 'action', label: 'Action' },
-  { value: 'adventure', label: 'Adventure' },
-  { value: 'comedy', label: 'Comedy' },
-  { value: 'drama', label: 'Drama' },
-  { value: 'fantasy', label: 'Fantasy' },
-  { value: 'horror', label: 'Horror' },
-  { value: 'mystery', label: 'Mystery' },
-  { value: 'romance', label: 'Romance' },
-  { value: 'sci_fi', label: 'Sci-Fi' },
-  { value: 'slice_of_life', label: 'Slice of Life' },
-  { value: 'thriller', label: 'Thriller' },
+  { value: "action", label: "Action" },
+  { value: "adventure", label: "Adventure" },
+  { value: "comedy", label: "Comedy" },
+  { value: "drama", label: "Drama" },
+  { value: "fantasy", label: "Fantasy" },
+  { value: "horror", label: "Horror" },
+  { value: "mystery", label: "Mystery" },
+  { value: "romance", label: "Romance" },
+  { value: "sci_fi", label: "Sci-Fi" },
+  { value: "slice_of_life", label: "Slice of Life" },
+  { value: "thriller", label: "Thriller" },
 
   // ========== ANIME/GAME SPECIFIC ==========
-  { value: 'isekai', label: 'Isekai' },
-  { value: 'harem', label: 'Harem' },
-  { value: 'reverse_harem', label: 'Reverse Harem' },
-  { value: 'school', label: 'School Life' },
-  { value: 'supernatural', label: 'Supernatural' },
+  { value: "isekai", label: "Isekai" },
+  { value: "harem", label: "Harem" },
+  { value: "reverse_harem", label: "Reverse Harem" },
+  { value: "school", label: "School Life" },
+  { value: "supernatural", label: "Supernatural" },
 
   // ========== ADULT THEMES ==========
-  { value: 'vanilla', label: 'Vanilla' },
-  { value: 'ntr', label: 'NTR (Netorare)' },
-  { value: 'netori', label: 'Netori' },
-  { value: 'cuckold', label: 'Cuckold' },
-  { value: 'corruption', label: 'Corruption' },
-  { value: 'milf', label: 'MILF' },
-  { value: 'incest', label: 'Incest' },
-  { value: 'cheating', label: 'Cheating' },
-  { value: 'femdom', label: 'Femdom' },
-  { value: 'bdsm', label: 'BDSM' },
-  { value: 'mind_control', label: 'Mind Control' },
-  { value: 'blackmail', label: 'Blackmail' },
+  { value: "vanilla", label: "Vanilla" },
+  { value: "ntr", label: "NTR (Netorare)" },
+  { value: "netori", label: "Netori" },
+  { value: "cuckold", label: "Cuckold" },
+  { value: "corruption", label: "Corruption" },
+  { value: "milf", label: "MILF" },
+  { value: "incest", label: "Incest" },
+  { value: "cheating", label: "Cheating" },
+  { value: "femdom", label: "Femdom" },
+  { value: "bdsm", label: "BDSM" },
+  { value: "mind_control", label: "Mind Control" },
+  { value: "blackmail", label: "Blackmail" },
 
   // ========== OTHER ==========
-  { value: 'other', label: 'Other' }
+  { value: "other", label: "Other" },
 ];
 
 // Platform options
 const PLATFORM_OPTIONS = [
-  { value: 'netflix', label: '📺 Netflix' },
-  { value: 'amazon_prime', label: '📦 Amazon Prime' },
-  { value: 'disney_plus', label: '🏰 Disney+' },
-  { value: 'hbo_max', label: '🎬 HBO Max' },
-  { value: 'hulu', label: '📗 Hulu' },
-  { value: 'crunchyroll', label: '🍥 Crunchyroll' },
-  { value: 'funimation', label: '🎌 Funimation' },
-  { value: 'youtube', label: '▶️ YouTube' },
-  { value: 'webtoon', label: '📖 Webtoon' },
-  { value: 'tapas', label: '📚 Tapas' },
-  { value: 'mangadex', label: '📕 MangaDex' },
-  { value: 'torrent', label: '🏴‍☠️ Torrent' },
-  { value: 'physical', label: '💿 Physical' },
+  { value: "netflix", label: "📺 Netflix" },
+  { value: "amazon_prime", label: "📦 Amazon Prime" },
+  { value: "disney_plus", label: "🏰 Disney+" },
+  { value: "hbo_max", label: "🎬 HBO Max" },
+  { value: "hulu", label: "📗 Hulu" },
+  { value: "crunchyroll", label: "🍥 Crunchyroll" },
+  { value: "funimation", label: "🎌 Funimation" },
+  { value: "youtube", label: "▶️ YouTube" },
+  { value: "webtoon", label: "📖 Webtoon" },
+  { value: "tapas", label: "📚 Tapas" },
+  { value: "mangadex", label: "📕 MangaDex" },
+  { value: "torrent", label: "🏴‍☠️ Torrent" },
+  { value: "physical", label: "💿 Physical" },
   { value: "hotstar", label: "✨🎬 Disney+ Hotstar" },
-  { value: 'other', label: '📁 Other' }
+  { value: "other", label: "📁 Other" },
 ];
 
-const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
-  const { updateStatus, markAsChanged, markAsSaved, goBack } = useTransaction();
+const EntertainmentWishlistScreen = ({ mode = "create" }) => {
+  const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
   const confirm = useConfirm();
@@ -115,81 +115,83 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   const saveRef = useRef(null);
   const clearRef = useRef(null);
   const deleteRef = useRef(null);
-  
-  const [itemId, setItemId] = useState('');
+
+  const [itemId, setItemId] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterPriority, setFilterPriority] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
 
   // Form data
   const [formData, setFormData] = useState({
-    itemNumber: '',
-    category: '',
-    title: '',
-    originalTitle: '',
-    description: '',
-    year: '',
-    status: 'planned',
-    priority: 'medium',
-    rating: '',
+    itemNumber: "",
+    category: "",
+    title: "",
+    originalTitle: "",
+    description: "",
+    year: "",
+    status: "planned",
+    priority: "medium",
+    rating: "",
     genres: [],
-    platform: '',
-    url: '',
-    imageUrl: '',
-    episodes: '',
-    currentEpisode: '',
-    chapters: '',
-    currentChapter: '',
-    seasons: '',
-    currentSeason: '',
-    duration: '',
-    studio: '',
-    developer: '',
-    director: '',
-    cast: '',
-    startDate: '',
-    endDate: '',
-    notes: '',
-    tags: '',
+    platform: "",
+    url: "",
+    imageUrl: "",
+    episodes: "",
+    currentEpisode: "",
+    chapters: "",
+    currentChapter: "",
+    seasons: "",
+    currentSeason: "",
+    duration: "",
+    studio: "",
+    developer: "",
+    director: "",
+    cast: "",
+    startDate: "",
+    endDate: "",
+    notes: "",
+    tags: "",
     isNsfw: false,
-    createdBy: user?.username || 'SAPUSER'
+    createdBy: user?.username || "SAPUSER",
   });
 
   const [errors, setErrors] = useState({});
 
   // Generate next ID based on category
   const generateNextId = (category) => {
-    const data = getTableData('entertainment_wishlist') || [];
-    const categoryItems = data.filter(item => item.itemNumber?.startsWith(category));
-    
+    const data = getTableData("entertainment_wishlist") || [];
+    const categoryItems = data.filter((item) =>
+      item.itemNumber?.startsWith(category),
+    );
+
     let maxNum = 0;
-    categoryItems.forEach(item => {
-      const num = parseInt(item.itemNumber.replace(category, ''), 10);
+    categoryItems.forEach((item) => {
+      const num = parseInt(item.itemNumber.replace(category, ""), 10);
       if (num > maxNum) maxNum = num;
     });
-    
-    return `${category}${String(maxNum + 1).padStart(9, '0')}`;
+
+    return `${category}${String(maxNum + 1).padStart(9, "0")}`;
   };
 
   // Handle form field change
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     markAsChanged();
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   // Handle category change (updates ID prefix)
   const handleCategoryChange = (category) => {
-    handleChange('category', category);
-    if (mode === 'create') {
+    handleChange("category", category);
+    if (mode === "create") {
       const newId = extId(categorygenerateN);
-      setFormData(prev => ({ ...prev, category, itemNumber: newId }));
+      setFormData((prev) => ({ ...prev, category, itemNumber: newId }));
     }
   };
 
@@ -197,68 +199,72 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   const handleGenreToggle = (genre) => {
     const currentGenres = formData.genres || [];
     if (currentGenres.includes(genre)) {
-      handleChange('genres', currentGenres.filter(g => g !== genre));
+      handleChange(
+        "genres",
+        currentGenres.filter((g) => g !== genre),
+      );
     } else {
-      handleChange('genres', [...currentGenres, genre]);
+      handleChange("genres", [...currentGenres, genre]);
     }
   };
 
   // Load item for edit/view
   const loadItem = () => {
     if (!itemId.trim()) {
-      updateStatus('Enter an item ID', 'warning');
+      updateStatus("Enter an item ID", "warning");
       return;
     }
 
-    const data = getTableData('entertainment_wishlist') || [];
-    const item = data.find(i => i.itemNumber === itemId.trim());
-    
+    const data = getTableData("entertainment_wishlist") || [];
+    const item = data.find((i) => i.itemNumber === itemId.trim());
+
     if (item) {
       setFormData(item);
       setIsLoaded(true);
-      updateStatus(`Item ${itemId} loaded successfully`, 'success');
+      updateStatus(`Item ${itemId} loaded successfully`, "success");
     } else {
-      updateStatus(`Item ${itemId} not found`, 'error');
+      updateStatus(`Item ${itemId} not found`, "error");
     }
   };
 
   // Search items
   const handleSearch = () => {
-    let items = getTableData('entertainment_wishlist') || [];
-    
+    let items = getTableData("entertainment_wishlist") || [];
+
     // Apply filters
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      items = items.filter(i =>
-        i.itemNumber?.toLowerCase().includes(term) ||
-        i.title?.toLowerCase().includes(term) ||
-        i.originalTitle?.toLowerCase().includes(term) ||
-        i.description?.toLowerCase().includes(term) ||
-        i.tags?.toLowerCase().includes(term)
+      items = items.filter(
+        (i) =>
+          i.itemNumber?.toLowerCase().includes(term) ||
+          i.title?.toLowerCase().includes(term) ||
+          i.originalTitle?.toLowerCase().includes(term) ||
+          i.description?.toLowerCase().includes(term) ||
+          i.tags?.toLowerCase().includes(term),
       );
     }
-    
-    if (filterCategory !== 'all') {
-      items = items.filter(i => i.category === filterCategory);
+
+    if (filterCategory !== "all") {
+      items = items.filter((i) => i.category === filterCategory);
     }
-    
-    if (filterStatus !== 'all') {
-      items = items.filter(i => i.status === filterStatus);
+
+    if (filterStatus !== "all") {
+      items = items.filter((i) => i.status === filterStatus);
     }
-    
-    if (filterPriority !== 'all') {
-      items = items.filter(i => i.priority === filterPriority);
+
+    if (filterPriority !== "all") {
+      items = items.filter((i) => i.priority === filterPriority);
     }
-    
+
     // Sort by priority and then by date
-    const priorityOrder = { 'must_watch': 0, 'high': 1, 'medium': 2, 'low': 3 };
+    const priorityOrder = { must_watch: 0, high: 1, medium: 2, low: 3 };
     items = items.sort((a, b) => {
       const pA = priorityOrder[a.priority] ?? 2;
       const pB = priorityOrder[b.priority] ?? 2;
       if (pA !== pB) return pA - pB;
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     });
-    
+
     setSearchResults(items);
     setShowSearchModal(true);
   };
@@ -269,21 +275,21 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
     setFormData(item);
     setIsLoaded(true);
     setShowSearchModal(false);
-    updateStatus(`Item ${item.itemNumber} selected`, 'success');
+    updateStatus(`Item ${item.itemNumber} selected`, "success");
   };
 
   // Validate form
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.category) {
-      newErrors.category = 'Category is required';
+      newErrors.category = "Category is required";
     }
     if (!formData.title?.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
     }
     if (!formData.status) {
-      newErrors.status = 'Status is required';
+      newErrors.status = "Status is required";
     }
 
     setErrors(newErrors);
@@ -293,7 +299,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   // Save item
   saveRef.current = () => {
     if (!validateForm()) {
-      updateStatus('Please fill in all required fields', 'error');
+      updateStatus("Please fill in all required fields", "error");
       return;
     }
 
@@ -303,133 +309,186 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
         allData.entertainment_wishlist = [];
       }
 
-      if (mode === 'create') {
-        const itemNumber = formData.itemNumber ||  generateNextId(formData.category);
+      if (mode === "create") {
+        const itemNumber =
+          formData.itemNumber || generateNextId(formData.category);
         const newItem = {
           ...formData,
           id: Date.now(),
           itemNumber,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
         allData.entertainment_wishlist.push(newItem);
         saveAllData(allData);
-        setFormData(prev => ({ ...prev, itemNumber, id: newItem.id }));
+        setFormData((prev) => ({ ...prev, itemNumber, id: newItem.id }));
         markAsSaved();
         clearRef.current?.();
-        updateStatus(`Item ${itemNumber} created successfully`, 'success');
-      } else if (mode === 'change') {
-        const index = allData.entertainment_wishlist.findIndex(i => i.id === formData.id);
+        updateStatus(`Item ${itemNumber} created successfully`, "success");
+      } else if (mode === "change") {
+        const index = allData.entertainment_wishlist.findIndex(
+          (i) => i.id === formData.id,
+        );
         if (index !== -1) {
           allData.entertainment_wishlist[index] = {
             ...formData,
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
           };
           saveAllData(allData);
           markAsSaved();
-          updateStatus(`Item ${formData.itemNumber} updated successfully`, 'success');
+          updateStatus(
+            `Item ${formData.itemNumber} updated successfully`,
+            "success",
+          );
         }
       }
     } catch (error) {
-      updateStatus(`Error saving item: ${error.message}`, 'error');
+      updateStatus(`Error saving item: ${error.message}`, "error");
     }
   };
 
   // Clear form
   clearRef.current = () => {
     setFormData({
-      itemNumber: '',
-      category: '',
-      title: '',
-      originalTitle: '',
-      description: '',
-      year: '',
-      status: 'planned',
-      priority: 'medium',
-      rating: '',
+      itemNumber: "",
+      category: "",
+      title: "",
+      originalTitle: "",
+      description: "",
+      year: "",
+      status: "planned",
+      priority: "medium",
+      rating: "",
       genres: [],
-      platform: '',
-      url: '',
-      imageUrl: '',
-      episodes: '',
-      currentEpisode: '',
-      chapters: '',
-      currentChapter: '',
-      seasons: '',
-      currentSeason: '',
-      duration: '',
-      studio: '',
-      developer: '',
-      director: '',
-      cast: '',
-      startDate: '',
-      endDate: '',
-      notes: '',
-      tags: '',
+      platform: "",
+      url: "",
+      imageUrl: "",
+      episodes: "",
+      currentEpisode: "",
+      chapters: "",
+      currentChapter: "",
+      seasons: "",
+      currentSeason: "",
+      duration: "",
+      studio: "",
+      developer: "",
+      director: "",
+      cast: "",
+      startDate: "",
+      endDate: "",
+      notes: "",
+      tags: "",
       isNsfw: false,
-      createdBy: user?.username || 'SAPUSER'
+      createdBy: user?.username || "SAPUSER",
     });
-    setItemId('');
+    setItemId("");
     setIsLoaded(false);
     setErrors({});
     markAsSaved();
-    updateStatus('Form cleared', 'info');
+    updateStatus("Form cleared", "info");
   };
 
   useEffect(() => {
-    registerAction("SAVE",()=>{saveRef.current?.()});
-    registerAction("CLEAR",()=>{clearRef.current?.()});
-    registerAction("DELETE",()=>{deleteRef.current?.()});
+    registerAction("SAVE", () => {
+      saveRef.current?.();
+    });
+    registerAction("CLEAR", () => {
+      clearRef.current?.();
+    });
+    registerAction("DELETE", () => {
+      deleteRef.current?.();
+    });
 
     return () => {
       clearAction("SAVE");
       clearAction("CLEAR");
       clearAction("DELETE");
     };
-    },[]);
+  }, []);
 
   // Delete item
   deleteRef.current = async () => {
     if (!formData.id) return;
-    
-    const confirmed = await confirm('Are you sure you want to delete this item from your wishlist?','danger');
+
+    const confirmed = await confirm(
+      "Are you sure you want to delete this item from your wishlist?",
+      "danger",
+    );
     if (confirmed) {
       const allData = getAllData();
-      allData.entertainment_wishlist = (allData.entertainment_wishlist || []).filter(
-        i => i.id !== formData.id
-      );
+      allData.entertainment_wishlist = (
+        allData.entertainment_wishlist || []
+      ).filter((i) => i.id !== formData.id);
       saveAllData(allData);
       clearRef.current?.();
       goBack();
-      updateStatus('Item deleted successfully', 'success');
+      updateStatus("Item deleted successfully", "success");
     }
+  };
+
+  //Delete in search modal
+  const DeleteInSearchModal = async (id) => {
+    if (!id) return;
+
+    const confirmed = await confirm(
+      "Are you sure you want to delete this wishlist item?",
+      "danger",
+    );
+    if (confirmed) {
+      const expenses = getTableData("entertainment_wishlist");
+      const filtered = expenses.filter((e) => e.id !== id);
+      const allData = getAllData();
+      allData.entertainment_wishlist = filtered;
+      saveAllData(allData);
+      clearRef.current?.();
+      updateStatus("Item deleted successfully", "success");
+      setSearchResults(filtered);
+    }
+    markAsSaved();
   };
 
   // Get category info
   const getCategoryInfo = (categoryValue) => {
-    return ENTERTAINMENT_CATEGORIES.find(c => c.value === categoryValue) || 
-      { label: categoryValue, color: '#9e9e9e', icon: '📁' };
+    return (
+      ENTERTAINMENT_CATEGORIES.find((c) => c.value === categoryValue) || {
+        label: categoryValue,
+        color: "#9e9e9e",
+        icon: "📁",
+      }
+    );
   };
 
   // Get status info
   const getStatusInfo = (statusValue) => {
-    return STATUS_OPTIONS.find(s => s.value === statusValue) || 
-      { label: statusValue, color: '#9e9e9e' };
+    return (
+      STATUS_OPTIONS.find((s) => s.value === statusValue) || {
+        label: statusValue,
+        color: "#9e9e9e",
+      }
+    );
   };
 
   // Get priority info
   const getPriorityInfo = (priorityValue) => {
-    return PRIORITY_OPTIONS.find(p => p.value === priorityValue) || 
-      { label: priorityValue, color: '#9e9e9e' };
+    return (
+      PRIORITY_OPTIONS.find((p) => p.value === priorityValue) || {
+        label: priorityValue,
+        color: "#9e9e9e",
+      }
+    );
   };
 
   // Calculate progress
   const getProgress = () => {
     if (formData.episodes && formData.currentEpisode) {
-      return Math.round((parseInt(formData.currentEpisode) / parseInt(formData.episodes)) * 100);
+      return Math.round(
+        (parseInt(formData.currentEpisode) / parseInt(formData.episodes)) * 100,
+      );
     }
     if (formData.chapters && formData.currentChapter) {
-      return Math.round((parseInt(formData.currentChapter) / parseInt(formData.chapters)) * 100);
+      return Math.round(
+        (parseInt(formData.currentChapter) / parseInt(formData.chapters)) * 100,
+      );
     }
     return null;
   };
@@ -438,27 +497,33 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   const renderRating = (rating, editable = false) => {
     const maxRating = 10;
     const currentRating = parseInt(rating) || 0;
-    
+
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
         {[...Array(maxRating)].map((_, i) => (
           <span
             key={i}
-            onClick={() => editable && handleChange('rating', i + 1)}
+            onClick={() => editable && handleChange("rating", i + 1)}
             style={{
-              cursor: editable ? 'pointer' : 'default',
-              fontSize: '18px',
-              color: i < currentRating ? '#ffc107' : '#e0e0e0',
-              transition: 'transform 0.1s'
+              cursor: editable ? "pointer" : "default",
+              fontSize: "18px",
+              color: i < currentRating ? "#ffc107" : "#e0e0e0",
+              transition: "transform 0.1s",
             }}
-            onMouseEnter={(e) => editable && (e.target.style.transform = 'scale(1.2)')}
-            onMouseLeave={(e) => editable && (e.target.style.transform = 'scale(1)')}
+            onMouseEnter={(e) =>
+              editable && (e.target.style.transform = "scale(1.2)")
+            }
+            onMouseLeave={(e) =>
+              editable && (e.target.style.transform = "scale(1)")
+            }
           >
             ★
           </span>
         ))}
         {currentRating > 0 && (
-          <span style={{ marginLeft: '8px', fontSize: '13px', fontWeight: '600' }}>
+          <span
+            style={{ marginLeft: "8px", fontSize: "13px", fontWeight: "600" }}
+          >
             {currentRating}/10
           </span>
         )}
@@ -466,78 +531,88 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
     );
   };
 
-  const isReadOnly = mode === 'display';
-  const needsLoad = (mode === 'change' || mode === 'display') && !isLoaded;
+  const isReadOnly = mode === "display";
+  const needsLoad = (mode === "change" || mode === "display") && !isLoaded;
 
   // Get relevant fields based on category
-  const showEpisodeFields = ['SE', 'AN', 'HE'].includes(formData.category);
-  const showChapterFields = ['WE'].includes(formData.category);
-  const showSeasonFields = ['SE'].includes(formData.category);
-  const showDeveloperField = ['GA'].includes(formData.category);
-  const showStudioField = ['AN', 'MO', 'SE', 'HE'].includes(formData.category);
-  const showDirectorField = ['MO', 'PO'].includes(formData.category);
+  const showEpisodeFields = ["SE", "AN", "HE"].includes(formData.category);
+  const showChapterFields = ["WE"].includes(formData.category);
+  const showSeasonFields = ["SE"].includes(formData.category);
+  const showDeveloperField = ["GA"].includes(formData.category);
+  const showStudioField = ["AN", "MO", "SE", "HE"].includes(formData.category);
+  const showDirectorField = ["MO", "PO"].includes(formData.category);
 
   // Details Tab
   const detailsTab = (
     <div className="sap-form">
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+      >
         {/* Left Column */}
         <div>
-          <h4 style={{ 
-            marginBottom: '14px', 
-            color: formData.category ? getCategoryInfo(formData.category).color : 'var(--sap-brand)', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px', 
-            fontSize: '13px' 
-          }}>
-            <span>{formData.category ? getCategoryInfo(formData.category).icon : '🎬'}</span> 
+          <h4
+            style={{
+              marginBottom: "14px",
+              color: formData.category
+                ? getCategoryInfo(formData.category).color
+                : "var(--sap-brand)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "13px",
+            }}
+          >
+            <span>
+              {formData.category
+                ? getCategoryInfo(formData.category).icon
+                : "🎬"}
+            </span>
             Basic Information
           </h4>
-          
+
           <SapInput
             label="Item ID"
             value={formData.itemNumber}
             readOnly={true}
             placeholder="Select category first"
           />
-          
+
           <SapSelect
             label="Category"
             value={formData.category}
             onChange={handleCategoryChange}
-            options={ENTERTAINMENT_CATEGORIES.map(c => ({ 
-              value: c.value, 
-              label: `${c.icon} ${c.label.replace(/^[^\s]+\s/, '')}` 
+            options={ENTERTAINMENT_CATEGORIES.map((c) => ({
+              value: c.value,
+              label: `${c.icon} ${c.label.replace(/^[^\s]+\s/, "")}`,
             }))}
             required={true}
-            disabled={isReadOnly || mode === 'change'}
+            disabled={isReadOnly || mode === "change"}
             placeholder="Select category..."
             error={errors.category}
           />
-          
+
           <SapInput
             label="Title"
             value={formData.title}
-            onChange={(val) => handleChange('title', val)}
+            onChange={(val) => handleChange("title", val)}
             required={true}
             disabled={isReadOnly}
             error={errors.title}
             placeholder="Enter title..."
           />
-          
+
           <SapInput
             label="Original Title"
             value={formData.originalTitle}
-            onChange={(val) => handleChange('originalTitle', val)}
+            onChange={(val) => handleChange("originalTitle", val)}
             disabled={isReadOnly}
             placeholder="Original/Japanese/Korean title..."
           />
-          
+
           <SapInput
             label="Year"
             value={formData.year}
-            onChange={(val) => handleChange('year', val)}
+            onChange={(val) => handleChange("year", val)}
             disabled={isReadOnly}
             placeholder="Release year"
             type="number"
@@ -548,7 +623,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
           <SapInput
             label="Image URL"
             value={formData.imageUrl}
-            onChange={(val) => handleChange('imageUrl', val)}
+            onChange={(val) => handleChange("imageUrl", val)}
             disabled={isReadOnly}
             placeholder="Poster/cover image URL"
           />
@@ -556,31 +631,39 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
 
         {/* Right Column */}
         <div>
-          <h4 style={{ 
-            marginBottom: '14px', 
-            color: 'var(--sap-brand)', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px', 
-            fontSize: '13px' 
-          }}>
+          <h4
+            style={{
+              marginBottom: "14px",
+              color: "var(--sap-brand)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "13px",
+            }}
+          >
             <span>📊</span> Status & Priority
           </h4>
-          
+
           <SapSelect
             label="Status"
             value={formData.status}
-            onChange={(val) => handleChange('status', val)}
-            options={STATUS_OPTIONS.map(s => ({ value: s.value, label: s.label }))}
+            onChange={(val) => handleChange("status", val)}
+            options={STATUS_OPTIONS.map((s) => ({
+              value: s.value,
+              label: s.label,
+            }))}
             required={true}
             disabled={isReadOnly}
           />
-          
+
           <SapSelect
             label="Priority"
             value={formData.priority}
-            onChange={(val) => handleChange('priority', val)}
-            options={PRIORITY_OPTIONS.map(p => ({ value: p.value, label: p.label }))}
+            onChange={(val) => handleChange("priority", val)}
+            options={PRIORITY_OPTIONS.map((p) => ({
+              value: p.value,
+              label: p.label,
+            }))}
             disabled={isReadOnly}
           />
 
@@ -590,14 +673,14 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
               {renderRating(formData.rating, !isReadOnly)}
               {!isReadOnly && formData.rating && (
                 <button
-                  onClick={() => handleChange('rating', '')}
+                  onClick={() => handleChange("rating", "")}
                   style={{
-                    marginLeft: '8px',
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--sap-negative)',
-                    cursor: 'pointer',
-                    fontSize: '12px'
+                    marginLeft: "8px",
+                    background: "none",
+                    border: "none",
+                    color: "var(--sap-negative)",
+                    cursor: "pointer",
+                    fontSize: "12px",
                   }}
                 >
                   Clear
@@ -609,7 +692,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
           <SapSelect
             label="Platform"
             value={formData.platform}
-            onChange={(val) => handleChange('platform', val)}
+            onChange={(val) => handleChange("platform", val)}
             options={PLATFORM_OPTIONS}
             disabled={isReadOnly}
             placeholder="Where to watch/play..."
@@ -618,31 +701,46 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
           <SapInput
             label="URL/Link"
             value={formData.url}
-            onChange={(val) => handleChange('url', val)}
+            onChange={(val) => handleChange("url", val)}
             disabled={isReadOnly}
             placeholder="Link to content..."
           />
 
-          <div style={{ marginTop: '12px' }}>
-            <label style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '10px',
-              padding: '10px 12px',
-              background: formData.isNsfw ? '#ffebee' : 'var(--sap-content-bg)',
-              borderRadius: '6px',
-              cursor: isReadOnly ? 'default' : 'pointer',
-              width: 'fit-content',
-              border: formData.isNsfw ? '1px solid #f44336' : '1px solid transparent'
-            }}>
+          <div style={{ marginTop: "12px" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 12px",
+                background: formData.isNsfw
+                  ? "#ffebee"
+                  : "var(--sap-content-bg)",
+                borderRadius: "6px",
+                cursor: isReadOnly ? "default" : "pointer",
+                width: "fit-content",
+                border: formData.isNsfw
+                  ? "1px solid #f44336"
+                  : "1px solid transparent",
+              }}
+            >
               <input
                 type="checkbox"
                 checked={formData.isNsfw}
-                onChange={(e) => handleChange('isNsfw', e.target.checked)}
+                onChange={(e) => handleChange("isNsfw", e.target.checked)}
                 disabled={isReadOnly}
-                style={{ width: '18px', height: '18px', accentColor: '#f44336' }}
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  accentColor: "#f44336",
+                }}
               />
-              <span style={{ fontSize: '13px', color: formData.isNsfw ? '#f44336' : 'inherit' }}>
+              <span
+                style={{
+                  fontSize: "13px",
+                  color: formData.isNsfw ? "#f44336" : "inherit",
+                }}
+              >
                 🔞 NSFW Content
               </span>
             </label>
@@ -652,85 +750,132 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
 
       {/* Preview Card */}
       {formData.title && (
-        <div style={{
-          marginTop: '20px',
-          padding: '16px',
-          background: `linear-gradient(135deg, ${getCategoryInfo(formData.category).color}15 0%, ${getCategoryInfo(formData.category).color}05 100%)`,
-          borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
-          borderRadius: '6px',
-          display: 'flex',
-          gap: '16px'
-        }}>
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "16px",
+            background: `linear-gradient(135deg, ${getCategoryInfo(formData.category).color}15 0%, ${getCategoryInfo(formData.category).color}05 100%)`,
+            borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
+            borderRadius: "6px",
+            display: "flex",
+            gap: "16px",
+          }}
+        >
           {formData.imageUrl && (
             <img
               src={formData.imageUrl}
               alt={formData.title}
               style={{
-                width: '80px',
-                height: '120px',
-                objectFit: 'cover',
-                borderRadius: '4px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                width: "80px",
+                height: "120px",
+                objectFit: "cover",
+                borderRadius: "4px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
               }}
-              onError={(e) => e.target.style.display = 'none'}
+              onError={(e) => (e.target.style.display = "none")}
             />
           )}
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ 
-                fontSize: '11px', 
-                padding: '2px 8px', 
-                background: getCategoryInfo(formData.category).color,
-                color: 'white',
-                borderRadius: '4px'
-              }}>
-                {formData.itemNumber || getCategoryInfo(formData.category).value}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "4px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "11px",
+                  padding: "2px 8px",
+                  background: getCategoryInfo(formData.category).color,
+                  color: "white",
+                  borderRadius: "4px",
+                }}
+              >
+                {formData.itemNumber ||
+                  getCategoryInfo(formData.category).value}
               </span>
               {formData.isNsfw && (
-                <span style={{ 
-                  fontSize: '10px', 
-                  padding: '2px 6px', 
-                  background: '#f44336',
-                  color: 'white',
-                  borderRadius: '4px'
-                }}>
+                <span
+                  style={{
+                    fontSize: "10px",
+                    padding: "2px 6px",
+                    background: "#f44336",
+                    color: "white",
+                    borderRadius: "4px",
+                  }}
+                >
                   NSFW
                 </span>
               )}
             </div>
-            <div style={{ fontWeight: '700', fontSize: '16px', marginBottom: '4px' }}>
+            <div
+              style={{
+                fontWeight: "700",
+                fontSize: "16px",
+                marginBottom: "4px",
+              }}
+            >
               {formData.title}
             </div>
             {formData.originalTitle && (
-              <div style={{ fontSize: '12px', color: 'var(--sap-text-secondary)', marginBottom: '8px' }}>
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "var(--sap-text-secondary)",
+                  marginBottom: "8px",
+                }}
+              >
                 {formData.originalTitle}
               </div>
             )}
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <span className={`sap-badge ${
-                formData.status === 'completed' ? 'success' :
-                formData.status === 'in_progress' ? 'info' :
-                formData.status === 'dropped' ? 'error' :
-                formData.status === 'on_hold' ? 'warning' : ''
-              }`}>
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <span
+                className={`sap-badge ${
+                  formData.status === "completed"
+                    ? "success"
+                    : formData.status === "in_progress"
+                      ? "info"
+                      : formData.status === "dropped"
+                        ? "error"
+                        : formData.status === "on_hold"
+                          ? "warning"
+                          : ""
+                }`}
+              >
                 {getStatusInfo(formData.status).label}
               </span>
-              <span style={{
-                fontSize: '11px',
-                padding: '2px 8px',
-                background: getPriorityInfo(formData.priority).color,
-                color: 'white',
-                borderRadius: '10px'
-              }}>
-                {formData.priority?.replace('_', ' ').toUpperCase()}
+              <span
+                style={{
+                  fontSize: "11px",
+                  padding: "2px 8px",
+                  background: getPriorityInfo(formData.priority).color,
+                  color: "white",
+                  borderRadius: "10px",
+                }}
+              >
+                {formData.priority?.replace("_", " ").toUpperCase()}
               </span>
               {formData.year && (
-                <span style={{ fontSize: '12px', color: 'var(--sap-text-secondary)' }}>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--sap-text-secondary)",
+                  }}
+                >
                   📅 {formData.year}
                 </span>
               )}
               {formData.rating && (
-                <span style={{ fontSize: '12px', color: '#ffc107' }}>
+                <span style={{ fontSize: "12px", color: "#ffc107" }}>
                   ⭐ {formData.rating}/10
                 </span>
               )}
@@ -744,9 +889,20 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   // Progress Tab
   const progressTab = (
     <div className="sap-form">
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+      >
         <div>
-          <h4 style={{ marginBottom: '14px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+          <h4
+            style={{
+              marginBottom: "14px",
+              color: "var(--sap-brand)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "13px",
+            }}
+          >
             <span>📈</span> Progress Tracking
           </h4>
 
@@ -754,27 +910,32 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
             <>
               <div className="sap-form-group">
                 <label className="sap-form-label">Episodes</label>
-                <div className="sap-form-field" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div
+                  className="sap-form-field"
+                  style={{ display: "flex", gap: "8px", alignItems: "center" }}
+                >
                   <input
                     type="number"
                     className="sap-input"
                     value={formData.currentEpisode}
-                    onChange={(e) => handleChange('currentEpisode', e.target.value)}
+                    onChange={(e) =>
+                      handleChange("currentEpisode", e.target.value)
+                    }
                     disabled={isReadOnly}
                     placeholder="Current"
                     min="0"
-                    style={{ width: '80px' }}
+                    style={{ width: "80px" }}
                   />
-                  <span style={{ color: 'var(--sap-text-secondary)' }}>/</span>
+                  <span style={{ color: "var(--sap-text-secondary)" }}>/</span>
                   <input
                     type="number"
                     className="sap-input"
                     value={formData.episodes}
-                    onChange={(e) => handleChange('episodes', e.target.value)}
+                    onChange={(e) => handleChange("episodes", e.target.value)}
                     disabled={isReadOnly}
                     placeholder="Total"
                     min="0"
-                    style={{ width: '80px' }}
+                    style={{ width: "80px" }}
                   />
                 </div>
               </div>
@@ -784,27 +945,32 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
           {showSeasonFields && (
             <div className="sap-form-group">
               <label className="sap-form-label">Seasons</label>
-              <div className="sap-form-field" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div
+                className="sap-form-field"
+                style={{ display: "flex", gap: "8px", alignItems: "center" }}
+              >
                 <input
                   type="number"
                   className="sap-input"
                   value={formData.currentSeason}
-                  onChange={(e) => handleChange('currentSeason', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("currentSeason", e.target.value)
+                  }
                   disabled={isReadOnly}
                   placeholder="Current"
                   min="0"
-                  style={{ width: '80px' }}
+                  style={{ width: "80px" }}
                 />
-                <span style={{ color: 'var(--sap-text-secondary)' }}>/</span>
+                <span style={{ color: "var(--sap-text-secondary)" }}>/</span>
                 <input
                   type="number"
                   className="sap-input"
                   value={formData.seasons}
-                  onChange={(e) => handleChange('seasons', e.target.value)}
+                  onChange={(e) => handleChange("seasons", e.target.value)}
                   disabled={isReadOnly}
                   placeholder="Total"
                   min="0"
-                  style={{ width: '80px' }}
+                  style={{ width: "80px" }}
                 />
               </div>
             </div>
@@ -813,27 +979,32 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
           {showChapterFields && (
             <div className="sap-form-group">
               <label className="sap-form-label">Chapters</label>
-              <div className="sap-form-field" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div
+                className="sap-form-field"
+                style={{ display: "flex", gap: "8px", alignItems: "center" }}
+              >
                 <input
                   type="number"
                   className="sap-input"
                   value={formData.currentChapter}
-                  onChange={(e) => handleChange('currentChapter', e.target.value)}
+                  onChange={(e) =>
+                    handleChange("currentChapter", e.target.value)
+                  }
                   disabled={isReadOnly}
                   placeholder="Current"
                   min="0"
-                  style={{ width: '80px' }}
+                  style={{ width: "80px" }}
                 />
-                <span style={{ color: 'var(--sap-text-secondary)' }}>/</span>
+                <span style={{ color: "var(--sap-text-secondary)" }}>/</span>
                 <input
                   type="number"
                   className="sap-input"
                   value={formData.chapters}
-                  onChange={(e) => handleChange('chapters', e.target.value)}
+                  onChange={(e) => handleChange("chapters", e.target.value)}
                   disabled={isReadOnly}
                   placeholder="Total"
                   min="0"
-                  style={{ width: '80px' }}
+                  style={{ width: "80px" }}
                 />
               </div>
             </div>
@@ -842,45 +1013,76 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
           <SapInput
             label="Duration"
             value={formData.duration}
-            onChange={(val) => handleChange('duration', val)}
+            onChange={(val) => handleChange("duration", val)}
             disabled={isReadOnly}
             placeholder="e.g., 2h 30m, 24 min/ep"
           />
 
           {/* Progress Bar */}
           {getProgress() !== null && (
-            <div style={{ marginTop: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span style={{ fontSize: '12px', color: 'var(--sap-text-secondary)' }}>Progress</span>
-                <span style={{ fontSize: '12px', fontWeight: '600' }}>{getProgress()}%</span>
+            <div style={{ marginTop: "16px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "4px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--sap-text-secondary)",
+                  }}
+                >
+                  Progress
+                </span>
+                <span style={{ fontSize: "12px", fontWeight: "600" }}>
+                  {getProgress()}%
+                </span>
               </div>
-              <div style={{
-                height: '8px',
-                background: 'var(--sap-border)',
-                borderRadius: '4px',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  height: '100%',
-                  width: `${getProgress()}%`,
-                  background: getProgress() === 100 ? 'var(--sap-positive)' : 'var(--sap-brand)',
-                  borderRadius: '4px',
-                  transition: 'width 0.3s ease'
-                }} />
+              <div
+                style={{
+                  height: "8px",
+                  background: "var(--sap-border)",
+                  borderRadius: "4px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${getProgress()}%`,
+                    background:
+                      getProgress() === 100
+                        ? "var(--sap-positive)"
+                        : "var(--sap-brand)",
+                    borderRadius: "4px",
+                    transition: "width 0.3s ease",
+                  }}
+                />
               </div>
             </div>
           )}
         </div>
 
         <div>
-          <h4 style={{ marginBottom: '14px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+          <h4
+            style={{
+              marginBottom: "14px",
+              color: "var(--sap-brand)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "13px",
+            }}
+          >
             <span>📅</span> Dates
           </h4>
 
           <SapInput
             label="Start Date"
             value={formData.startDate}
-            onChange={(val) => handleChange('startDate', val)}
+            onChange={(val) => handleChange("startDate", val)}
             type="date"
             disabled={isReadOnly}
           />
@@ -888,22 +1090,30 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
           <SapInput
             label="End Date"
             value={formData.endDate}
-            onChange={(val) => handleChange('endDate', val)}
+            onChange={(val) => handleChange("endDate", val)}
             type="date"
             disabled={isReadOnly}
           />
 
           {formData.startDate && formData.endDate && (
-            <div style={{
-              marginTop: '12px',
-              padding: '10px',
-              background: 'var(--sap-content-bg)',
-              borderRadius: '6px',
-              fontSize: '12px'
-            }}>
-              <span style={{ color: 'var(--sap-text-secondary)' }}>Duration: </span>
-              <span style={{ fontWeight: '600' }}>
-                {Math.ceil((new Date(formData.endDate) - new Date(formData.startDate)) / (1000 * 60 * 60 * 24))} days
+            <div
+              style={{
+                marginTop: "12px",
+                padding: "10px",
+                background: "var(--sap-content-bg)",
+                borderRadius: "6px",
+                fontSize: "12px",
+              }}
+            >
+              <span style={{ color: "var(--sap-text-secondary)" }}>
+                Duration:{" "}
+              </span>
+              <span style={{ fontWeight: "600" }}>
+                {Math.ceil(
+                  (new Date(formData.endDate) - new Date(formData.startDate)) /
+                    (1000 * 60 * 60 * 24),
+                )}{" "}
+                days
               </span>
             </div>
           )}
@@ -915,9 +1125,20 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   // Details/Credits Tab
   const creditsTab = (
     <div className="sap-form">
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+      >
         <div>
-          <h4 style={{ marginBottom: '14px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+          <h4
+            style={{
+              marginBottom: "14px",
+              color: "var(--sap-brand)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "13px",
+            }}
+          >
             <span>🎭</span> Credits & Details
           </h4>
 
@@ -925,7 +1146,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
             <SapInput
               label="Studio"
               value={formData.studio}
-              onChange={(val) => handleChange('studio', val)}
+              onChange={(val) => handleChange("studio", val)}
               disabled={isReadOnly}
               placeholder="Animation/Production studio"
             />
@@ -935,7 +1156,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
             <SapInput
               label="Developer"
               value={formData.developer}
-              onChange={(val) => handleChange('developer', val)}
+              onChange={(val) => handleChange("developer", val)}
               disabled={isReadOnly}
               placeholder="Game developer"
             />
@@ -945,7 +1166,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
             <SapInput
               label="Director"
               value={formData.director}
-              onChange={(val) => handleChange('director', val)}
+              onChange={(val) => handleChange("director", val)}
               disabled={isReadOnly}
               placeholder="Director name"
             />
@@ -954,42 +1175,59 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
           <SapInput
             label="Cast/Actors"
             value={formData.cast}
-            onChange={(val) => handleChange('cast', val)}
+            onChange={(val) => handleChange("cast", val)}
             disabled={isReadOnly}
             placeholder="Main cast, voice actors..."
           />
         </div>
 
         <div>
-          <h4 style={{ marginBottom: '14px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+          <h4
+            style={{
+              marginBottom: "14px",
+              color: "var(--sap-brand)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "13px",
+            }}
+          >
             <span>🏷️</span> Genres
           </h4>
 
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '8px',
-            maxHeight: '200px',
-            overflowY: 'auto',
-            padding: '8px',
-            background: 'var(--sap-content-bg)',
-            borderRadius: '6px'
-          }}>
-            {GENRE_OPTIONS.map(genre => (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              maxHeight: "200px",
+              overflowY: "auto",
+              padding: "8px",
+              background: "var(--sap-content-bg)",
+              borderRadius: "6px",
+            }}
+          >
+            {GENRE_OPTIONS.map((genre) => (
               <button
                 key={genre.value}
                 onClick={() => !isReadOnly && handleGenreToggle(genre.value)}
                 disabled={isReadOnly}
                 style={{
-                  padding: '6px 12px',
-                  border: '1px solid',
-                  borderColor: (formData.genres || []).includes(genre.value) ? 'var(--sap-brand)' : 'var(--sap-border)',
-                  background: (formData.genres || []).includes(genre.value) ? 'var(--sap-brand)' : 'white',
-                  color: (formData.genres || []).includes(genre.value) ? 'white' : 'var(--sap-text-primary)',
-                  borderRadius: '16px',
-                  cursor: isReadOnly ? 'default' : 'pointer',
-                  fontSize: '11px',
-                  transition: 'all 0.2s'
+                  padding: "6px 12px",
+                  border: "1px solid",
+                  borderColor: (formData.genres || []).includes(genre.value)
+                    ? "var(--sap-brand)"
+                    : "var(--sap-border)",
+                  background: (formData.genres || []).includes(genre.value)
+                    ? "var(--sap-brand)"
+                    : "white",
+                  color: (formData.genres || []).includes(genre.value)
+                    ? "white"
+                    : "var(--sap-text-primary)",
+                  borderRadius: "16px",
+                  cursor: isReadOnly ? "default" : "pointer",
+                  fontSize: "11px",
+                  transition: "all 0.2s",
                 }}
               >
                 {genre.label}
@@ -998,27 +1236,43 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
           </div>
 
           {(formData.genres || []).length > 0 && (
-            <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--sap-text-secondary)' }}>
-              Selected: {(formData.genres || []).map(g => 
-                GENRE_OPTIONS.find(go => go.value === g)?.label
-              ).join(', ')}
+            <div
+              style={{
+                marginTop: "8px",
+                fontSize: "11px",
+                color: "var(--sap-text-secondary)",
+              }}
+            >
+              Selected:{" "}
+              {(formData.genres || [])
+                .map((g) => GENRE_OPTIONS.find((go) => go.value === g)?.label)
+                .join(", ")}
             </div>
           )}
         </div>
       </div>
 
-      <div style={{ marginTop: '20px' }}>
-        <h4 style={{ marginBottom: '14px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+      <div style={{ marginTop: "20px" }}>
+        <h4
+          style={{
+            marginBottom: "14px",
+            color: "var(--sap-brand)",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "13px",
+          }}
+        >
           <span>📝</span> Description
         </h4>
         <textarea
           className="sap-textarea"
-          value={formData.description || ''}
-          onChange={(e) => handleChange('description', e.target.value)}
+          value={formData.description || ""}
+          onChange={(e) => handleChange("description", e.target.value)}
           disabled={isReadOnly}
           placeholder="Synopsis, description, or your thoughts..."
           rows={4}
-          style={{ width: '100%' }}
+          style={{ width: "100%" }}
         />
       </div>
     </div>
@@ -1027,39 +1281,50 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   // Notes Tab
   const notesTab = (
     <div className="sap-form">
-      <div className="sap-form-group" style={{ alignItems: 'flex-start' }}>
+      <div className="sap-form-group" style={{ alignItems: "flex-start" }}>
         <label className="sap-form-label">Personal Notes</label>
         <div className="sap-form-field">
           <textarea
             className="sap-textarea"
-            value={formData.notes || ''}
-            onChange={(e) => handleChange('notes', e.target.value)}
+            value={formData.notes || ""}
+            onChange={(e) => handleChange("notes", e.target.value)}
             disabled={isReadOnly}
             placeholder="Your personal notes, review, thoughts..."
             rows={6}
-            style={{ width: '100%', maxWidth: '600px' }}
+            style={{ width: "100%", maxWidth: "600px" }}
           />
         </div>
       </div>
-      
+
       <SapInput
         label="Tags"
         value={formData.tags}
-        onChange={(val) => handleChange('tags', val)}
+        onChange={(val) => handleChange("tags", val)}
         disabled={isReadOnly}
         placeholder="Comma-separated tags (e.g., masterpiece, comfort, rewatch)"
       />
 
       {formData.tags && (
-        <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', marginLeft: '162px' }}>
-          {formData.tags.split(',').map((tag, i) => (
-            <span key={i} style={{
-              padding: '4px 10px',
-              background: 'var(--sap-brand-lighter)',
-              color: 'var(--sap-brand-dark)',
-              borderRadius: '12px',
-              fontSize: '11px'
-            }}>
+        <div
+          style={{
+            marginTop: "12px",
+            display: "flex",
+            gap: "8px",
+            flexWrap: "wrap",
+            marginLeft: "162px",
+          }}
+        >
+          {formData.tags.split(",").map((tag, i) => (
+            <span
+              key={i}
+              style={{
+                padding: "4px 10px",
+                background: "var(--sap-brand-lighter)",
+                color: "var(--sap-brand-dark)",
+                borderRadius: "12px",
+                fontSize: "11px",
+              }}
+            >
               #{tag.trim()}
             </span>
           ))}
@@ -1071,95 +1336,172 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   // History Tab
   const historyTab = (
     <div>
-      <div className="sap-message-strip info" style={{ marginBottom: '16px' }}>
+      <div className="sap-message-strip info" style={{ marginBottom: "16px" }}>
         <span className="sap-message-strip-icon">ℹ️</span>
         <span>Record information and history.</span>
       </div>
 
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-        gap: '16px' 
-      }}>
-        <div style={{
-          padding: '16px',
-          background: 'var(--sap-content-bg)',
-          borderRadius: '6px'
-        }}>
-          <div style={{ fontSize: '11px', color: 'var(--sap-text-secondary)', marginBottom: '4px' }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "16px",
+        }}
+      >
+        <div
+          style={{
+            padding: "16px",
+            background: "var(--sap-content-bg)",
+            borderRadius: "6px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              color: "var(--sap-text-secondary)",
+              marginBottom: "4px",
+            }}
+          >
             Item ID
           </div>
-          <div style={{ fontWeight: '600', fontSize: '13px', fontFamily: 'monospace' }}>
-            {formData.itemNumber || '-'}
+          <div
+            style={{
+              fontWeight: "600",
+              fontSize: "13px",
+              fontFamily: "monospace",
+            }}
+          >
+            {formData.itemNumber || "-"}
           </div>
         </div>
 
-        <div style={{
-          padding: '16px',
-          background: 'var(--sap-content-bg)',
-          borderRadius: '6px'
-        }}>
-          <div style={{ fontSize: '11px', color: 'var(--sap-text-secondary)', marginBottom: '4px' }}>
+        <div
+          style={{
+            padding: "16px",
+            background: "var(--sap-content-bg)",
+            borderRadius: "6px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              color: "var(--sap-text-secondary)",
+              marginBottom: "4px",
+            }}
+          >
             Category
           </div>
-          <div style={{ fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div
+            style={{
+              fontWeight: "600",
+              fontSize: "13px",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
             <span>{getCategoryInfo(formData.category).icon}</span>
-            {getCategoryInfo(formData.category).label.replace(/^[^\s]+\s/, '')}
+            {getCategoryInfo(formData.category).label.replace(/^[^\s]+\s/, "")}
           </div>
         </div>
-        
-        <div style={{
-          padding: '16px',
-          background: 'var(--sap-content-bg)',
-          borderRadius: '6px'
-        }}>
-          <div style={{ fontSize: '11px', color: 'var(--sap-text-secondary)', marginBottom: '4px' }}>
+
+        <div
+          style={{
+            padding: "16px",
+            background: "var(--sap-content-bg)",
+            borderRadius: "6px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              color: "var(--sap-text-secondary)",
+              marginBottom: "4px",
+            }}
+          >
             Created By
           </div>
-          <div style={{ fontWeight: '600', fontSize: '13px' }}>{formData.createdBy || '-'}</div>
+          <div style={{ fontWeight: "600", fontSize: "13px" }}>
+            {formData.createdBy || "-"}
+          </div>
         </div>
-        
-        <div style={{
-          padding: '16px',
-          background: 'var(--sap-content-bg)',
-          borderRadius: '6px'
-        }}>
-          <div style={{ fontSize: '11px', color: 'var(--sap-text-secondary)', marginBottom: '4px' }}>
+
+        <div
+          style={{
+            padding: "16px",
+            background: "var(--sap-content-bg)",
+            borderRadius: "6px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              color: "var(--sap-text-secondary)",
+              marginBottom: "4px",
+            }}
+          >
             Created On
           </div>
-          <div style={{ fontWeight: '600', fontSize: '13px' }}>
-            {formData.createdAt ? new Date(formData.createdAt).toLocaleString() : '-'}
+          <div style={{ fontWeight: "600", fontSize: "13px" }}>
+            {formData.createdAt
+              ? new Date(formData.createdAt).toLocaleString()
+              : "-"}
           </div>
         </div>
-        
-        <div style={{
-          padding: '16px',
-          background: 'var(--sap-content-bg)',
-          borderRadius: '6px'
-        }}>
-          <div style={{ fontSize: '11px', color: 'var(--sap-text-secondary)', marginBottom: '4px' }}>
+
+        <div
+          style={{
+            padding: "16px",
+            background: "var(--sap-content-bg)",
+            borderRadius: "6px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              color: "var(--sap-text-secondary)",
+              marginBottom: "4px",
+            }}
+          >
             Last Updated
           </div>
-          <div style={{ fontWeight: '600', fontSize: '13px' }}>
-            {formData.updatedAt ? new Date(formData.updatedAt).toLocaleString() : '-'}
+          <div style={{ fontWeight: "600", fontSize: "13px" }}>
+            {formData.updatedAt
+              ? new Date(formData.updatedAt).toLocaleString()
+              : "-"}
           </div>
         </div>
-        
-        <div style={{
-          padding: '16px',
-          background: 'var(--sap-content-bg)',
-          borderRadius: '6px'
-        }}>
-          <div style={{ fontSize: '11px', color: 'var(--sap-text-secondary)', marginBottom: '4px' }}>
+
+        <div
+          style={{
+            padding: "16px",
+            background: "var(--sap-content-bg)",
+            borderRadius: "6px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              color: "var(--sap-text-secondary)",
+              marginBottom: "4px",
+            }}
+          >
             Status
           </div>
           <div>
-            <span className={`sap-badge ${
-              formData.status === 'completed' ? 'success' :
-              formData.status === 'dropped' ? 'error' :
-              formData.status === 'in_progress' ? 'info' :
-              formData.status === 'on_hold' ? 'warning' : ''
-            }`}>
+            <span
+              className={`sap-badge ${
+                formData.status === "completed"
+                  ? "success"
+                  : formData.status === "dropped"
+                    ? "error"
+                    : formData.status === "in_progress"
+                      ? "info"
+                      : formData.status === "on_hold"
+                        ? "warning"
+                        : ""
+              }`}
+            >
               {getStatusInfo(formData.status).label}
             </span>
           </div>
@@ -1169,28 +1511,38 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   );
 
   const tabs = [
-    { label: 'Details', icon: '📋', content: detailsTab },
-    { label: 'Progress', icon: '📈', content: progressTab },
-    { label: 'Credits', icon: '🎭', content: creditsTab },
-    { label: 'Notes', icon: '📝', content: notesTab },
-    ...(formData.id ? [{ label: 'History', icon: '🕐', content: historyTab }] : [])
+    { label: "Details", icon: "📋", content: detailsTab },
+    { label: "Progress", icon: "📈", content: progressTab },
+    { label: "Credits", icon: "🎭", content: creditsTab },
+    { label: "Notes", icon: "📝", content: notesTab },
+    ...(formData.id
+      ? [{ label: "History", icon: "🕐", content: historyTab }]
+      : []),
   ];
 
   const getModeTitle = () => {
     switch (mode) {
-      case 'create': return 'Add to Wishlist';
-      case 'change': return 'Edit Wishlist Item';
-      case 'display': return 'View Wishlist Item';
-      default: return 'Entertainment Wishlist';
+      case "create":
+        return "Add to Wishlist";
+      case "change":
+        return "Edit Wishlist Item";
+      case "display":
+        return "View Wishlist Item";
+      default:
+        return "Entertainment Wishlist";
     }
   };
 
   const getModeIcon = () => {
     switch (mode) {
-      case 'create': return '➕';
-      case 'change': return '✏️';
-      case 'display': return '👁️';
-      default: return '🎬';
+      case "create":
+        return "➕";
+      case "change":
+        return "✏️";
+      case "display":
+        return "👁️";
+      default:
+        return "🎬";
     }
   };
 
@@ -1200,23 +1552,29 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
         <div className="sap-panel-header">
           <span>
             <span className="sap-panel-header-icon">{getModeIcon()}</span>
-            {getModeTitle()} - WS0{mode === 'create' ? '1' : mode === 'change' ? '2' : '3'}
+            {getModeTitle()} - WS0
+            {mode === "create" ? "1" : mode === "change" ? "2" : "3"}
           </span>
           <div className="sap-panel-header-actions">
-            <span className={`sap-badge ${mode === 'create' ? 'info' : mode === 'change' ? 'warning' : 'success'}`}>
-              {mode === 'create' ? 'NEW' : mode === 'change' ? 'EDIT' : 'VIEW'}
+            <span
+              className={`sap-badge ${mode === "create" ? "info" : mode === "change" ? "warning" : "success"}`}
+            >
+              {mode === "create" ? "NEW" : mode === "change" ? "EDIT" : "VIEW"}
             </span>
             {formData.category && (
-              <span className="sap-badge" style={{ 
-                marginLeft: '8px',
-                background: getCategoryInfo(formData.category).color,
-                color: 'white'
-              }}>
+              <span
+                className="sap-badge"
+                style={{
+                  marginLeft: "8px",
+                  background: getCategoryInfo(formData.category).color,
+                  color: "white",
+                }}
+              >
                 {getCategoryInfo(formData.category).icon} {formData.category}
               </span>
             )}
             {formData.isNsfw && (
-              <span className="sap-badge error" style={{ marginLeft: '8px' }}>
+              <span className="sap-badge error" style={{ marginLeft: "8px" }}>
                 🔞 NSFW
               </span>
             )}
@@ -1225,36 +1583,63 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
         <div className="sap-panel-content">
           {needsLoad ? (
             <div>
-              <div className="sap-message-strip info" style={{ marginBottom: '16px' }}>
+              <div
+                className="sap-message-strip info"
+                style={{ marginBottom: "16px" }}
+              >
                 <span className="sap-message-strip-icon">ℹ️</span>
-                <span>Enter an item ID to load or search for existing items in your wishlist.</span>
+                <span>
+                  Enter an item ID to load or search for existing items in your
+                  wishlist.
+                </span>
               </div>
-              
-              <div className="sap-form-row" style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+
+              <div
+                className="sap-form-row"
+                style={{ display: "flex", alignItems: "flex-end", gap: "10px" }}
+              >
                 <SapInput
                   label="Item ID"
                   value={itemId}
                   onChange={setItemId}
                   placeholder="e.g., MO000000001, AN000000001"
+                  icon="🔍"
+                  onIconClick={() => {
+                    setSearchResults(
+                      getTableData("entertainment_wishlist") || [],
+                    );
+                    setShowSearchModal(true);
+                  }}
                 />
                 <SapButton onClick={loadItem} type="primary" icon="📂">
                   Load
                 </SapButton>
-                <SapButton onClick={() => {
-                  setSearchResults(getTableData('entertainment_wishlist') || []);
-                  setShowSearchModal(true);
-                }} icon="🔎">
+                <SapButton
+                  onClick={() => {
+                    setSearchResults(
+                      getTableData("entertainment_wishlist") || [],
+                    );
+                    setShowSearchModal(true);
+                  }}
+                  icon="🔎"
+                >
                   Search
                 </SapButton>
               </div>
 
               {/* Category Quick Filters */}
-              <div style={{ marginTop: '20px' }}>
-                <div style={{ fontSize: '12px', color: 'var(--sap-text-secondary)', marginBottom: '8px' }}>
+              <div style={{ marginTop: "20px" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--sap-text-secondary)",
+                    marginBottom: "8px",
+                  }}
+                >
                   Quick filter by category:
                 </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {ENTERTAINMENT_CATEGORIES.map(cat => (
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  {ENTERTAINMENT_CATEGORIES.map((cat) => (
                     <button
                       key={cat.value}
                       onClick={() => {
@@ -1262,20 +1647,20 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
                         handleSearch();
                       }}
                       style={{
-                        padding: '8px 16px',
+                        padding: "8px 16px",
                         background: `${cat.color}15`,
                         border: `1px solid ${cat.color}`,
-                        borderRadius: '20px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
+                        borderRadius: "20px",
+                        cursor: "pointer",
+                        fontSize: "12px",
                         color: cat.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        transition: 'all 0.2s'
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        transition: "all 0.2s",
                       }}
                     >
-                      {cat.icon} {cat.label.replace(/^[^\s]+\s/, '')}
+                      {cat.icon} {cat.label.replace(/^[^\s]+\s/, "")}
                     </button>
                   ))}
                 </div>
@@ -1296,57 +1681,63 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
         title="🔍 Search Entertainment Wishlist"
         width="900px"
         footer={
-          <SapButton onClick={() => setShowSearchModal(false)}>
-            Close
-          </SapButton>
+          <SapButton onClick={() => setShowSearchModal(false)}>Close</SapButton>
         }
       >
         {/* Filters */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '10px', 
-          marginBottom: '16px',
-          flexWrap: 'wrap'
-        }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            marginBottom: "16px",
+            flexWrap: "wrap",
+          }}
+        >
           <input
             type="text"
             className="sap-input"
             placeholder="🔍 Search by ID, title, tags..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ flex: 1, minWidth: '200px' }}
+            style={{ flex: 1, minWidth: "200px" }}
           />
           <select
             className="sap-select"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            style={{ width: '160px' }}
+            style={{ width: "160px" }}
           >
             <option value="all">All Categories</option>
-            {ENTERTAINMENT_CATEGORIES.map(c => (
-              <option key={c.value} value={c.value}>{c.icon} {c.label.replace(/^[^\s]+\s/, '')}</option>
+            {ENTERTAINMENT_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.icon} {c.label.replace(/^[^\s]+\s/, "")}
+              </option>
             ))}
           </select>
           <select
             className="sap-select"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            style={{ width: '140px' }}
+            style={{ width: "140px" }}
           >
             <option value="all">All Status</option>
-            {STATUS_OPTIONS.map(s => (
-              <option key={s.value} value={s.value}>{s.label}</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
             ))}
           </select>
           <select
             className="sap-select"
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
-            style={{ width: '130px' }}
+            style={{ width: "130px" }}
           >
             <option value="all">All Priority</option>
-            {PRIORITY_OPTIONS.map(p => (
-              <option key={p.value} value={p.value}>{p.label}</option>
+            {PRIORITY_OPTIONS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
             ))}
           </select>
           <SapButton onClick={handleSearch} type="primary">
@@ -1355,14 +1746,18 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
         </div>
 
         {/* Category Summary */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '8px', 
-          marginBottom: '16px',
-          flexWrap: 'wrap' 
-        }}>
-          {ENTERTAINMENT_CATEGORIES.map(cat => {
-            const count = searchResults.filter(i => i.category === cat.value).length;
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            marginBottom: "16px",
+            flexWrap: "wrap",
+          }}
+        >
+          {ENTERTAINMENT_CATEGORIES.map((cat) => {
+            const count = searchResults.filter(
+              (i) => i.category === cat.value,
+            ).length;
             return (
               <div
                 key={cat.value}
@@ -1371,29 +1766,29 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
                   handleSearch();
                 }}
                 style={{
-                  padding: '4px 10px',
+                  padding: "4px 10px",
                   background: `${cat.color}15`,
-                  borderRadius: '12px',
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px'
+                  borderRadius: "12px",
+                  fontSize: "11px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
                 }}
               >
                 {cat.icon}
-                <span style={{ fontWeight: '600' }}>{count}</span>
+                <span style={{ fontWeight: "600" }}>{count}</span>
               </div>
             );
           })}
         </div>
 
         {/* Results */}
-        <div style={{ maxHeight: '400px', overflow: 'auto' }}>
+        <div style={{ maxHeight: "400px", overflow: "auto" }}>
           <table className="sap-table">
             <thead>
               <tr>
-                <th style={{ width: '40px' }}></th>
+                <th style={{ width: "40px" }}></th>
                 <th>ID</th>
                 <th>Title</th>
                 <th>Category</th>
@@ -1406,11 +1801,16 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
             <tbody>
               {searchResults.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>
-                    <div style={{ color: 'var(--sap-text-secondary)' }}>
-                      <div style={{ fontSize: '32px', marginBottom: '8px' }}>📭</div>
+                  <td
+                    colSpan={8}
+                    style={{ textAlign: "center", padding: "40px" }}
+                  >
+                    <div style={{ color: "var(--sap-text-secondary)" }}>
+                      <div style={{ fontSize: "32px", marginBottom: "8px" }}>
+                        📭
+                      </div>
                       <div>No items found in your wishlist</div>
-                      <div style={{ fontSize: '12px', marginTop: '4px' }}>
+                      <div style={{ fontSize: "12px", marginTop: "4px" }}>
                         Try adjusting your filters or add new items
                       </div>
                     </div>
@@ -1425,99 +1825,143 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
                           src={item.imageUrl}
                           alt=""
                           style={{
-                            width: '32px',
-                            height: '45px',
-                            objectFit: 'cover',
-                            borderRadius: '2px'
+                            width: "32px",
+                            height: "45px",
+                            objectFit: "cover",
+                            borderRadius: "2px",
                           }}
-                          onError={(e) => e.target.style.display = 'none'}
+                          onError={(e) => (e.target.style.display = "none")}
                         />
                       ) : (
-                        <div style={{
-                          width: '32px',
-                          height: '45px',
-                          background: getCategoryInfo(item.category).color,
-                          borderRadius: '2px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '16px'
-                        }}>
+                        <div
+                          style={{
+                            width: "32px",
+                            height: "45px",
+                            background: getCategoryInfo(item.category).color,
+                            borderRadius: "2px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "white",
+                            fontSize: "16px",
+                          }}
+                        >
                           {getCategoryInfo(item.category).icon}
                         </div>
                       )}
                     </td>
-                    <td style={{ fontWeight: '600', fontFamily: 'monospace', fontSize: '11px' }}>
+                    <td
+                      style={{
+                        fontWeight: "600",
+                        fontFamily: "monospace",
+                        fontSize: "11px",
+                      }}
+                    >
                       {item.itemNumber}
                       {item.isNsfw && (
-                        <span style={{
-                          marginLeft: '4px',
-                          fontSize: '9px',
-                          padding: '1px 4px',
-                          background: '#f44336',
-                          color: 'white',
-                          borderRadius: '2px'
-                        }}>18+</span>
+                        <span
+                          style={{
+                            marginLeft: "4px",
+                            fontSize: "9px",
+                            padding: "1px 4px",
+                            background: "#f44336",
+                            color: "white",
+                            borderRadius: "2px",
+                          }}
+                        >
+                          18+
+                        </span>
                       )}
                     </td>
                     <td>
-                      <div style={{ fontWeight: '500' }}>{item.title}</div>
+                      <div style={{ fontWeight: "500" }}>{item.title}</div>
                       {item.year && (
-                        <div style={{ fontSize: '10px', color: 'var(--sap-text-secondary)' }}>
+                        <div
+                          style={{
+                            fontSize: "10px",
+                            color: "var(--sap-text-secondary)",
+                          }}
+                        >
                           {item.year}
                         </div>
                       )}
                     </td>
                     <td>
-                      <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        padding: '2px 8px',
-                        background: `${getCategoryInfo(item.category).color}20`,
-                        color: getCategoryInfo(item.category).color,
-                        borderRadius: '4px',
-                        fontSize: '10px',
-                        fontWeight: '600'
-                      }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "2px 8px",
+                          background: `${getCategoryInfo(item.category).color}20`,
+                          color: getCategoryInfo(item.category).color,
+                          borderRadius: "4px",
+                          fontSize: "10px",
+                          fontWeight: "600",
+                        }}
+                      >
                         {getCategoryInfo(item.category).icon} {item.category}
                       </span>
                     </td>
                     <td>
-                      <span className={`sap-badge ${
-                        item.status === 'completed' ? 'success' :
-                        item.status === 'in_progress' ? 'info' :
-                        item.status === 'dropped' ? 'error' :
-                        item.status === 'on_hold' ? 'warning' : ''
-                      }`} style={{ fontSize: '10px' }}>
+                      <span
+                        className={`sap-badge ${
+                          item.status === "completed"
+                            ? "success"
+                            : item.status === "in_progress"
+                              ? "info"
+                              : item.status === "dropped"
+                                ? "error"
+                                : item.status === "on_hold"
+                                  ? "warning"
+                                  : ""
+                        }`}
+                        style={{ fontSize: "10px" }}
+                      >
                         {getStatusInfo(item.status).label}
                       </span>
                     </td>
                     <td>
-                      <span style={{
-                        padding: '2px 6px',
-                        background: getPriorityInfo(item.priority).color,
-                        color: 'white',
-                        borderRadius: '8px',
-                        fontSize: '10px'
-                      }}>
-                        {item.priority?.replace('_', ' ')}
+                      <span
+                        style={{
+                          padding: "2px 6px",
+                          background: getPriorityInfo(item.priority).color,
+                          color: "white",
+                          borderRadius: "8px",
+                          fontSize: "10px",
+                        }}
+                      >
+                        {item.priority?.replace("_", " ")}
                       </span>
                     </td>
                     <td>
                       {item.rating ? (
-                        <span style={{ color: '#ffc107' }}>
+                        <span style={{ color: "#ffc107" }}>
                           ⭐ {item.rating}/10
                         </span>
                       ) : (
-                        <span style={{ color: 'var(--sap-text-placeholder)' }}>-</span>
+                        <span style={{ color: "var(--sap-text-placeholder)" }}>
+                          -
+                        </span>
                       )}
                     </td>
                     <td>
-                      <SapButton onClick={() => handleSelectItem(item)} type="primary">
-                        Select
+                      <span style={{ marginRight: "8px" }}>
+                      <SapButton
+                        onClick={() => handleSelectItem(item)}
+                        type="primary"
+                      >
+                        👁️
                       </SapButton>
+                      </span>
+                      {currentTransaction === "WS02" && (<span style={{ marginLeft: "8px" }}>
+                        <SapButton
+                        onClick={() => DeleteInSearchModal(item.id)}
+                        type="danger"
+                      >
+                        🗑️
+                      </SapButton>
+                      </span>)}
                     </td>
                   </tr>
                 ))
@@ -1528,29 +1972,45 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
 
         {/* Summary */}
         {searchResults.length > 0 && (
-          <div style={{
-            marginTop: '16px',
-            padding: '12px',
-            background: 'var(--sap-content-bg)',
-            borderRadius: '6px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '12px'
-          }}>
-            <span style={{ fontSize: '12px', color: 'var(--sap-text-secondary)' }}>
+          <div
+            style={{
+              marginTop: "16px",
+              padding: "12px",
+              background: "var(--sap-content-bg)",
+              borderRadius: "6px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "12px",
+            }}
+          >
+            <span
+              style={{ fontSize: "12px", color: "var(--sap-text-secondary)" }}
+            >
               {searchResults.length} item(s) found
             </span>
-            <div style={{ display: 'flex', gap: '16px', fontSize: '12px' }}>
+            <div style={{ display: "flex", gap: "16px", fontSize: "12px" }}>
               <span>
-                ✅ Completed: <strong>{searchResults.filter(i => i.status === 'completed').length}</strong>
+                ✅ Completed:{" "}
+                <strong>
+                  {searchResults.filter((i) => i.status === "completed").length}
+                </strong>
               </span>
               <span>
-                ▶️ In Progress: <strong>{searchResults.filter(i => i.status === 'in_progress').length}</strong>
+                ▶️ In Progress:{" "}
+                <strong>
+                  {
+                    searchResults.filter((i) => i.status === "in_progress")
+                      .length
+                  }
+                </strong>
               </span>
               <span>
-                📋 Planned: <strong>{searchResults.filter(i => i.status === 'planned').length}</strong>
+                📋 Planned:{" "}
+                <strong>
+                  {searchResults.filter((i) => i.status === "planned").length}
+                </strong>
               </span>
             </div>
           </div>

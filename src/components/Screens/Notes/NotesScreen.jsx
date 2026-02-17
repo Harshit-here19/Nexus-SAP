@@ -383,6 +383,27 @@ const NotesScreen = ({ mode = "create" }) => {
     }
   };
 
+  //Delete in search modal
+  const DeleteInSearchModal = async (id) => {
+    if (!id) return;
+
+    const confirmed = await confirm(
+      "Are you sure you want to delete this Note?",
+      "danger",
+    );
+    if (confirmed) {
+      const expenses = getTableData("notes");
+      const filtered = expenses.filter((e) => e.id !== id);
+      const allData = getAllData();
+      allData.notes = filtered;
+      saveAllData(allData);
+      clearRef.current?.();
+      updateStatus("Note deleted successfully", "success");
+      setSearchResults(filtered);
+    }
+    markAsSaved();
+  };
+
   // Load demo note
   const loadDemoNote = () => {
     const counts = calculateCounts(DEMO_NOTE_CONTENT);
@@ -518,6 +539,10 @@ const NotesScreen = ({ mode = "create" }) => {
                   onChange={setNoteId}
                   placeholder="e.g., NT000000001"
                   icon="🔍"
+                  onIconClick={() => {
+                    setSearchResults(getTableData("notes") || []);
+                    setShowSearchModal(true);
+                  }}
                 />
                 <SapButton onClick={loadNote} type="primary" icon="📂">
                   Load
@@ -595,6 +620,7 @@ const NotesScreen = ({ mode = "create" }) => {
         searchResults={searchResults}
         onSearch={handleSearch}
         onSelectNote={handleSelectNote}
+        DeleteInSearchModal={DeleteInSearchModal}
       />
 
       <NotesLinkModal

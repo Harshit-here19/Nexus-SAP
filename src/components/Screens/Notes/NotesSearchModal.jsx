@@ -5,6 +5,7 @@ import SapModal from '../../Common/SapModal';
 import SapButton from '../../Common/SapButton';
 import { NOTE_CATEGORIES, STATUS_OPTIONS } from './NotesConstants';
 import { getCategoryInfo, getStatusInfo, getStatusBadgeClass } from './NotesUtils';
+import { useTransaction } from '../../../context/TransactionContext';
 import './NotesStyles.css';
 
 const NotesSearchModal = ({
@@ -18,8 +19,12 @@ const NotesSearchModal = ({
   onFilterStatusChange,
   searchResults,
   onSearch,
-  onSelectNote
+  onSelectNote,
+  deleteInSearchModal
 }) => {
+
+  const { currentTransaction } = useTransaction();
+
   return (
     <SapModal
       isOpen={isOpen}
@@ -151,6 +156,24 @@ const NotesSearchModal = ({
                       Select
                     </SapButton>
                   </td>
+                  <td>
+                      <span style={{ marginRight: "8px" }}>
+                      <SapButton
+                        onClick={() => onSelectNote(note)}
+                        type="primary"
+                      >
+                        👁️
+                      </SapButton>
+                      </span>
+                      {currentTransaction === "NT02" && (<span style={{ marginLeft: "8px" }}>
+                        <SapButton
+                        onClick={() => deleteInSearchModal(note.id)}
+                        type="danger"
+                      >
+                        🗑️
+                      </SapButton>
+                      </span>)}
+                    </td>
                 </tr>
               ))
             )}

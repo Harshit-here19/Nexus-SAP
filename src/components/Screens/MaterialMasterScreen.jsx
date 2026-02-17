@@ -20,7 +20,7 @@ import {
 } from "../../utils/storage";
 
 const MaterialMasterScreen = ({ mode = "create" }) => {
-  const { updateStatus, markAsChanged, markAsSaved, goBack } = useTransaction();
+  const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
   const { registerAction, clearAction } = useAction();
 
   const confirm = useConfirm();
@@ -519,6 +519,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
       saveAllData(allData);
       clearRef.current?.();
       updateStatus("Material deleted successfully", "success");
+      setSearchResults(filtered);
     }
     markAsSaved();
   };
@@ -623,13 +624,12 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
                 <th>Description</th>
                 <th>Type</th>
                 <th>Action</th>
-                <th>Delete</th>
               </tr>
             </thead>
             <tbody>
               {searchResults.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: "center" }}>
+                  <td colSpan={4} style={{ textAlign: "center" }}>
                     No materials found
                   </td>
                 </tr>
@@ -640,21 +640,22 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
                     <td>{material.description}</td>
                     <td>{material.materialType}</td>
                     <td>
+                      <span style={{ marginRight: "8px" }}>
                       <SapButton
                         onClick={() => handleSelectMaterial(material)}
                         type="primary"
                       >
-                        Select
+                        👁️
                       </SapButton>
-                    </td>
-                    <td>
-                      <SapButton
+                      </span>
+                      {currentTransaction === "MM02" && (<span style={{ marginLeft: "8px" }}>
+                        <SapButton
                         onClick={() => DeleteInSearchModal(material.id)}
                         type="danger"
-                        icon={'🗑️'}
                       >
-                        
+                        🗑️
                       </SapButton>
+                      </span>)}
                     </td>
                   </tr>
                 ))
