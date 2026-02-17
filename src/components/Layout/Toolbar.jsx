@@ -176,8 +176,11 @@ const Toolbar = ({ children }) => {
   return (
     <>
       <div className={styles.sapToolbar}>
+      <div style={{order:0}}>
         {children}
-        <div className={styles.sapToolbarSeparator} />
+      </div>
+        
+        <div className={styles.sapToolbarSeparator}/>
 
         {toolbarButtons.map((btn, index) => {
           if (btn.separator) {

@@ -151,11 +151,7 @@ const NotesSearchModal = ({
                   <td className="notes-search-date">
                     {note.updatedAt ? new Date(note.updatedAt).toLocaleDateString() : '-'}
                   </td>
-                  <td>
-                    <SapButton onClick={() => onSelectNote(note)} type="primary">
-                      Select
-                    </SapButton>
-                  </td>
+                  
                   <td>
                       <span style={{ marginRight: "8px" }}>
                       <SapButton

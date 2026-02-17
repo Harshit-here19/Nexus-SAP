@@ -65,7 +65,9 @@ const menuItems = [
       { separator: true },
       { label: 'About', action: 'about' }
     ]
-  }
+  },{label : 'View', items: [
+  { label: 'Toggle Sidebar', shortcut: 'Ctrl+B', action: 'toggleSidebar' }
+]}
 ];
 
 const MenuBar = ({ onNewSession, onToggleSidebar, onOpenImportExport }) => {
@@ -112,7 +114,7 @@ const MenuBar = ({ onNewSession, onToggleSidebar, onOpenImportExport }) => {
   };
 
   return (
-    <div className="sap-menu-bar" onMouseLeave={handleMouseLeave}>
+    <div className="sap-menu-bar" onMouseLeave={handleMouseLeave} style={{zIndex: 1000}}>
       {menuItems.map((menu, index) => (
         <div 
           key={index}

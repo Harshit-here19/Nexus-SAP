@@ -3,6 +3,7 @@
 /* ========== BASE TOOLBAR ========== */
 .sapToolbar {
   display: flex;
+  flex-direction: row;
   align-items: center;
   height: 36px;
   background: linear-gradient(
@@ -411,52 +412,6 @@
   padding: 0 4px;
 }
 
-/* ========== RESPONSIVE ========== */
-@media (max-width: 768px) {
-  .sapToolbar {
-    height: 40px;
-    padding: 0 4px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .sapToolbarButton {
-    min-width: 36px;
-    height: 32px;
-    padding: 0 8px;
-  }
-
-  .buttonIcon {
-    font-size: 18px;
-  }
-
-  .sapToolbarSeparator {
-    margin: 0 4px;
-    height: 26px;
-  }
-
-  /* Hide tooltips on mobile */
-  .sapToolbarButton[title]:hover::after,
-  .sapToolbarButton[title]:hover::before {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .sapToolbar {
-    height: 44px;
-  }
-
-  .sapToolbarButton {
-    min-width: 40px;
-    height: 36px;
-  }
-
-  .buttonIcon {
-    font-size: 20px;
-  }
-}
-
 /* ========== DARK THEME ========== */
 [data-theme="dark"] .sapToolbar {
   background: linear-gradient(
@@ -690,9 +645,91 @@
   }
 }
 
-/* ========== PRINT ========== */
-@media print {
+/* ============================= */
+/* TABLET (≤ 1024px) */
+/* ============================= */
+@media (max-width: 1024px) {
   .sapToolbar {
-    display: none !important;
+    height: 40px;
+    padding: 0 6px;
+    gap: 4px;
+  }
+
+  .sapToolbarButton {
+    min-width: 34px;
+    height: 32px;
+    padding: 0 8px;
+  }
+
+  .buttonIcon {
+    font-size: 17px;
+  }
+}
+
+/* ============================= */
+/* MOBILE (≤ 768px) */
+/* ============================= */
+@media (max-width: 768px) {
+  .sapToolbar {
+    height: 44px;
+    padding: 0 4px;
+
+    /* Enable horizontal scrolling */
+    overflow-x: scroll;
+    overflow-y: hidden;
+    white-space: nowrap;
+
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .sapToolbar::-webkit-scrollbar {
+    display: none; /* Chrome */
+  }
+
+  .sapToolbarButton {
+    min-width: 40px;
+    height: 36px;
+    padding: 0 10px;
+    flex-shrink: 0; /* Prevent shrinking */
+  }
+
+  .buttonIcon {
+    font-size: 18px;
+  }
+
+  .sapToolbarSeparator {
+    height: 28px;
+    margin: 0 6px;
+  }
+
+  /* Disable tooltips on mobile */
+  .sapToolbarButton[title]:hover::after,
+  .sapToolbarButton[title]:hover::before {
+    display: none;
+  }
+}
+
+/* ============================= */
+/* SMALL MOBILE (≤ 480px) */
+/* ============================= */
+@media (max-width: 480px) {
+  .sapToolbar {
+    height: 48px;
+    padding: 0 2px;
+  }
+
+  .sapToolbarButton {
+    min-width: 44px;
+    height: 40px;
+  }
+
+  .buttonIcon {
+    font-size: 20px;
+  }
+
+  .sapToolbarGroup {
+    padding: 0 2px;
+    gap: 4px;
   }
 }

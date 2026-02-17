@@ -895,7 +895,6 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                 <th>Category</th>
                 <th>Description</th>
                 <th style={{ textAlign: "right" }}>Amount</th>
-                <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -903,7 +902,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               {searchResults.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={6}
                     style={{ textAlign: "center", padding: "30px" }}
                   >
                     <div style={{ color: "var(--sap-text-secondary)" }}>
@@ -940,22 +939,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                     <td style={{ textAlign: "right", fontWeight: "600" }}>
                       {expense.currency} {parseFloat(expense.amount).toFixed(2)}
                     </td>
-                    <td>
-                      <span
-                        className={`sap-badge ${
-                          expense.status === "approved" ||
-                          expense.status === "reimbursed"
-                            ? "success"
-                            : expense.status === "rejected"
-                              ? "error"
-                              : expense.status === "pending"
-                                ? "warning"
-                                : "info"
-                        }`}
-                      >
-                        {expense.status || "recorded"}
-                      </span>
-                    </td>
+                    
                     <td>
                       <span style={{ marginRight: "8px" }}>
                       <SapButton
@@ -1000,7 +984,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               {searchResults.length} expense(s) found
             </span>
             <span style={{ fontWeight: "600" }}>
-              Total: USD{" "}
+              Total: INR{" "}
               {searchResults
                 .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0)
                 .toFixed(2)}

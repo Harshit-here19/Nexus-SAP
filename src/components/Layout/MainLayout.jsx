@@ -121,11 +121,9 @@ const MainLayout = ({ children }) => {
 
       {/* Main Content */}
       <div className="sap-main-container">
+        {sidebarVisible && <div className="sap-sidebar-overlay" onClick={() => setSidebarVisible(false)} />}
         {sidebarVisible && (
-          <div className="sap-sidebar" style={{
-            opacity: isTransactionActive ? 0.6 : 1,
-            pointerEvents: isTransactionActive ? 'none' : 'auto'
-          }}>
+          <div className={`sap-sidebar ${sidebarVisible ? 'open' : 'collapsed'}`} >
             <TreeMenu />
           </div>
         )}

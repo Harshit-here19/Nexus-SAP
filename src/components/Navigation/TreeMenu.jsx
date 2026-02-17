@@ -1,10 +1,11 @@
 // src/components/Navigation/TreeMenu.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
-
 import { useConfirm } from "../../context/ConfirmContext";
+
+import "./TreeMenu.css";
 
 // Transaction definitions - UPDATE THIS SECTION
 const transactionDefinitions = {
@@ -101,6 +102,21 @@ const TreeMenu = () => {
     "favorites",
     "history",
   ]);
+
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    console.log("TreeMenu mounted, screen width:", screenWidth);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const isAdmin = checkIsAdmin();
   const confirm = useConfirm();
