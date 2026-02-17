@@ -14,7 +14,8 @@ const SapInput = ({
   maxLength,
   width = '100%',
   icon,
-  onIconClick
+  onIconClick,
+  className=''
 }) => {
   return (
     <div className="sap-form-group">
@@ -27,7 +28,7 @@ const SapInput = ({
         <div className={`sap-input-icon`} style={{ width }}>
           <input
             type={type}
-            className={`sap-input ${error ? 'error' : ''}`}
+            className={className ? className : `sap-input ${error ? 'error' : ''}`}
             value={value || ''}
             onChange={(e) => onChange && onChange(e.target.value)}
             disabled={disabled}
@@ -53,3 +54,31 @@ const SapInput = ({
 };
 
 export default SapInput;
+
+// 1️SimpleInput: minimal reusable input
+export const SimpleInput = ({
+  value,
+  onChange,
+  placeholder = '',
+  type = 'text',
+  className = '',
+  error = '',
+  disabled = false,
+  readOnly = false,
+  maxLength,
+  width = '100%',
+}) => {
+  return (
+    <input
+      type={type}
+      className={className ? className : `sap-input ${error ? 'error' : ''}`}
+      value={value || ''}
+      onChange={(e) => onChange && onChange(e.target.value)}
+      disabled={disabled}
+      readOnly={readOnly}
+      placeholder={placeholder}
+      maxLength={maxLength}
+      style={{ width }}
+    />
+  );
+};

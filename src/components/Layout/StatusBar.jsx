@@ -29,7 +29,7 @@ const StatusBar = ({ message = 'Ready', type = 'info', user }) => {
     });
   };
 
-  console.log(type, message);
+  // console.log(type, message);
   
 
   return (

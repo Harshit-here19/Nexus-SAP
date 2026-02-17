@@ -107,7 +107,7 @@ export const TransactionProvider = ({ children }) => {
   );
 
   // Go back to previous screen or HOME
-  const goBack = useCallback(() => {
+  const goBack = useCallback((hasUnsavedChanges=true) => {
     // If screen has its own back logic → use it first
     if (customBackHandler) {
       const handled = customBackHandler();

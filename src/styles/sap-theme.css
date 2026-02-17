@@ -952,7 +952,7 @@ body {
 .sap-form-group {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin: 10px 0px;
   flex-wrap: wrap;
   gap: 8px;
 }

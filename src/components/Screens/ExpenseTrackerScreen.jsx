@@ -16,7 +16,7 @@ import {
   findRecord,
   generateNextNumber,
   getExpenseCategories,
-  getPaymentMethods
+  getPaymentMethods,
 } from '../../utils/storage';
 
 const ExpenseTrackerScreen = ({ mode = 'create' }) => {

@@ -49,14 +49,41 @@ const PRIORITY_OPTIONS = [
 
 // Genres
 const GENRE_OPTIONS = [
+  // ========== MAIN GENRES ==========
   { value: 'action', label: 'Action' },
   { value: 'adventure', label: 'Adventure' },
   { value: 'comedy', label: 'Comedy' },
   { value: 'drama', label: 'Drama' },
+  { value: 'fantasy', label: 'Fantasy' },
+  { value: 'horror', label: 'Horror' },
+  { value: 'mystery', label: 'Mystery' },
+  { value: 'romance', label: 'Romance' },
+  { value: 'sci_fi', label: 'Sci-Fi' },
+  { value: 'slice_of_life', label: 'Slice of Life' },
+  { value: 'thriller', label: 'Thriller' },
+
+  // ========== ANIME/GAME SPECIFIC ==========
   { value: 'isekai', label: 'Isekai' },
-  { value: 'visual_novel', label: 'Visual Novel' },
+  { value: 'harem', label: 'Harem' },
+  { value: 'reverse_harem', label: 'Reverse Harem' },
+  { value: 'school', label: 'School Life' },
+  { value: 'supernatural', label: 'Supernatural' },
+
+  // ========== ADULT THEMES ==========
+  { value: 'vanilla', label: 'Vanilla' },
   { value: 'ntr', label: 'NTR (Netorare)' },
+  { value: 'netori', label: 'Netori' },
   { value: 'cuckold', label: 'Cuckold' },
+  { value: 'corruption', label: 'Corruption' },
+  { value: 'milf', label: 'MILF' },
+  { value: 'incest', label: 'Incest' },
+  { value: 'cheating', label: 'Cheating' },
+  { value: 'femdom', label: 'Femdom' },
+  { value: 'bdsm', label: 'BDSM' },
+  { value: 'mind_control', label: 'Mind Control' },
+  { value: 'blackmail', label: 'Blackmail' },
+
+  // ========== OTHER ==========
   { value: 'other', label: 'Other' }
 ];
 
@@ -73,13 +100,9 @@ const PLATFORM_OPTIONS = [
   { value: 'webtoon', label: '📖 Webtoon' },
   { value: 'tapas', label: '📚 Tapas' },
   { value: 'mangadex', label: '📕 MangaDex' },
-  { value: 'steam', label: '🎮 Steam' },
-  { value: 'epic_games', label: '🎯 Epic Games' },
-  { value: 'playstation', label: '🎮 PlayStation' },
-  { value: 'xbox', label: '🎮 Xbox' },
-  { value: 'nintendo', label: '🎮 Nintendo' },
   { value: 'torrent', label: '🏴‍☠️ Torrent' },
   { value: 'physical', label: '💿 Physical' },
+  { value: "hotstar", label: "✨🎬 Disney+ Hotstar" },
   { value: 'other', label: '📁 Other' }
 ];
 
@@ -165,7 +188,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
   const handleCategoryChange = (category) => {
     handleChange('category', category);
     if (mode === 'create') {
-      const newId = generateNextId(category);
+      const newId = extId(categorygenerateN);
       setFormData(prev => ({ ...prev, category, itemNumber: newId }));
     }
   };
@@ -281,7 +304,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
       }
 
       if (mode === 'create') {
-        const itemNumber = formData.itemNumber || generateNextId(formData.category);
+        const itemNumber = formData.itemNumber ||  generateNextId(formData.category);
         const newItem = {
           ...formData,
           id: Date.now(),
@@ -1177,7 +1200,7 @@ const EntertainmentWishlistScreen = ({ mode = 'create' }) => {
         <div className="sap-panel-header">
           <span>
             <span className="sap-panel-header-icon">{getModeIcon()}</span>
-            {getModeTitle()} - EW0{mode === 'create' ? '1' : mode === 'change' ? '2' : '3'}
+            {getModeTitle()} - WS0{mode === 'create' ? '1' : mode === 'change' ? '2' : '3'}
           </span>
           <div className="sap-panel-header-actions">
             <span className={`sap-badge ${mode === 'create' ? 'info' : mode === 'change' ? 'warning' : 'success'}`}>

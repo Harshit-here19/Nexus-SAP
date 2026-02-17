@@ -119,26 +119,6 @@ const MainLayout = ({ children }) => {
         <TransactionInput />
       </Toolbar>
 
-      {/* Transaction Lock Indicator */}
-      {/* {isTransactionActive && (
-        <div style={{
-          background: 'linear-gradient(90deg, var(--sap-critical) 0%, #c45c00 100%)',
-          color: 'white',
-          padding: '6px 16px',
-          fontSize: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px'
-        }}>
-          <span>🔒</span>
-          <span>
-            Transaction <strong>{currentTransaction}</strong> is active. 
-            Press <strong>F3</strong> (Back) or <strong>Shift+F3</strong> (Exit) to leave.
-          </span>
-        </div>
-      )} */}
-
       {/* Main Content */}
       <div className="sap-main-container">
         {sidebarVisible && (
@@ -160,6 +140,7 @@ const MainLayout = ({ children }) => {
         type={statusType}
         user={user}
       />
+      
 
       {/* Exit Confirmation Modal */}
       <ExitConfirmModal

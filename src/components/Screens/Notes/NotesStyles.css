@@ -11,12 +11,13 @@
   border-radius: 6px;
   margin-bottom: 16px;
   align-items: center;
+  width: 80vw;
 }
 
 .notes-toolbar-formatting {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: 6px;
   flex: 1;
 }
 
@@ -657,3 +658,4 @@
 [data-theme="dark"] .notes-table-preview-info {
   background: #1e2d3a;
 }
+

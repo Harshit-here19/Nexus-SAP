@@ -25,6 +25,7 @@ const Toolbar = ({ children }) => {
   const handleToggleFavorite = () => {
     if (currentTransaction === "HOME") return;
 
+    console.log("Toggling favorite for transaction:", currentTransaction);
     const result = toggleFavorite({
       tcode: currentTransaction,
       label: currentTransaction,
@@ -52,6 +53,7 @@ const Toolbar = ({ children }) => {
       title: "Back (F3)",
       action: "back",
       highlight: isTransactionActive,
+      disabled: currentTransaction === "HOME",
     },
     {
       icon: "🚪",
@@ -91,7 +93,7 @@ const Toolbar = ({ children }) => {
         ["VA02", "WS02","NT02"].includes(currentTransaction),
       disabled: !isTransactionActive,
     },
-    { separator: true },
+    // { separator: true },
     { separator: true },
     {
       icon: currentIsFavorite ? "⭐" : "☆",
@@ -151,7 +153,7 @@ const Toolbar = ({ children }) => {
         exitTransaction();
       } else if (e.key === "F12") {
         e.preventDefault();
-        cancelOperation();
+        triggerAction("CLEAR");
       } else if (e.key === "F2" && e.shiftKey) {
         e.preventDefault();
         triggerAction("DELETE");

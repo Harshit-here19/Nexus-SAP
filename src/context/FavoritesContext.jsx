@@ -1,6 +1,12 @@
 // src/context/FavoritesContext.jsx
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth } from './AuthContext';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
+import { useAuth } from "./AuthContext";
 import {
   getFavorites,
   addToFavorites as addFav,
@@ -8,15 +14,15 @@ import {
   isFavorite as checkFav,
   getTransactionHistory,
   addToHistory,
-  clearTransactionHistory
-} from '../utils/storage';
+  clearTransactionHistory,
+} from "../utils/storage";
 
 const FavoritesContext = createContext();
 
 export const useFavorites = () => {
   const context = useContext(FavoritesContext);
   if (!context) {
-    throw new Error('useFavorites must be used within FavoritesProvider');
+    throw new Error("useFavorites must be used within FavoritesProvider");
   }
   return context;
 };
@@ -38,70 +44,88 @@ export const FavoritesProvider = ({ children }) => {
   }, [isAuthenticated, user?.userId]);
 
   // Add to favorites
-  const addToFavorites = useCallback((transaction) => {
-    if (!user?.userId) return { success: false, message: 'Not logged in' };
-    
-    const result = addFav(transaction, user.userId);
-    if (result.success) {
-      setFavorites(getFavorites(user.userId));
-    }
-    return result;
-  }, [user?.userId]);
+  const addToFavorites = useCallback(
+    (transaction) => {
+      if (!user?.userId) return { success: false, message: "Not logged in" };
 
-  // Remove from favorites
-  const removeFromFavorites = useCallback((tcode) => {
-    if (!user?.userId) return { success: false, message: 'Not logged in' };
-    
-    const result = removeFav(tcode, user.userId);
-    if (result.success) {
-      setFavorites(getFavorites(user.userId));
-    }
-    return result;
-  }, [user?.userId]);
-
-  // Check if favorite
-  const isFavorite = useCallback((tcode) => {
-    if (!user?.userId) return false;
-    return checkFav(tcode, user.userId);
-  }, [user?.userId]);
-
-  // Toggle favorite
-  const toggleFavorite = useCallback((transaction) => {
-    if (isFavorite(transaction.tcode)) {
-      return removeFromFavorites(transaction.tcode);
-    } else {
-      return addToFavorites(transaction);
-    }
-  }, [isFavorite, addToFavorites, removeFromFavorites]);
-
-  // Add to history
-  const addTransactionToHistory = useCallback((tcode, description = '') => {
-  if (!user?.userId) return;
-
-  // Get current history first
-  const fullHistory = getTransactionHistory(user.userId);
-
-  // Add new transaction at the end
-  const updatedHistory = [...fullHistory, { tcode, description }];
-
-  // Keep only the last 5 and reverse to have newest first
-  const latestHistory = updatedHistory.slice(-5).reverse();
-
-  // Clear and rewrite history
-  clearTransactionHistory(user.userId);
-  // Since addToHistory likely appends, reverse again to maintain newest first in state
-  latestHistory.slice().reverse().forEach(entry =>
-    addToHistory(entry.tcode, entry.description, user.userId)
+      const result = addFav(transaction, user.userId);
+      if (result.success) {
+        setFavorites(getFavorites(user.userId));
+      }
+      return result;
+    },
+    [user?.userId],
   );
 
-  // Update state
-  setHistory(latestHistory);
-}, [user?.userId]);
+  // Remove from favorites
+  const removeFromFavorites = useCallback(
+    (tcode) => {
+      if (!user?.userId) return { success: false, message: "Not logged in" };
+
+      const result = removeFav(tcode, user.userId);
+      if (result.success) {
+        setFavorites(getFavorites(user.userId));
+      }
+      return result;
+    },
+    [user?.userId],
+  );
+
+  // Check if favorite
+  const isFavorite = useCallback(
+    (tcode) => {
+      if (!user?.userId) return false;
+      return checkFav(tcode, user.userId);
+    },
+    [user?.userId],
+  );
+
+  // Toggle favorite
+  const toggleFavorite = useCallback(
+    (transaction) => {
+      if (isFavorite(transaction.tcode)) {
+        return removeFromFavorites(transaction.tcode);
+      } else {
+        return addToFavorites(transaction);
+      }
+    },
+    [isFavorite, addToFavorites, removeFromFavorites],
+  );
+
+  // Add to history
+  const addTransactionToHistory = useCallback(
+    (tcode, description = "") => {
+      if (!user?.userId) return;
+
+      // Get current history first
+      const fullHistory = getTransactionHistory(user.userId);
+
+      // Add new transaction at the end
+      const updatedHistory = [...fullHistory, { tcode, description }];
+
+      // Keep only the last 5 and reverse to have newest first
+      const latestHistory = updatedHistory.slice(-5).reverse();
+
+      // Clear and rewrite history
+      clearTransactionHistory(user.userId);
+      // Since addToHistory likely appends, reverse again to maintain newest first in state
+      latestHistory
+        .slice()
+        .reverse()
+        .forEach((entry) =>
+          addToHistory(entry.tcode, entry.description, user.userId),
+        );
+
+      // Update state
+      setHistory(latestHistory);
+    },
+    [user?.userId],
+  );
 
   // Clear history
   const clearHistory = useCallback(() => {
     if (!user?.userId) return;
-    
+
     clearTransactionHistory(user.userId);
     setHistory([]);
   }, [user?.userId]);
@@ -114,7 +138,7 @@ export const FavoritesProvider = ({ children }) => {
     isFavorite,
     toggleFavorite,
     addTransactionToHistory,
-    clearHistory
+    clearHistory,
   };
 
   return (

@@ -112,7 +112,7 @@ const TreeMenu = () => {
       icon: "⭐",
       children: favorites.map((fav) => ({
         id: `fav_${fav.tcode}`,
-        label: `${fav.tcode} - ${fav.label || transactionDefinitions[fav.tcode]?.label || fav.tcode}`,
+        label: `${fav.tcode} - ${transactionDefinitions[fav.tcode]?.label || fav.tcode}`,
         icon: transactionDefinitions[fav.tcode]?.icon || "📄",
         tcode: fav.tcode,
         isFavorite: true,
@@ -405,7 +405,6 @@ const TreeMenu = () => {
                 style={{
                   paddingLeft: `${(level + 1) * 16 + 8}px`,
                   padding: "8px",
-                  paddingLeft: `${(level + 1) * 16 + 8}px`,
                 }}
               >
                 <button

@@ -35,7 +35,7 @@ const HomeScreen = () => {
               <strong style={{ color: 'var(--sap-brand)' }}>🎬 Entertainment Wishlist:</strong>
               <br />
               Manage your watch/play/read list across multiple categories including movies (MO),
-              series (SE), anime (AN), webtoons/manhwa (WE), games (GA), and adult content (HE/PO).
+              series (SE), anime (AN), webtoons/manhwa (WE), games (GA), and content (HE/PO).
               Track progress with episode/chapter counters, rate items 1-10 stars, organize by genres and tags,
               set priorities, and monitor viewing habits with start/end dates.
             </div>
