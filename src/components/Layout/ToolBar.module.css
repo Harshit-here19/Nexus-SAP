@@ -720,8 +720,8 @@
   }
 
   .sapToolbarButton {
-    min-width: 44px;
-    height: 40px;
+    min-width: 30px;
+    height: 30px;
   }
 
   .buttonIcon {

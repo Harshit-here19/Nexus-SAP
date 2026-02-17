@@ -36,9 +36,6 @@ const StatusBar = ({ message = 'Ready', type = 'info', user }) => {
     <div className={styles.sapStatusBar}>
       <div className={styles.sapStatusLeft}>
         <div className={`${styles.sapStatusMessage} ${styles[type]}`}>
-          {/* {type === 'success' && '✓ '}
-          {type === 'error' && '✗ '}
-          {type === 'warning' && '⚠ '} */}
           {message}
         </div>
       </div>

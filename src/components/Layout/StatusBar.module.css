@@ -222,6 +222,15 @@
     width: 12px;
     height: 12px;
   }
+
+  .sapStatusRight {
+    font-size: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    width: 60%;
+    justify-content: right;
+}
+  
 }
 
 /* Print */

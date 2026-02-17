@@ -47,7 +47,8 @@ const HomeScreen = () => {
             border: '1px solid #7baedc', // medium blue border
             borderRadius: '4px',
             padding: '15px',
-            width: '280px',
+            width: '100%',
+            maxWidth: '280px',
             color: '#003366', // classic SAP dark blue text
             marginTop: '20px',
           }}>
