@@ -76,7 +76,7 @@ const NotesSearchModal = ({
       </div>
 
       {/* Results Table */}
-      <div className="notes-search-results">
+      <div className="notes-search-results sap-table-scroller" >
         <table className="sap-table">
           <thead>
             <tr>

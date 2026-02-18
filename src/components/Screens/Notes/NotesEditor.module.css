@@ -741,28 +741,6 @@ kbd {
   font-style: italic;
 }
 
-.notes-preview code {
-  padding: 2px 6px;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 3px;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-}
-
-.notes-preview pre {
-  margin: 16px 0;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  overflow-x: auto;
-  border: 1px solid var(--sap-border);
-}
-
-.notes-preview pre code {
-  padding: 0;
-  background: none;
-}
-
 .notes-preview hr {
   margin: 24px 0;
   border: none;
@@ -865,3 +843,59 @@ kbd {
   }
 }
 
+/* VS Code Code Block Styling */
+.notes-preview pre {
+  background: #1e1e1e; /* VS Code dark editor background */
+  color: #d4d4d4;      /* Default text color in VS Code */
+  font-family: "Fira Code", "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 16px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 16px 0;
+  border: 1px solid #333; /* subtle border like VS Code */
+  white-space: pre-wrap;   /* wrap long lines */
+  word-break: break-word;
+}
+
+/* Inline code styling */
+.notes-preview code {
+  background: #1e1e1e;
+  color: #f472b6;
+  font-family: "Fira Code", "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Optional: highlight keywords like VS Code (basic) */
+.notes-preview pre span.keyword {
+  color: #569cd6;
+  font-weight: 500;
+}
+
+.notes-preview pre span.string {
+  color: #d69d85;
+}
+
+.notes-preview pre span.comment {
+  color: #6a9955;
+  font-style: italic;
+}
+
+.notes-preview pre span.function {
+  color: #dcdcaa;
+}
+
+/* Scrollbar for code block (optional) */
+.notes-preview pre::-webkit-scrollbar {
+  height: 8px;
+}
+.notes-preview pre::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+.notes-preview pre::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}

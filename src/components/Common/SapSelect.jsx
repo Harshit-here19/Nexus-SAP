@@ -11,8 +11,10 @@ const SapSelect = ({
   placeholder = 'Select...',
   width = '200px'
 }) => {
+const isMobile = window.innerWidth <= 768; // Simple mobile check
+
   return (
-    <div className="sap-form-group">
+    <div className="sap-form-group"  >
       {label && (
         <label className={`sap-form-label ${required ? 'required' : ''}`}>
           {label}
@@ -24,7 +26,7 @@ const SapSelect = ({
           value={value || ''}
           onChange={(e) => onChange && onChange(e.target.value)}
           disabled={disabled}
-          style={{ width }}
+          style={{ width: isMobile ? '100%' : width }}
         >
           <option value="">{placeholder}</option>
           {options.map((option, index) => (

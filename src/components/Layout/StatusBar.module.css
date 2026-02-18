@@ -34,6 +34,9 @@
   gap: 12px;
   opacity: 0.9;
   flex-shrink: 0;
+
+  /* Transition for smooth show/hide */
+  transition: opacity 0.25s ease;
 }
 
 /* ========== STATUS MESSAGE ========== */
@@ -41,24 +44,48 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  
+
   padding: 4px 10px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  
+
   font-weight: 500;
   font-size: 12px;
   line-height: 1.4;
-  
+
   border-radius: 3px;
   border: 1px solid transparent;
-  
+
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(4px);
-  
+
   transition: all 0.2s ease;
-  animation: slideIn 0.3s ease;
+}
+
+/* Animation for message change */
+@keyframes statusMessageFlash {
+  0% {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sapStatusMessage.animating {
+  animation: statusMessageFlash 0.5s ease forwards;
+}
+
+/* Right section hidden during animation */
+.sapStatusRight.hidden {
+  opacity: 0;
 }
 
 /* Icon prefix support (optional) */
@@ -73,94 +100,43 @@
   background-position: center;
 }
 
-/* Smooth animation */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* Hover effect */
+.sapStatusMessage:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* ========== STATUS TYPES ========== */
-
-/* Default / Info */
 .sapStatusMessage.info {
   background: linear-gradient(135deg, rgba(14, 110, 184, 0.08) 0%, rgba(14, 110, 184, 0.04) 100%);
   color: #fff;
   border-color: rgba(14, 110, 184, 0.3);
 }
+.sapStatusMessage.info::before { content: 'ℹ'; color: #fff; }
 
-.sapStatusMessage.info::before {
-  content: 'ℹ';
-  font-style: normal;
-  color: #fff;
-  width: auto;
-  height: auto;
-  background: none;
-}
-
-/* Success */
 .sapStatusMessage.success {
   background: linear-gradient(135deg, rgba(16, 126, 62, 0.1) 0%, rgba(16, 126, 62, 0.05) 100%);
   color: #8ce4b3;
   border-color: rgba(16, 126, 62, 0.4);
   font-weight: 600;
 }
+.sapStatusMessage.success::before { content: '✓'; color: #8ce4b3; font-weight: bold; }
 
-.sapStatusMessage.success::before {
-  content: '✓';
-  font-style: normal;
-  color: #8ce4b3;
-  width: auto;
-  height: auto;
-  background: none;
-  font-weight: bold;
-}
-
-/* Error */
 .sapStatusMessage.error {
   background: linear-gradient(135deg, rgba(187, 0, 0, 0.1) 0%, rgba(187, 0, 0, 0.05) 100%);
   color: #f56b6b;
   border-color: rgba(187, 0, 0, 0.4);
   font-weight: 600;
 }
+.sapStatusMessage.error::before { content: '✕'; color: #f56b6b; font-weight: bold; }
 
-.sapStatusMessage.error::before {
-  content: '✕';
-  font-style: normal;
-  color: #f56b6b;
-  width: auto;
-  height: auto;
-  background: none;
-  font-weight: bold;
-}
-
-/* Warning */
 .sapStatusMessage.warning {
-  background: linear-gradient(135deg, rgba(187, 0, 0, 0.1) 0%, rgba(187, 0, 0, 0.05) 100%);
-  color: #f56b6b;
-  border-color: rgba(187, 0, 0, 0.4);
+  background: linear-gradient(135deg, rgba(255, 153, 0, 0.1) 0%, rgba(255, 153, 0, 0.05) 100%);
+  color: #f5c04d;
+  border-color: rgba(255, 153, 0, 0.4);
   font-weight: 600;
 }
-
-.sapStatusMessage.warning::before {
-  content: '⚠';
-  font-style: normal;
-  color: #f56b6b;
-  width: auto;
-  height: auto;
-  background: none;
-}
-
-/* Hover effect */
-.sapStatusMessage:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+.sapStatusMessage.warning::before { content: '⚠'; color: #f5c04d; font-weight: bold; }
 
 /* ========== DARK THEME ========== */
 [data-theme="dark"] .sapStatusBar {
@@ -179,20 +155,14 @@
   color: #fff;
   border-color: rgba(91, 172, 255, 0.4);
 }
-
-[data-theme="dark"] .sapStatusMessage.info::before {
-  color: #fff;
-}
+[data-theme="dark"] .sapStatusMessage.info::before { color: #fff; }
 
 [data-theme="dark"] .sapStatusMessage.success {
   background: linear-gradient(135deg, rgba(143, 217, 176, 0.15) 0%, rgba(143, 217, 176, 0.08) 100%);
   color: #8fd9b0;
   border-color: rgba(143, 217, 176, 0.4);
 }
-
-[data-theme="dark"] .sapStatusMessage.success::before {
-  color: #8fd9b0;
-}
+[data-theme="dark"] .sapStatusMessage.success::before { color: #8fd9b0; }
 
 [data-theme="dark"] .sapStatusMessage.error,
 [data-theme="dark"] .sapStatusMessage.warning {
@@ -200,28 +170,14 @@
   color: #ff9999;
   border-color: rgba(255, 153, 153, 0.4);
 }
-
 [data-theme="dark"] .sapStatusMessage.error::before,
-[data-theme="dark"] .sapStatusMessage.warning::before {
-  color: #ff9999;
-}
+[data-theme="dark"] .sapStatusMessage.warning::before { color: #ff9999; }
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-  .sapStatusBar {
-    font-size: 11px;
-    padding: 3px 6px;
-  }
-  
-  .sapStatusMessage {
-    padding: 3px 8px;
-    font-size: 11px;
-  }
-  
-  .sapStatusMessage::before {
-    width: 12px;
-    height: 12px;
-  }
+  .sapStatusBar { font-size: 11px; padding: 3px 6px; }
+  .sapStatusMessage { padding: 3px 8px; font-size: 11px; }
+  .sapStatusMessage::before { width: 12px; height: 12px; }
 
   .sapStatusRight {
     font-size: 10px;
@@ -229,13 +185,10 @@
     flex-wrap: wrap;
     width: 60%;
     justify-content: right;
-}
-  
+  }
 }
 
 /* Print */
 @media print {
-  .sapStatusBar {
-    display: none !important;
-  }
+  .sapStatusBar { display: none !important; }
 }

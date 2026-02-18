@@ -169,28 +169,6 @@
   font-style: italic;
 }
 
-.notes-preview pre {
-  background: #1e1e1e;
-  color: #d4d4d4;
-  padding: 16px;
-  border-radius: 6px;
-  overflow-x: auto;
-  font-family: 'Consolas', monospace;
-}
-
-.notes-preview code {
-  background: #f0f0f0;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-family: 'Consolas', monospace;
-  font-size: 13px;
-}
-
-.notes-preview pre code {
-  background: transparent;
-  padding: 0;
-}
-
 .notes-preview hr {
   border: none;
   border-top: 1px solid var(--sap-border);
@@ -666,5 +644,9 @@
 
 [data-theme="dark"] .notes-table-preview-info {
   background: #1e2d3a;
+}
+
+[data-theme="dark"] .notes-preview pre {
+  border: 1px solid #3a3a3a;
 }
 

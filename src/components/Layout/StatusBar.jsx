@@ -3,7 +3,24 @@ import { useState, useEffect } from 'react';
 import styles from './StatusBar.module.css';
 
 const StatusBar = ({ message = 'Ready', type = 'info', user }) => {
+  const isMobile = window.innerWidth < 768;
+  
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  const [animating, setAnimating] = useState(false);
+
+  // Whenever message changes, trigger animation
+  useEffect(() => {
+    if (!message) return;
+
+    setAnimating(true); // hide right side and start animation
+
+    const timer = setTimeout(() => {
+      setAnimating(false); // animation finished
+    }, 500); // duration matches CSS animation (0.5s)
+
+    return () => clearTimeout(timer);
+  }, [message]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -35,13 +52,13 @@ const StatusBar = ({ message = 'Ready', type = 'info', user }) => {
   return (
     <div className={styles.sapStatusBar}>
       <div className={styles.sapStatusLeft}>
-        <div className={`${styles.sapStatusMessage} ${styles[type]}`}>
+        <div className={`${styles.sapStatusMessage} ${styles[type]} ${animating ? styles.animating : ''}`}>
           {message}
         </div>
       </div>
-      <div className={styles.sapStatusRight}>
-        <span>System: DEV (100)</span>
-        <span>Client: {user?.client || '001'}</span>
+      <div className={`${styles.sapStatusRight} ${animating ? styles.hidden : ''}`}>
+        {!isMobile && <span>System: DEV (100)</span>}
+        {!isMobile && <span>Client: {user?.client || '001'}</span>}
         <span>User: {user?.username || 'GUEST'}</span>
         <span>{formatDate(currentTime)}</span>
         <span>{formatTime(currentTime)}</span>

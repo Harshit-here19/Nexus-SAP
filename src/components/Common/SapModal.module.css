@@ -111,7 +111,6 @@
 
 .sap-modal-body {
   padding: 16px;
-  overflow: auto;
   flex: 1;
 
   overflow: auto; /* enable scrolling */

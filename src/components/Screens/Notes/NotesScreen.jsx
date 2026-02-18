@@ -36,6 +36,7 @@ import {
 import { generateNextNumber } from "../../../utils/storage";
 
 import "./NotesStyles.css";
+import SapModal from "../../Common/SapModal";
 
 const NotesScreen = ({ mode = "create" }) => {
   const { updateStatus, markAsChanged, markAsSaved, goBack } = useTransaction();
@@ -47,6 +48,7 @@ const NotesScreen = ({ mode = "create" }) => {
   const clearRef = useRef(null);
   const deleteRef = useRef(null);
   const editorRef = useRef(null);
+  const printRef = useRef(null);
 
   // State
   const [noteId, setNoteId] = useState("");
@@ -55,6 +57,7 @@ const NotesScreen = ({ mode = "create" }) => {
 
   // Modals
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
@@ -421,16 +424,22 @@ const NotesScreen = ({ mode = "create" }) => {
     updateStatus("Demo note loaded! Explore all the features.", "success");
   };
 
+  printRef.current = () => {
+    setShowPrintModal(true);
+  };
+
   // Register actions
   useEffect(() => {
     registerAction("SAVE", () => saveRef.current?.());
     registerAction("CLEAR", () => clearRef.current?.());
     registerAction("DELETE", () => deleteRef.current?.());
+    registerAction("PRINT", () => printRef.current?.());
 
     return () => {
       clearAction("SAVE");
       clearAction("CLEAR");
       clearAction("DELETE");
+      clearAction("PRINT");
     };
   }, [registerAction, clearAction]);
 
@@ -653,6 +662,25 @@ const NotesScreen = ({ mode = "create" }) => {
         onTableColsChange={setTableCols}
         onInsert={insertTable}
       />
+
+      <SapModal
+    isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        title="🔍 Search Entertainment Wishlist"
+        width="900px"
+        footer={
+          <SapButton type="close" onClick={() => setShowPrintModal(false)}>Close</SapButton>
+        }
+    >
+      <div style={{ padding: "20px" }}>
+        <h2>Print Note</h2>
+        <p>This feature is coming soon! In the meantime, you can copy the content and paste it into your preferred text editor for printing.</p>
+        <button onClick={() => navigator.clipboard.writeText(formData.content)}>
+          Copy Content
+        </button>
+      </div>
+    </SapModal>
+      
     </div>
   );
 };

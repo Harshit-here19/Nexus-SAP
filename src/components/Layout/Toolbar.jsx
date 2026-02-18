@@ -136,6 +136,12 @@ const Toolbar = ({ children }) => {
       case "delete":
         triggerAction("DELETE");
         break;
+      case "print":
+        triggerAction("PRINT");
+        break;
+      case "find":
+        triggerAction("FIND");
+        break;
       default:
         console.log("Toolbar action:", action);
     }

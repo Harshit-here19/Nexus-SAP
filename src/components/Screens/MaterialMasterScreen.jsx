@@ -528,7 +528,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
 
   return (
     <div>
-      <div className="sap-panel">
+      <div className="sap-panel" style={{paddingBottom: "10px"}}>
         <div className="sap-panel-header">
           <span>
             <span className="sap-panel-header-icon">{getModeIcon()}</span>
@@ -618,7 +618,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
           />
         </div>
 
-        <div>
+        <div className="sap-table-scroller">
           <table className="sap-table">
             <thead>
               <tr>

@@ -548,7 +548,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const detailsTab = (
     <div className="sap-form">
       <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+        style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "20px" }}
       >
         {/* Left Column */}
         <div>
@@ -892,7 +892,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const progressTab = (
     <div className="sap-form">
       <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+        style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "20px" }}
       >
         <div>
           <h4
@@ -1128,7 +1128,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const creditsTab = (
     <div className="sap-form">
       <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+        style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "20px" }}
       >
         <div>
           <h4
@@ -1293,7 +1293,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             disabled={isReadOnly}
             placeholder="Your personal notes, review, thoughts..."
             rows={6}
-            style={{ width: "100%", maxWidth: "600px" }}
+            style={{ width: "100%", maxWidth: isMobile ? "100%" : "600px" }}
           />
         </div>
       </div>
@@ -1787,7 +1787,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
         </div>
 
         {/* Results */}
-        <div>
+        <div className="sap-table-scroller">
           <table className="sap-table">
             <thead>
               <tr>

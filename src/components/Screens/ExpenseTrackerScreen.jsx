@@ -745,7 +745,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
 
   return (
     <div>
-      <div className="sap-panel">
+      <div className="sap-panel" style={{marginBottom: "10px"}}>
         <div className="sap-panel-header">
           <span>
             <span className="sap-panel-header-icon">{getModeIcon()}</span>
@@ -891,7 +891,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
         </div>
 
         {/* Results */}
-        <div>
+        <div className="sap-table-scroller">
           <table className="sap-table">
             <thead>
               <tr>
