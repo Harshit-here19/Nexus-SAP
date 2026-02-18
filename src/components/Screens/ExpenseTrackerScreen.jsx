@@ -891,7 +891,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
         </div>
 
         {/* Results */}
-        <div className="sap-table-scroller">
+        <div>
           <table className="sap-table">
             <thead>
               <tr>

@@ -1171,21 +1171,6 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-.sap-table-scroller {
-  max-height: 400px;
-  padding: 2px 2px;
-
-  overflow: auto; /* enable scrolling */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE 10+ */
-
-  scroll-behavior: smooth;
-}
-
-.sap-table-scroller::-webkit-scrollbar {
-  display: none;            /* Chrome, Safari, Edge */
-}
-
 .sap-table {
   width: 100%;
   border-collapse: collapse;
