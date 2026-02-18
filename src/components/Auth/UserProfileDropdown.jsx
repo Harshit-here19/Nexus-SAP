@@ -62,7 +62,7 @@ const UserProfileDropdown = () => {
     onClick={() => setShowDropdown(!showDropdown)}
     className="sap-user-button"
   >
-    <div className="sap-user-avatar">
+    <div className="sap-user-avatar"> 
       {getInitials()}
     </div>
 

@@ -548,6 +548,7 @@ const NotesScreen = ({ mode = "create" }) => {
                   Load
                 </SapButton>
                 <SapButton
+                type="search"
                   onClick={() => {
                     setSearchResults(getTableData("notes") || []);
                     setShowSearchModal(true);

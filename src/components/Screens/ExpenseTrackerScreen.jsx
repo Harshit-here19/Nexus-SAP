@@ -20,6 +20,8 @@ import {
 } from "../../utils/storage";
 
 const ExpenseTrackerScreen = ({ mode = "create" }) => {
+  const isMobile = window.innerWidth <= 768;
+  
   const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
@@ -313,7 +315,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   const detailsTab = (
     <div className="sap-form">
       <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+        style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "20px" }}
       >
         {/* Left Column */}
         <div>
@@ -520,7 +522,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     <div className="sap-form">
       <div className="sap-form-group" style={{ alignItems: "flex-start" }}>
         <label className="sap-form-label">Notes</label>
-        <div className="sap-form-field">
+        <div className="sap-form-field" style={{ width: isMobile ? "100%" : "70%" }}>
           <textarea
             className="sap-textarea"
             value={formData.notes || ""}
@@ -806,6 +808,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                   Load
                 </SapButton>
                 <SapButton
+                  type="search"
                   onClick={() => {
                     setSearchResults(
                       getTableData("expenses").sort(
@@ -835,7 +838,9 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
         title="🔍 Search Expenses"
         width="800px"
         footer={
-          <SapButton onClick={() => setShowSearchModal(false)}>Close</SapButton>
+          <SapButton type="close" onClick={() => setShowSearchModal(false)}>
+            Close
+          </SapButton>
         }
       >
         {/* Filters */}
@@ -859,7 +864,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
             className="sap-select"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            style={{ width: "180px" }}
+            style={{ width: isMobile ? "100%" : "180px" }}
           >
             <option value="all">All Categories</option>
             {categories.map((c) => (
@@ -872,7 +877,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
             className="sap-select"
             value={filterMonth}
             onChange={(e) => setFilterMonth(e.target.value)}
-            style={{ width: "180px" }}
+            style={{ width: isMobile ? "100%" : "180px" }}
           >
             {getMonthOptions().map((m) => (
               <option key={m.value} value={m.value}>
@@ -880,13 +885,13 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               </option>
             ))}
           </select>
-          <SapButton onClick={handleSearch} type="primary">
+          <SapButton onClick={handleSearch} type="close">
             Search
           </SapButton>
         </div>
 
         {/* Results */}
-        <div style={{ maxHeight: "400px", overflow: "auto" }}>
+        <div className="sap-table-scroller">
           <table className="sap-table">
             <thead>
               <tr>
@@ -941,7 +946,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                     </td>
                     
                     <td>
-                      <span style={{ marginRight: "8px" }}>
+                      <span style={{ marginRight: "8px",width: "4rem", display: "inline-block" }}>
                       <SapButton
                         onClick={() => handleSelectExpense(expense)}
                         type="primary"
@@ -949,7 +954,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                         👁️
                       </SapButton>
                       </span>
-                      {currentTransaction === "VA02" && (<span style={{ marginLeft: "8px" }}>
+                      {currentTransaction === "VA02" && (<span style={{ marginLeft: "8px",width: "4rem", display: "inline-block" }}>
                         <SapButton
                         onClick={() => DeleteInSearchModal(expense.id)}
                         type="danger"
@@ -984,7 +989,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               {searchResults.length} expense(s) found
             </span>
             <span style={{ fontWeight: "600" }}>
-              Total: INR{" "}
+              Total: ₹ {" "}
               {searchResults
                 .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0)
                 .toFixed(2)}

@@ -1,28 +1,31 @@
 // src/components/Common/SapButton.jsx
 import React from 'react';
+import styles from './SapButton.module.css';
 
 const SapButton = ({
   children,
   onClick,
-  type = 'default', // 'default', 'primary', 'success', 'danger'
+  type = 'default', // 'default', 'primary', 'success', 'danger', 'search', 'close'
   disabled = false,
   icon,
-  loading = false
+  loading = false,
 }) => {
+  const classNames = [
+    styles.sapButton,
+    type !== 'default' ? styles[type] : '',
+    disabled || loading ? styles.disabled : '',
+  ].join(' ');
+
   return (
-    <button
-      className={`sap-button ${type}`}
-      onClick={onClick}
-      disabled={disabled || loading}
-    >
+    <button className={classNames} onClick={onClick} disabled={disabled || loading}>
       {loading ? (
         <>
-          <span className="sap-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></span>
+          <span className={styles.sapSpinner}></span>
           Loading...
         </>
       ) : (
         <>
-          {icon && <span>{icon}</span>}
+          {icon && <span className={styles.icon}>{icon}</span>}
           {children}
         </>
       )}

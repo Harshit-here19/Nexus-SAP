@@ -1,0 +1,244 @@
+/* ===== Base Button ===== */
+.sapButton {
+  height: 30px;
+  padding: 0 14px;
+  border: 1px solid #888;
+  background: linear-gradient(180deg, #f0f4f8 0%, #d9e2ec 100%);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  color: #003366;
+  white-space: nowrap;
+}
+
+/* Hover & Active for Default */
+.sapButton:hover {
+  background: linear-gradient(180deg, #e1e9f2 0%, #c7d8e7 100%);
+  border-color: #0072c6;
+}
+
+.sapButton:active {
+  transform: translateY(1px);
+}
+
+/* Disabled */
+.sapButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== Variants ===== */
+.sapButton.primary {
+  background: linear-gradient(180deg, var(--sap-brand) 0%, var(--sap-brand-dark) 100%);
+  color: white;
+  border-color: var(--sap-brand-darker);
+}
+
+.sapButton.primary:hover {
+  background: linear-gradient(180deg, var(--sap-brand-light) 0%, var(--sap-brand) 100%);
+}
+
+.sapButton.success {
+  background: linear-gradient(180deg, #12a150 0%, #107e3e 100%);
+  color: white;
+  border-color: #0a6129;
+}
+
+.sapButton.danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 12px;
+  background: transparent;
+  border: 2px solid #dc3545;
+  border-radius: 4px;
+  color: #dc3545;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sapButton.danger:hover {
+  background: #dc3545;
+  color: #ffffff;
+}
+
+.sapButton.danger:active {
+  background: #c82333;
+  border-color: #c82333;
+}
+
+/* Button Group */
+.sapButton-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Spinner */
+.sapSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+  border-top-color: #003366;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Dark Theme */
+[data-theme="dark"] .sapButton {
+  background: linear-gradient(180deg, #2a2a4a 0%, #1f1f3a 100%);
+  border-color: #3a3a5a;
+  color: #eaeaea;
+}
+
+[data-theme="dark"] .sapButton:hover {
+  background: linear-gradient(180deg, #3a3a5a 0%, #2a2a4a 100%);
+  border-color: #4a4a6a;
+}
+
+[data-theme="dark"] .sapButton.danger {
+  border-color: #ff6b7a;
+  color: #ff6b7a;
+}
+
+[data-theme="dark"] .sapButton.danger:hover {
+  background: #ff6b7a;
+  color: #1a1a2e;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .sapButton {
+    width: 100%;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .sapButton-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .sapButton-group .sapButton {
+    width: 100%;
+  }
+}
+
+/* Search Button */
+
+/* .sapButton.search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 12px;
+  background: rgba(10, 110, 209, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: #0a6ed1;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sapButton.search:hover {
+  background: rgba(10, 110, 209, 0.2);
+}
+
+.sapButton.search:active {
+  background: rgba(10, 110, 209, 0.3);
+} */
+
+/* ========== STYLE 28: ELEGANT SHADOW ========== */
+.sapButton.search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  min-width: 36px;
+  padding: 0 14px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  color: #333333;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.sapButton.search:hover {
+  border-color: #0a6ed1;
+  color: #0a6ed1;
+  box-shadow: 0 4px 16px rgba(10, 110, 209, 0.15);
+  transform: translateY(-1px);
+}
+
+.sapButton.search:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Close Button */
+
+.sapButton.close {
+  margin: 0 auto;
+  
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  min-width: 15rem;
+  padding: 0 14px;
+  background: linear-gradient(135deg, #3aafff 0%, #0a6ed1 50%, #074a8a 100%);
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.sapButton.close::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.4s ease;
+}
+
+.sapButton.close:hover::before {
+  left: 100%;
+}
+
+.sapButton.close:hover {
+  box-shadow: 0 4px 15px rgba(10, 110, 209, 0.4);
+}

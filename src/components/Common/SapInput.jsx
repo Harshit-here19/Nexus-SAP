@@ -17,8 +17,10 @@ const SapInput = ({
   onIconClick,
   className=''
 }) => {
+  const isMobile = window.innerWidth <= 768;
+
   return (
-    <div className="sap-form-group">
+    <div className="sap-form-group" style={{ width: isMobile ? '100%' : 'auto'}} >
       {label && (
         <label className={`sap-form-label ${required ? 'required' : ''}`}>
           {label}

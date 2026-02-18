@@ -1,5 +1,6 @@
 // src/components/Common/SapModal.jsx
 import React from 'react';
+import styles from './SapModal.module.css';
 
 const SapModal = ({ 
   isOpen, 
@@ -12,23 +13,23 @@ const SapModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="sap-modal-overlay" onClick={onClose}>
+    <div className={styles['sap-modal-overlay']} onClick={onClose}>
       <div 
-        className="sap-modal" 
+        className={styles['sap-modal']} 
         style={{ width }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sap-modal-header">
-          <span>{title}</span>
-          <button className="sap-modal-close" onClick={onClose}>
+        <div className={styles['sap-modal-header']}>
+          <span className={styles['sap-modal-title']}>{title}</span>
+          <button className={styles['sap-modal-close']} onClick={onClose}>
             ✕
           </button>
         </div>
-        <div className="sap-modal-body">
+        <div className={styles['sap-modal-body']}>
           {children}
         </div>
         {footer && (
-          <div className="sap-modal-footer">
+          <div className={styles['sap-modal-footer']}>
             {footer}
           </div>
         )}

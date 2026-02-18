@@ -7,6 +7,8 @@ const HomeScreen = () => {
   const { navigateToTransaction } = useTransaction();
   const { user, checkIsAdmin } = useAuth();
 
+  const isMobile = window.innerWidth < 768;
+
   return (
     <div style={{ padding: '12px' }}>
 
@@ -50,7 +52,7 @@ const HomeScreen = () => {
             width: '100%',
             maxWidth: '280px',
             color: '#003366', // classic SAP dark blue text
-            marginTop: '20px',
+            margin: isMobile ? '20px auto' : '20px',
           }}>
             <h3 style={{
               marginTop: '5px',
@@ -84,12 +86,11 @@ const HomeScreen = () => {
           </div>
 
 
-          <QuickTips />
+          {!isMobile && <QuickTips />}
 
         </div>
       </div>
 
-      {/* Quick Access to Dashboard */}
       {/* Quick Access to Dashboard */}
       <div
         onClick={() => navigateToTransaction('ZDASH')}

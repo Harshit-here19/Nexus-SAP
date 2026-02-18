@@ -107,6 +107,8 @@ const PLATFORM_OPTIONS = [
 ];
 
 const EntertainmentWishlistScreen = ({ mode = "create" }) => {
+  const isMobile = window.innerWidth <= 768;
+  
   const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
@@ -1615,6 +1617,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                   Load
                 </SapButton>
                 <SapButton
+                type="search"
                   onClick={() => {
                     setSearchResults(
                       getTableData("entertainment_wishlist") || [],
@@ -1681,7 +1684,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
         title="🔍 Search Entertainment Wishlist"
         width="900px"
         footer={
-          <SapButton onClick={() => setShowSearchModal(false)}>Close</SapButton>
+          <SapButton type="close" onClick={() => setShowSearchModal(false)}>Close</SapButton>
         }
       >
         {/* Filters */}
@@ -1705,7 +1708,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             className="sap-select"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            style={{ width: "160px" }}
+            style={{ width: isMobile ? "100%" : "160px" }}
           >
             <option value="all">All Categories</option>
             {ENTERTAINMENT_CATEGORIES.map((c) => (
@@ -1718,7 +1721,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             className="sap-select"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            style={{ width: "140px" }}
+            style={{ width: isMobile ? "50%" : "130px" }}
           >
             <option value="all">All Status</option>
             {STATUS_OPTIONS.map((s) => (
@@ -1731,7 +1734,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             className="sap-select"
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
-            style={{ width: "130px" }}
+            style={{ width: isMobile ? "45%" : "130px" }}
           >
             <option value="all">All Priority</option>
             {PRIORITY_OPTIONS.map((p) => (
@@ -1740,7 +1743,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
               </option>
             ))}
           </select>
-          <SapButton onClick={handleSearch} type="primary">
+          <SapButton onClick={handleSearch} type="close">
             Search
           </SapButton>
         </div>
@@ -1784,7 +1787,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
         </div>
 
         {/* Results */}
-        <div style={{ maxHeight: "400px", overflow: "auto" }}>
+        <div className="sap-table-scroller">
           <table className="sap-table">
             <thead>
               <tr>
@@ -1946,7 +1949,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                       )}
                     </td>
                     <td>
-                      <span style={{ marginRight: "8px" }}>
+                      <span style={{ marginRight: "8px",width: "4rem", display: "inline-block" }}>
                       <SapButton
                         onClick={() => handleSelectItem(item)}
                         type="primary"
@@ -1954,7 +1957,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                         👁️
                       </SapButton>
                       </span>
-                      {currentTransaction === "WS02" && (<span style={{ marginLeft: "8px" }}>
+                      {currentTransaction === "WS02" && (<span style={{ marginLeft: "8px",width: "4rem", display: "inline-block" }}>
                         <SapButton
                         onClick={() => DeleteInSearchModal(item.id)}
                         type="danger"

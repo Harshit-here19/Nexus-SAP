@@ -22,6 +22,7 @@ const NotesSearchModal = ({
   onSelectNote,
   deleteInSearchModal
 }) => {
+  const isMobile = window.innerWidth <= 768;
 
   const { currentTransaction } = useTransaction();
 
@@ -32,7 +33,7 @@ const NotesSearchModal = ({
       title="🔍 Search Notes"
       width="900px"
       footer={
-        <SapButton onClick={onClose}>Close</SapButton>
+        <SapButton type="close" onClick={onClose}>Close</SapButton>
       }
     >
       {/* Filters */}
@@ -49,7 +50,7 @@ const NotesSearchModal = ({
           className="sap-select"
           value={filterCategory}
           onChange={(e) => onFilterCategoryChange(e.target.value)}
-          style={{ width: '140px' }}
+          style={{ width: isMobile ? "100%" : "160px" }}
         >
           <option value="all">All Categories</option>
           {NOTE_CATEGORIES.map(c => (
@@ -62,14 +63,14 @@ const NotesSearchModal = ({
           className="sap-select"
           value={filterStatus}
           onChange={(e) => onFilterStatusChange(e.target.value)}
-          style={{ width: '120px' }}
+          style={{ width: isMobile ? "100%" : "120px" }}
         >
           <option value="all">All Status</option>
           {STATUS_OPTIONS.map(s => (
             <option key={s.value} value={s.value}>{s.label}</option>
           ))}
         </select>
-        <SapButton onClick={onSearch} type="primary">
+        <SapButton onClick={onSearch} type="close">
           Search
         </SapButton>
       </div>
@@ -153,7 +154,7 @@ const NotesSearchModal = ({
                   </td>
                   
                   <td>
-                      <span style={{ marginRight: "8px" }}>
+                      <span style={{ marginRight: "8px",width: "4rem", display: "inline-block" }}>
                       <SapButton
                         onClick={() => onSelectNote(note)}
                         type="primary"
@@ -161,7 +162,7 @@ const NotesSearchModal = ({
                         👁️
                       </SapButton>
                       </span>
-                      {currentTransaction === "NT02" && (<span style={{ marginLeft: "8px" }}>
+                      {currentTransaction === "NT02" && (<span style={{ marginLeft: "8px",width: "4rem", display: "inline-block" }}>
                         <SapButton
                         onClick={() => deleteInSearchModal(note.id)}
                         type="danger"

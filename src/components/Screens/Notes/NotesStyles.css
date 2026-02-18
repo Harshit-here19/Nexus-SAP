@@ -418,7 +418,16 @@
 
 .notes-search-results {
   max-height: 400px;
-  overflow: auto;
+  
+  overflow: auto; /* enable scrolling */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+
+  scroll-behavior: smooth;
+}
+
+.notes-search-results::-webkit-scrollbar {
+  display: none;            /* Chrome, Safari, Edge */
 }
 
 .notes-search-empty {

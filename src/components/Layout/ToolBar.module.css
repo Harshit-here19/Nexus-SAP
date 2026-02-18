@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  height: 36px;
+  height: 48px;
   background: linear-gradient(
     180deg,
     #f8fafb 0%,
@@ -16,10 +16,24 @@
   border-top: 1px solid #ffffff;
   border-bottom: 1px solid #c5d0d8;
   padding: 0 6px;
-  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    "Segoe UI",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   font-size: 11px;
   gap: 2px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  overflow: auto; /* enable scrolling */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+
+  scroll-behavior: smooth;
+}
+
+.sapToolbar::-webkit-scrollbar {
+  display: none;            /* Chrome, Safari, Edge */
 }
 
 /* ========== SEPARATOR ========== */
@@ -39,7 +53,7 @@
 }
 
 .sapToolbarSeparator::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 1px;
   top: 0;
@@ -60,8 +74,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 28px;
-  height: 28px;
+
+  min-width: 48px;
+  height: 33px;
   margin: 0 1px;
   padding: 0 6px;
   background: linear-gradient(
@@ -83,7 +98,7 @@
 
 /* Subtle inner highlight */
 .sapToolbarButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -108,8 +123,9 @@
     #d0e5f9 100%
   );
   border-color: #5b9bd5;
-  box-shadow: 0 2px 6px rgba(91, 155, 213, 0.25),
-              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 2px 6px rgba(91, 155, 213, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transform: translateY(-1px);
 }
 
@@ -143,12 +159,7 @@
 .sapToolbarButton:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-  background: linear-gradient(
-    180deg,
-    #f5f5f5 0%,
-    #ebebeb 50%,
-    #e0e0e0 100%
-  );
+  background: linear-gradient(180deg, #f5f5f5 0%, #ebebeb 50%, #e0e0e0 100%);
   border-color: #d0d0d0;
   box-shadow: none;
   transform: none;
@@ -171,8 +182,9 @@
     #ffc44d 100%
   );
   border-color: #f59f00;
-  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.35),
-              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 2px 8px rgba(255, 152, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   animation: highlightPulse 2s ease-in-out infinite;
 }
 
@@ -185,8 +197,9 @@
     #ffcc66 100%
   );
   border-color: #e68a00;
-  box-shadow: 0 3px 10px rgba(255, 152, 0, 0.45),
-              inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 3px 10px rgba(255, 152, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transform: translateY(-1px);
 }
 
@@ -200,8 +213,9 @@
     #99cdff 100%
   );
   border-color: #4a9eff;
-  box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 2px 8px rgba(74, 158, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .sapToolbarButton.highlightedBlue:hover:not(:disabled) {
@@ -226,8 +240,9 @@
     #68d391 100%
   );
   border-color: #38a169;
-  box-shadow: 0 2px 8px rgba(56, 161, 105, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 2px 8px rgba(56, 161, 105, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 /* Red Highlight (Danger/Delete) */
@@ -240,8 +255,9 @@
     #fc8181 100%
   );
   border-color: #e53e3e;
-  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 2px 8px rgba(229, 62, 62, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 /* ========== BUTTON ICON ========== */
@@ -367,7 +383,7 @@
 }
 
 .sapToolbarButton[title]:hover::before {
-  content: '';
+  content: "";
   position: absolute;
   top: calc(100% + 3px);
   left: 50%;
@@ -394,13 +410,16 @@
 
 /* ========== ANIMATIONS ========== */
 @keyframes highlightPulse {
-  0%, 100% {
-    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.35),
-                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  0%,
+  100% {
+    box-shadow:
+      0 2px 8px rgba(255, 152, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
   50% {
-    box-shadow: 0 2px 12px rgba(255, 152, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    box-shadow:
+      0 2px 12px rgba(255, 152, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
   }
 }
 
@@ -494,12 +513,7 @@
 
 [data-theme="dark"] .sapToolbarButton.disabled,
 [data-theme="dark"] .sapToolbarButton:disabled {
-  background: linear-gradient(
-    180deg,
-    #2a3440 0%,
-    #252f3a 50%,
-    #202a35 100%
-  );
+  background: linear-gradient(180deg, #2a3440 0%, #252f3a 50%, #202a35 100%);
   border-color: #3a4450;
   opacity: 0.4;
 }
@@ -630,7 +644,7 @@
   .sapToolbarButton {
     transition: none;
   }
-  
+
   .sapToolbarButton.highlighted {
     animation: none;
   }
@@ -639,74 +653,9 @@
   .sapToolbarButton[title]:hover::before {
     animation: none;
   }
-  
+
   .sapToolbarButton:hover:not(:disabled) {
     transform: none;
-  }
-}
-
-/* ============================= */
-/* TABLET (≤ 1024px) */
-/* ============================= */
-@media (max-width: 1024px) {
-  .sapToolbar {
-    height: 40px;
-    padding: 0 6px;
-    gap: 4px;
-  }
-
-  .sapToolbarButton {
-    min-width: 34px;
-    height: 32px;
-    padding: 0 8px;
-  }
-
-  .buttonIcon {
-    font-size: 17px;
-  }
-}
-
-/* ============================= */
-/* MOBILE (≤ 768px) */
-/* ============================= */
-@media (max-width: 768px) {
-  .sapToolbar {
-    height: 44px;
-    padding: 0 4px;
-
-    /* Enable horizontal scrolling */
-    overflow-x: scroll;
-    overflow-y: hidden;
-    white-space: nowrap;
-
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Firefox */
-  }
-
-  .sapToolbar::-webkit-scrollbar {
-    display: none; /* Chrome */
-  }
-
-  .sapToolbarButton {
-    min-width: 40px;
-    height: 36px;
-    padding: 0 10px;
-    flex-shrink: 0; /* Prevent shrinking */
-  }
-
-  .buttonIcon {
-    font-size: 18px;
-  }
-
-  .sapToolbarSeparator {
-    height: 28px;
-    margin: 0 6px;
-  }
-
-  /* Disable tooltips on mobile */
-  .sapToolbarButton[title]:hover::after,
-  .sapToolbarButton[title]:hover::before {
-    display: none;
   }
 }
 

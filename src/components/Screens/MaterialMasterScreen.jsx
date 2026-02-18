@@ -20,6 +20,8 @@ import {
 } from "../../utils/storage";
 
 const MaterialMasterScreen = ({ mode = "create" }) => {
+  const isMobile = window.innerWidth <= 768;
+  
   const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
   const { registerAction, clearAction } = useAction();
 
@@ -557,7 +559,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
 
               <div
                 className="sap-form-row"
-                style={{ display: "flex", alignItems: "flex-end", gap: "12px" }}
+                style={{ display: "flex", alignItems: isMobile ? "center" : "flex-end", gap: "12px" }}
               >
                 <SapInput
                   label="Material Number"
@@ -570,7 +572,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
                 <SapButton onClick={loadMaterial} type="primary" icon="📂">
                   Load
                 </SapButton>
-                <SapButton onClick={() => setShowSearchModal(true)} icon="🔎">
+                <SapButton type="search" onClick={() => setShowSearchModal(true)} icon="🔎">
                   Search
                 </SapButton>
               </div>
@@ -589,7 +591,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
         title="🔍 Search Materials"
         width="700px"
         footer={
-          <SapButton onClick={() => setShowSearchModal(false)}>Close</SapButton>
+          <SapButton type="close" onClick={() => setShowSearchModal(false)}>Close</SapButton>
         }
       >
         <div style={{ marginBottom: "16px" }}>
@@ -616,7 +618,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
           />
         </div>
 
-        <div style={{ maxHeight: "300px", overflow: "auto" }}>
+        <div className="sap-table-scroller">
           <table className="sap-table">
             <thead>
               <tr>
@@ -640,7 +642,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
                     <td>{material.description}</td>
                     <td>{material.materialType}</td>
                     <td>
-                      <span style={{ marginRight: "8px" }}>
+                      <span style={{ marginRight: "8px",width: "4rem", display: "inline-block" }}>
                       <SapButton
                         onClick={() => handleSelectMaterial(material)}
                         type="primary"
@@ -648,7 +650,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
                         👁️
                       </SapButton>
                       </span>
-                      {currentTransaction === "MM02" && (<span style={{ marginLeft: "8px" }}>
+                      {currentTransaction === "MM02" && (<span style={{ marginLeft: "8px",width: "4rem", display: "inline-block" }}>
                         <SapButton
                         onClick={() => DeleteInSearchModal(material.id)}
                         type="danger"

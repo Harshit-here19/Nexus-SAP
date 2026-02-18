@@ -35,7 +35,6 @@ const Toolbar = ({ children }) => {
   };
 
   const toolbarButtons = [
-    { icon: "✓", title: "Enter (Enter)", action: "enter", always: true },
     {
       icon: "💾",
       title: "Save (Ctrl+S)",
