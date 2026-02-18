@@ -17,8 +17,7 @@ const StatusBar = ({ message = 'Ready', type = 'info', user }) => {
 
     const timer = setTimeout(() => {
       setAnimating(false); // animation finished
-    }, 500); // duration matches CSS animation (0.5s)
-
+    }, 2900); // duration matches CSS animation 
     return () => clearTimeout(timer);
   }, [message]);
 

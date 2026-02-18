@@ -86,6 +86,7 @@
 /* Right section hidden during animation */
 .sapStatusRight.hidden {
   opacity: 0;
+  display : none;
 }
 
 /* Icon prefix support (optional) */
