@@ -44,6 +44,8 @@ const menuItems = [
       { label: '💾 Create Backup', action: 'createBackup' },
       { label: '📂 Restore Backup...', action: 'restoreBackup' },
       { separator: true },
+      { label: '🧹 Erase Table', action: 'eraseTable' },
+      { separator: true },
       { label: '⚙️ Settings', action: 'settings' }
     ]
   },
@@ -94,6 +96,7 @@ const MenuBar = ({ onNewSession, onToggleSidebar, onOpenImportExport }) => {
       case 'importData':
       case 'createBackup':
       case 'restoreBackup':
+      case 'eraseTable':
         if (isTransactionActive) {
           updateStatus('Please exit current transaction before importing/exporting', 'warning');
         } else {
@@ -104,7 +107,7 @@ const MenuBar = ({ onNewSession, onToggleSidebar, onOpenImportExport }) => {
         confirm('SAP GUI Clone v1.0\n\nBuilt with React.js\nNo backend required - uses localStorage');
         break;
       default:
-        console.log('Menu action:', action);
+        // console.log('Menu action:', action);
         updateStatus(`Action "${action}" not implemented yet`, 'info');
     }
   };
