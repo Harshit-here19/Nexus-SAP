@@ -10,6 +10,7 @@ const ExitConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
     <SapModal
       isOpen={isOpen}
       onClose={onCancel}
+      onConfirm={onConfirm}
       title="⚠️ Unsaved Changes"
       width="450px"
       footer={

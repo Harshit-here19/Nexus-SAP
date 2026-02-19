@@ -402,7 +402,6 @@ const TreeMenu = () => {
                 style={{
                   paddingLeft: `${(level + 1) * 16 + 8}px`,
                   padding: "8px",
-                  paddingLeft: `${(level + 1) * 16 + 8}px`,
                   color: "var(--sap-text-secondary)",
                   fontSize: "12px",
                   fontStyle: "italic",

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback } from "react";
 
 const ActionContext = createContext();
 
@@ -9,15 +9,15 @@ export const ActionProvider = ({ children }) => {
 
   // Register action (SAVE, DELETE, etc.)
   const registerAction = useCallback((actionName, handler) => {
-    setHandlers(prev => ({
+    setHandlers((prev) => ({
       ...prev,
-      [actionName]: handler
+      [actionName]: handler,
     }));
   }, []);
 
   // Clear action when screen unmounts
   const clearAction = useCallback((actionName) => {
-    setHandlers(prev => {
+    setHandlers((prev) => {
       const updated = { ...prev };
       delete updated[actionName];
       return updated;
@@ -25,20 +25,23 @@ export const ActionProvider = ({ children }) => {
   }, []);
 
   // Trigger action globally
-  const triggerAction = useCallback((actionName) => {
-    if (handlers[actionName]) {
-      handlers[actionName]();
-    } else {
-      console.warn(`No handler registered for ${actionName}`);
-    }
-  }, [handlers]);
+  const triggerAction = useCallback(
+    (actionName) => {
+      if (handlers[actionName]) {
+        handlers[actionName]();
+      } else {
+        console.warn(`No handler registered for ${actionName}`);
+      }
+    },
+    [handlers],
+  );
 
   return (
     <ActionContext.Provider
       value={{
         registerAction,
         clearAction,
-        triggerAction
+        triggerAction,
       }}
     >
       {children}

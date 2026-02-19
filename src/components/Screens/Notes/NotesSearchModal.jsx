@@ -30,6 +30,7 @@ const NotesSearchModal = ({
     <SapModal
       isOpen={isOpen}
       onClose={onClose}
+      onConfirm={onSearch}
       title="🔍 Search Notes"
       width="900px"
       footer={

@@ -114,7 +114,7 @@ const MenuBar = ({ onNewSession, onToggleSidebar, onOpenImportExport }) => {
   };
 
   return (
-    <div className="sap-menu-bar" onMouseLeave={handleMouseLeave} style={{zIndex: 1000}}>
+    <div className="sap-menu-bar" onMouseLeave={handleMouseLeave}>
       {menuItems.map((menu, index) => (
         <div 
           key={index}

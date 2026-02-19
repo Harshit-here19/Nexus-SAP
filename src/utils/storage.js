@@ -32,7 +32,7 @@ export const getAllData = (userId = null) => {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : getDefaultData();
   } catch (error) {
-    console.error("Error reading from localStorage:", error);
+    // console.error("Error reading from localStorage:", error);
     return getDefaultData();
   }
 };
@@ -43,7 +43,7 @@ export const saveAllData = (data, userId = null) => {
     const uid = userId || getCurrentUserId();
 
     if (!uid) {
-      console.error("No user ID provided for saving data");
+      // console.error("No user ID provided for saving data");
       return false;
     }
 
@@ -51,7 +51,7 @@ export const saveAllData = (data, userId = null) => {
     localStorage.setItem(key, JSON.stringify(data));
     return true;
   } catch (error) {
-    console.error("Error saving to localStorage:", error);
+    // console.error("Error saving to localStorage:", error);
     return false;
   }
 };
@@ -268,7 +268,7 @@ export const getUsers = () => {
     }
     return JSON.parse(users);
   } catch (error) {
-    console.error("Error reading users:", error);
+    // console.error("Error reading users:", error);
     return createDefaultUsers();
   }
 };
@@ -279,7 +279,7 @@ export const saveUsers = (users) => {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
     return true;
   } catch (error) {
-    console.error("Error saving users:", error);
+    // console.error("Error saving users:", error);
     return false;
   }
 };
@@ -393,18 +393,18 @@ export const resetUsersToDefault = () => {
 export const authenticateUser = (username, password) => {
   const users = getUsers();
 
-  console.log("Authenticating:", username); // Debug log
-  console.log(
-    "Available users:",
-    users.map((u) => u.username),
-  ); // Debug log
+  // console.log("Authenticating:", username); // Debug log
+  // console.log(
+  //   "Available users:",
+  //   users.map((u) => u.username),
+  // ); // Debug log
 
   const user = users.find(
     (u) => u.username.toUpperCase() === username.toUpperCase(),
   );
 
   if (!user) {
-    console.log("User not found"); // Debug log
+    // console.log("User not found"); // Debug log
     return { success: false, message: "User does not exist" };
   }
 
@@ -419,7 +419,7 @@ export const authenticateUser = (username, password) => {
     };
   }
 
-  console.log("Checking password:", password, "vs", user.password); // Debug log
+  // console.log("Checking password:", password, "vs", user.password); // Debug log
 
   if (user.password !== password) {
     // Increment failed attempts
@@ -465,7 +465,7 @@ export const authenticateUser = (username, password) => {
     isAdmin: isAdmin, // This is critical!
   };
 
-  console.log("Login successful, isAdmin:", isAdmin); // Debug log
+  // console.log("Login successful, isAdmin:", isAdmin); // Debug log
 
   return { success: true, user: session };
 };

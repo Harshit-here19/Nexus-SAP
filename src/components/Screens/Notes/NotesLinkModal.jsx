@@ -18,6 +18,7 @@ const NotesLinkModal = ({
     <SapModal
       isOpen={isOpen}
       onClose={onClose}
+      onConfirm={onInsert}
       title="🔗 Insert Link"
       width="400px"
       footer={

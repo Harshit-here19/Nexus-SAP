@@ -21,6 +21,7 @@ import {
 } from "../../utils/storage";
 
 import { useConfirm } from "../../context/ConfirmContext";
+import { useAuth } from "../../context/AuthContext";
 
 const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
   const [activeTab, setActiveTab] = useState("export");
@@ -32,6 +33,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
   const fileInputRef = useRef(null);
 
   const confirm = useConfirm();
+  const { user } = useAuth();
 
   const tables = [
     { value: "all", label: "All Data (Full Backup)" },
@@ -179,50 +181,63 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
         const existingData = getTableData(selectedTable);
         const newData = importPreview.data;
 
-        const numbers = existingData
-          .map((r) => {
-            const value = Object.values(r)[0] || "";
+        // Determine if the Existing data is not Empty
+        if (existingData.length > 0) {
+          if (Object.keys(existingData[0])[0] !== Object.keys(newData[0])[0]) {
+            throw new Error("The Imported File is Wrong.");
+          }
+          const numbers = existingData
+            .map((r) => {
+              const value = Object.values(r)[0] || "";
 
-            const prefix = value.slice(0, value.length - 9);
+              const prefix = value.slice(0, value.length - 9);
 
-            // Remove any letters at the beginning
-            const numericPart = value.replace(/^\D+/, "");
+              // Remove any letters at the beginning
+              const numericPart = value.replace(/^\D+/, "");
 
-            return { prefix, number: parseInt(numericPart, 10) };
-          })
-          .filter((n) => !isNaN(n?.number));
+              return { prefix, number: parseInt(numericPart, 10) };
+            })
+            .filter((n) => !isNaN(n?.number));
 
-        const maxNumber = numbers.length
-          ? Math.max(...numbers.map((n) => n.number))
-          : 100000000;
-        // console.log(maxNumber);
+          const maxNumber = numbers.length
+            ? Math.max(...numbers.map((n) => n.number))
+            : 100000000;
 
-        // Add IDs to imported records
-        const processedData = newData.map((record, index) => {
-          const nextNumber = maxNumber + index + 1;
-          const numberPart = String(nextNumber).padStart(9, "0");
+          // console.log(maxNumber);
 
-          const prefix = numbers[0]?.prefix || ""; // Use existing prefix or default to ""
+          // Add IDs to imported records
+          const processedData = newData.map((record, index) => {
+            const nextNumber = maxNumber + index + 1;
+            const numberPart = String(nextNumber).padStart(9, "0");
 
-          const firstKey = Object.keys(existingData[0])[0];
-          // console.log(firstKey);
+            const prefix = numbers[0]?.prefix || ""; // Use existing prefix or default to ""
 
-          return {
-            ...record,
-            [firstKey]: prefix + numberPart,
-            importedAt: new Date().toISOString(),
-          };
-        });
+            const firstKey = Object.keys(existingData[0])[0];
+            // console.log(firstKey);
 
+            return {
+              ...record,
+              [firstKey]: prefix + numberPart,
+              importedAt: new Date().toISOString(),
+            };
+          });
 
-        // Merge or replace
-        const mergedData = [...existingData, ...processedData];
-        saveTableData(selectedTable, mergedData);
+          // Merge or replace
+          const mergedData = [...existingData, ...processedData];
+          saveTableData(selectedTable, mergedData);
 
-        onStatusMessage(
-          `Imported ${processedData.length} records to ${selectedTable}`,
-          "success",
-        );
+          onStatusMessage(
+            `Imported ${processedData.length} records to ${selectedTable}`,
+            "success",
+          );
+        } else {
+          saveTableData(selectedTable, newData);
+
+          onStatusMessage(
+            `Imported ${newData.length} records to ${selectedTable}`,
+            "success",
+          );
+        }
       } else {
         onStatusMessage("Please select a target table for import", "warning");
         setIsProcessing(false);
@@ -236,6 +251,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
         fileInputRef.current.value = "";
       }
       onClose();
+      return;
     } catch (error) {
       onStatusMessage(`Import failed: ${error.message}`, "error");
     } finally {
@@ -255,10 +271,53 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
     onClose();
   };
 
+  // Erase all the Table Data
+  const handleErase = async (tableName) => {
+    setIsProcessing(true);
+    // 1. Read the stored data
+    try {
+      const userKey = `sap_user_data_${user.userId}`;
+      const rawData = localStorage.getItem(userKey);
+
+      const confirmed = await confirm(
+        "Do you want to proceed with the Erase ?",
+        "danger",
+      );
+
+      if (rawData && confirmed) {
+        // 2. Parse it into an object
+        const userData = JSON.parse(rawData);
+
+        const tableLength = userData[tableName].length
+
+        // 3. Delete the 'Selected' key
+        delete userData[tableName];
+
+        // 4. Save it back to localStorage
+        localStorage.setItem(userKey, JSON.stringify(userData));
+
+        onStatusMessage(
+            `Erased ${tableLength} records of ${selectedTable}`,
+            "success",
+          );
+      } else {
+        onStatusMessage("The Selected Table is Empty", "warning");
+        setIsProcessing(false);
+        return;
+      }
+      onClose();
+    } catch (error) {
+      onStatusMessage(`Import failed: ${error.message}`, "error");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <SapModal
       isOpen={isOpen}
       onClose={handleClose}
+      onConfirm={activeTab === "export" ? handleExport : handleImport}
       title="📁 Import / Export Data"
       width="650px"
     >
@@ -323,6 +382,24 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
           }}
         >
           💾 Backup
+        </button>
+        <button
+          onClick={() => setActiveTab("erase")}
+          style={{
+            padding: "12px 24px",
+            border: "none",
+            background:
+              activeTab === "erase" ? "var(--sap-brand)" : "transparent",
+            color: activeTab === "erase" ? "white" : "var(--sap-text-primary)",
+            cursor: "pointer",
+            fontWeight: "600",
+            borderRadius: "4px 4px 0 0",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          🧹 Erase the Data
         </button>
       </div>
 
@@ -724,6 +801,53 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
             }}
           >
             <SapButton onClick={handleClose}>Close</SapButton>
+          </div>
+        </div>
+      )}
+
+      {/* Erase Tab */}
+      {activeTab === "erase" && (
+        <div>
+          <div
+            className="sap-message-strip warning"
+            style={{ marginBottom: "20px" }}
+          >
+            <span className="sap-message-strip-icon">⚠️</span>
+            <span>All of your Data from Selected table will be Deleted.</span>
+          </div>
+
+          <div className="sap-form">
+            <SapSelect
+              label="Target Table"
+              value={selectedTable}
+              onChange={(val) => {
+                setSelectedTable(val);
+                setSelectedFile(null);
+                setImportPreview(null);
+              }}
+              options={tables.filter((t) => t.value !== "all")}
+              placeholder="Select the Table you want to Erase..."
+              width="100%"
+            />
+          </div>
+
+          <div
+            style={{
+              marginTop: "24px",
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "12px",
+            }}
+          >
+            <SapButton onClick={handleClose}>Cancel</SapButton>
+            <SapButton
+              onClick={() => handleErase(selectedTable)}
+              type="primary"
+              disabled={!selectedTable || isProcessing}
+              icon={isProcessing ? "⏳" : "🧹"}
+            >
+              {isProcessing ? "Erasing..." : "Erase"}
+            </SapButton>
           </div>
         </div>
       )}

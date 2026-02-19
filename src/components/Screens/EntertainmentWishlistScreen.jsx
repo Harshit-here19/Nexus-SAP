@@ -1681,6 +1681,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       <SapModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
+        onConfirm={handleSearch}
         title="🔍 Search Entertainment Wishlist"
         width="900px"
         footer={

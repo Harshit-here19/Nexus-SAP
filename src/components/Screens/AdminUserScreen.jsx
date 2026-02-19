@@ -490,6 +490,7 @@ const AdminUserScreen = () => {
           setShowPasswordModal(false);
           setNewPassword('');
         }}
+        onConfirm={handleResetPassword}
         title="🔑 Reset Password"
         width="400px"
         footer={
@@ -536,6 +537,7 @@ const AdminUserScreen = () => {
       <SapModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+        onConfirm={handleCreateUser}
         title="➕ Create New User"
         width="500px"
         footer={
@@ -661,6 +663,7 @@ const AdminUserScreen = () => {
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         title="⚠️ Confirm Delete"
+        onConfirm={handleDeleteUser}
         width="400px"
         footer={
           <>

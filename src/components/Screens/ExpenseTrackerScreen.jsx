@@ -835,6 +835,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
       <SapModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
+        onConfirm={handleSearch}
         title="🔍 Search Expenses"
         width="800px"
         footer={

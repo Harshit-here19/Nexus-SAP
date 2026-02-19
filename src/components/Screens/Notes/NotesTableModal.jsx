@@ -18,6 +18,7 @@ const NotesTableModal = ({
     <SapModal
       isOpen={isOpen}
       onClose={onClose}
+      onConfirm={onInsert}
       title="▦ Insert Table"
       width="350px"
       footer={

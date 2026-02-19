@@ -618,6 +618,7 @@ const UserProfileScreen = () => {
           setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
           setPasswordError('');
         }}
+        onConfirm={handleChangePassword}
         title="🔑 Change Password"
         width="400px"
         footer={

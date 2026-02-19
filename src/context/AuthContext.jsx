@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
       // Initialize user data
       initializeUserData(userSession.userId);
       
-      console.log('Logged in user:', userSession); // Debug log
+      // console.log('Logged in user:', userSession); // Debug log
       
       return true;
     } else {

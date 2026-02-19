@@ -6,7 +6,6 @@ const StatusBar = ({ message = 'Ready', type = 'info', user }) => {
   const isMobile = window.innerWidth < 768;
   
   const [currentTime, setCurrentTime] = useState(new Date());
-
   const [animating, setAnimating] = useState(false);
 
   // Whenever message changes, trigger animation

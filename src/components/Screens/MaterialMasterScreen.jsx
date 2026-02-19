@@ -6,6 +6,7 @@ import SapButton from "../Common/SapButton";
 import SapTabs from "../Common/SapTabs";
 import SapModal from "../Common/SapModal";
 import { useTransaction } from "../../context/TransactionContext";
+import {useAuth} from "../../context/AuthContext"
 import { useAction } from "../../context/ActionContext";
 import { useConfirm } from "../../context/ConfirmContext";
 
@@ -24,6 +25,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
   
   const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
   const { registerAction, clearAction } = useAction();
+  const { user } = useAuth();
 
   const confirm = useConfirm();
 
@@ -572,7 +574,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
                 <SapButton onClick={loadMaterial} type="primary" icon="📂">
                   Load
                 </SapButton>
-                <SapButton type="search" onClick={() => setShowSearchModal(true)} icon="🔎">
+                <SapButton type="search" onClick={handleSearch} icon="🔎">
                   Search
                 </SapButton>
               </div>
@@ -588,6 +590,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
       <SapModal
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
+        onConfirm={() => setShowSearchModal(false)}
         title="🔍 Search Materials"
         width="700px"
         footer={
