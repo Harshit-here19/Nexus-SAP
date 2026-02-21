@@ -9,6 +9,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useAction } from "../../../context/ActionContext";
 import { useConfirm } from "../../../context/ConfirmContext";
 import { getTableData, getAllData, saveAllData } from "../../../utils/storage";
+import { parseMarkdown } from "./NotesUtils";
 
 // Components
 import NotesEditor from "./NotesEditor";
@@ -424,8 +425,102 @@ const NotesScreen = ({ mode = "create" }) => {
     updateStatus("Demo note loaded! Explore all the features.", "success");
   };
 
+  // Print Function 
   printRef.current = () => {
-    setShowPrintModal(true);
+    const notes = getTableData("notes") || [];
+  
+    if (!notes.length) {
+      alert("No notes to print!");
+      return;
+    }
+  
+    // Summary table
+    const tableRows = notes
+      .map(
+        (note, index) => `
+        <tr>
+          <td class="col-num">${note.noteNumber || index + 1}</td>
+          <td class="col-cat">${note.category || "—"}</td>
+          <td class="col-title">${note.title || "Untitled"}</td>
+          <td class="col-date">${note.importedAt ? new Date(note.importedAt).toLocaleDateString() : new Date(note.createdAt).toLocaleDateString()}</td>
+        </tr>
+      `
+      )
+      .join("");
+  
+    // Detailed content using your parseMarkdown function
+    const detailedContent = notes
+      .map(
+        (note, index) => `
+        <div class="detail-section">
+          <div class="detail-header">
+            <span class="detail-num">${note.noteNumber || index + 1}</span>
+            <span class="detail-title">${note.title || "Untitled Note"}</span>
+          </div>
+          <div class="detail-meta">
+            <span>Category: <strong>${note.category || "—"}</strong></span>
+            <span>Date: <strong>${note.importedAt ? new Date(note.importedAt).toLocaleString() : new Date(note.createdAt).toLocaleString()}</strong></span>
+          </div>
+          <div class="detail-content">
+            ${parseMarkdown(note.content)}
+          </div>
+        </div>
+      `
+      )
+      .join("");
+  
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Notes Report</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 30px; color: #1a1a1a; line-height: 1.5; }
+            h1 { font-size: 24px; }
+            .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 12px; }
+            .summary-table th, .summary-table td { border: 1px solid #ddd; padding: 8px; }
+            .summary-table tr:nth-child(even) { background: #fafafa; }
+            .detail-section { margin-bottom: 24px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; page-break-inside: avoid; }
+            .detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+            .detail-num { background: #000; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px; font-family: monospace; }
+            .detail-title { font-size: 16px; font-weight: 600; }
+            .detail-meta { display: flex; gap: 24px; font-size: 11px; color: #666; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #e0e0e0; }
+            .detail-meta strong { color: #333; }
+            .detail-content { font-size: 13px; color: #444; line-height: 1.7; }
+            code { font-family: monospace; background: #000000; color: #f472b6; padding: 2px 4px; border-radius: 4px; }
+            pre code { display: block; padding: 12px; background: #000000; color: #f472b6; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
+            img { max-width: 100%; border-radius: 4px; }
+            a { color: #1a73e8; text-decoration: none; }
+            @media print { body { padding: 0; } .detail-section { break-inside: avoid; } }
+          </style>
+        </head>
+        <body>
+          <h1>📑 Notes Report</h1>
+          <h2>📊 Summary</h2>
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Category</th>
+                <th>Title</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+          <h2>📝 Detailed Content</h2>
+          ${detailedContent}
+        </body>
+      </html>
+    `;
+  
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    // setTimeout(() => printWindow.print(), 250);
   };
 
   // Register actions
@@ -480,16 +575,16 @@ const NotesScreen = ({ mode = "create" }) => {
     },
     ...(formData.id
       ? [
-          {
-            label: "History",
-            icon: "🕐",
-            content: <NotesHistory formData={formData} />,
-          },
-        ]
+        {
+          label: "History",
+          icon: "🕐",
+          content: <NotesHistory formData={formData} />,
+        },
+      ]
       : []),
   ];
 
-  
+
 
   return (
     <div>
@@ -557,7 +652,7 @@ const NotesScreen = ({ mode = "create" }) => {
                   Load
                 </SapButton>
                 <SapButton
-                type="search"
+                  type="search"
                   onClick={() => {
                     setSearchResults(getTableData("notes") || []);
                     setShowSearchModal(true);
@@ -609,7 +704,7 @@ const NotesScreen = ({ mode = "create" }) => {
             </div>
           ) : (
             <>
-              
+
 
               <SapTabs tabs={tabs} />
             </>
@@ -664,23 +759,23 @@ const NotesScreen = ({ mode = "create" }) => {
       />
 
       <SapModal
-    isOpen={showPrintModal}
+        isOpen={showPrintModal}
         onClose={() => setShowPrintModal(false)}
         title="🔍 Search Entertainment Wishlist"
         width="900px"
         footer={
           <SapButton type="close" onClick={() => setShowPrintModal(false)}>Close</SapButton>
         }
-    >
-      <div style={{ padding: "20px" }}>
-        <h2>Print Note</h2>
-        <p>This feature is coming soon! In the meantime, you can copy the content and paste it into your preferred text editor for printing.</p>
-        <button onClick={() => navigator.clipboard.writeText(formData.content)}>
-          Copy Content
-        </button>
-      </div>
-    </SapModal>
-      
+      >
+        <div style={{ padding: "20px" }}>
+          <h2>Print Note</h2>
+          <p>This feature is coming soon! In the meantime, you can copy the content and paste it into your preferred text editor for printing.</p>
+          <button onClick={() => navigator.clipboard.writeText(formData.content)}>
+            Copy Content
+          </button>
+        </div>
+      </SapModal>
+
     </div>
   );
 };
