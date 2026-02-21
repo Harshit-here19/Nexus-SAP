@@ -165,7 +165,7 @@ const NotesSearchModal = ({
                       </span>
                       {currentTransaction === "NT02" && (<span style={{ marginLeft: "8px",width: "4rem", display: "inline-block" }}>
                         <SapButton
-                        onClick={() => deleteInSearchModal(note.id)}
+                        onClick={() => deleteInSearchModal(note.noteNumber)}
                         type="danger"
                       >
                         🗑️

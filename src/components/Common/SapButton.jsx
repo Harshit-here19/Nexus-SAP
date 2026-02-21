@@ -5,7 +5,7 @@ import styles from './SapButton.module.css';
 const SapButton = ({
   children,
   onClick,
-  type = 'default', // 'default', 'primary', 'success', 'danger', 'search', 'close'
+  type = 'default', // 'default', 'primary', 'success', 'danger', 'search', 'close', 'login', 'signup'
   disabled = false,
   icon,
   loading = false,

@@ -192,7 +192,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const handleCategoryChange = (category) => {
     handleChange("category", category);
     if (mode === "create") {
-      const newId = extId(categorygenerateN);
+      const newId = generateNextId(categorygenerateN);
       setFormData((prev) => ({ ...prev, category, itemNumber: newId }));
     }
   };

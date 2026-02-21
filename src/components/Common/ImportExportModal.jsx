@@ -30,6 +30,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [importPreview, setImportPreview] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
   const fileInputRef = useRef(null);
 
   const confirm = useConfirm();
@@ -161,97 +162,125 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
 
   // Handle Import
   const handleImport = async () => {
+    // 1️⃣ Check if a file is selected and preview exists
     if (!selectedFile || !importPreview) {
       onStatusMessage("Please select a file first", "warning");
       return;
     }
-
+  
     setIsProcessing(true);
-
+  
     try {
-      if (importPreview.data.version && importPreview.data.data) {
-        // This is a full backup file
+      const importData = importPreview.data;
+  
+      // 2️⃣ Full backup file
+      if (importData.version && importData.data) {
         await restoreBackup(selectedFile);
         onStatusMessage(
           "Full backup restored successfully. Please refresh the page.",
-          "success",
+          "success"
         );
-      } else if (selectedTable && selectedTable !== "all") {
-        // Import to specific table
-        const existingData = getTableData(selectedTable);
-        const newData = importPreview.data;
-
-        // Determine if the Existing data is not Empty
-        if (existingData.length > 0) {
-          if (Object.keys(existingData[0])[0] !== Object.keys(newData[0])[0]) {
-            throw new Error("The Imported File is Wrong.");
-          }
-          const numbers = existingData
-            .map((r) => {
-              const value = Object.values(r)[0] || "";
-
-              const prefix = value.slice(0, value.length - 9);
-
-              // Remove any letters at the beginning
-              const numericPart = value.replace(/^\D+/, "");
-
-              return { prefix, number: parseInt(numericPart, 10) };
-            })
-            .filter((n) => !isNaN(n?.number));
-
-          const maxNumber = numbers.length
-            ? Math.max(...numbers.map((n) => n.number))
-            : 100000000;
-
-          // console.log(maxNumber);
-
-          // Add IDs to imported records
-          const processedData = newData.map((record, index) => {
-            const nextNumber = maxNumber + index + 1;
-            const numberPart = String(nextNumber).padStart(9, "0");
-
-            const prefix = numbers[0]?.prefix || ""; // Use existing prefix or default to ""
-
-            const firstKey = Object.keys(existingData[0])[0];
-            // console.log(firstKey);
-
-            return {
-              ...record,
-              [firstKey]: prefix + numberPart,
-              importedAt: new Date().toISOString(),
-            };
-          });
-
-          // Merge or replace
-          const mergedData = [...existingData, ...processedData];
-          saveTableData(selectedTable, mergedData);
-
-          onStatusMessage(
-            `Imported ${processedData.length} records to ${selectedTable}`,
-            "success",
-          );
-        } else {
-          saveTableData(selectedTable, newData);
-
-          onStatusMessage(
-            `Imported ${newData.length} records to ${selectedTable}`,
-            "success",
-          );
-        }
-      } else {
-        onStatusMessage("Please select a target table for import", "warning");
-        setIsProcessing(false);
         return;
       }
-
-      // Reset state
+  
+      // 3️⃣ Ensure a target table is selected
+      if (!selectedTable || selectedTable === "all") {
+        onStatusMessage("Please select a target table for import", "warning");
+        return;
+      }
+  
+      const existingData = getTableData(selectedTable);
+      const newData = importData;
+  
+      // 4️⃣ If table has existing data, validate structure
+      if (existingData.length > 0) {
+        const existingKey = Object.keys(existingData[0])[0];
+        const newKey = Object.keys(newData[0])[0];
+  
+        if (existingKey !== newKey) {
+          throw new Error("The imported file structure does not match the table.");
+        }
+  
+        // 5️⃣ Prepare ID sequence and find missing numbers
+        const numbers = existingData
+          .map((row) => {
+            const value = Object.values(row)[0] || "";
+            const prefix = value.slice(0, value.length - 9);
+            const numericPart = value.replace(/^\D+/, "");
+            return { prefix, number: parseInt(numericPart, 10) };
+          })
+          .filter((n) => !isNaN(n.number));
+  
+        const existingNumbers = numbers.map((n) => n.number);
+        const prefix = numbers[0]?.prefix || "";
+  
+        // Find missing numbers in sequence
+        const minNumber = Math.min(...existingNumbers);
+        const maxNumber = Math.max(...existingNumbers);
+        const missingNumbers = [];
+        for (let i = minNumber; i <= maxNumber; i++) {
+          if (!existingNumbers.includes(i)) missingNumbers.push(i);
+        }
+  
+        const existingTitles = new Set(existingData.map((r) => r.title));
+  
+        // 6️⃣ Process imported records, skip duplicates by title
+        const processedData = [];
+        let nextNumber = maxNumber;
+  
+        newData
+          .filter((record) => !existingTitles.has(record.title))
+          .forEach((record) => {
+            // Use a missing number first if available
+            const numberToUse = missingNumbers.length
+              ? missingNumbers.shift()
+              : ++nextNumber;
+  
+            const numberPart = String(numberToUse).padStart(9, "0");
+  
+            processedData.push({
+              ...record,
+              [existingKey]: prefix + numberPart,
+              importedAt: new Date().toISOString(),
+            });
+          });
+  
+        // 7️⃣ Merge new data
+        const mergedData = [...existingData, ...processedData];
+        saveTableData(selectedTable, mergedData);
+  
+        onStatusMessage(
+          `Imported ${processedData.length} new records to ${selectedTable}. Skipped ${
+            newData.length - processedData.length
+          } duplicates.`,
+          "success"
+        );
+      } else {
+        // 8️⃣ If table is empty, just save new data
+        const existingKey = Object.keys(newData[0])[0];
+        let nextNumber = 100000000;
+        const processedData = newData.map((record) => {
+          nextNumber += 1;
+          const numberPart = String(nextNumber).padStart(9, "0");
+          return {
+            ...record,
+            [existingKey]: numberPart,
+            importedAt: new Date().toISOString(),
+          };
+        });
+  
+        saveTableData(selectedTable, processedData);
+        onStatusMessage(
+          `Imported ${processedData.length} records to ${selectedTable}`,
+          "success"
+        );
+      }
+  
+      // 9️⃣ Reset state and clear file input
       setSelectedFile(null);
       setImportPreview(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
       onClose();
-      return;
     } catch (error) {
       onStatusMessage(`Import failed: ${error.message}`, "error");
     } finally {
@@ -297,9 +326,9 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
         localStorage.setItem(userKey, JSON.stringify(userData));
 
         onStatusMessage(
-            `Erased ${tableLength} records of ${selectedTable}`,
-            "success",
-          );
+          `Erased ${tableLength} records of ${selectedTable}`,
+          "success",
+        );
       } else {
         onStatusMessage("The Selected Table is Empty", "warning");
         setIsProcessing(false);
@@ -506,7 +535,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
                     : `Table: ${tables.find((t) => t.value === selectedTable)?.label}`}
                 </div>
               </div>
-            )}
+            )}          
           </div>
 
           <div
@@ -517,7 +546,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
               gap: "12px",
             }}
           >
-            <SapButton onClick={handleClose}>Cancel</SapButton>
+            <SapButton type="close" onClick={handleClose}>Cancel</SapButton>
             <SapButton
               onClick={handleExport}
               type="primary"
@@ -526,6 +555,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
             >
               {isProcessing ? "Exporting..." : "Export"}
             </SapButton>
+            
           </div>
         </div>
       )}
@@ -653,7 +683,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
               gap: "12px",
             }}
           >
-            <SapButton onClick={handleClose}>Cancel</SapButton>
+            <SapButton type="close" onClick={handleClose}>Cancel</SapButton>
             <SapButton
               onClick={handleImport}
               type="primary"
@@ -662,7 +692,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
             >
               {isProcessing ? "Importing..." : "Import"}
             </SapButton>
-          </div>
+            </div>
         </div>
       )}
 
@@ -800,7 +830,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
               justifyContent: "flex-end",
             }}
           >
-            <SapButton onClick={handleClose}>Close</SapButton>
+            <SapButton type="close" onClick={handleClose}>Close</SapButton>
           </div>
         </div>
       )}
@@ -839,7 +869,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
               gap: "12px",
             }}
           >
-            <SapButton onClick={handleClose}>Cancel</SapButton>
+            <SapButton type="close" onClick={handleClose}>Cancel</SapButton>
             <SapButton
               onClick={() => handleErase(selectedTable)}
               type="primary"
@@ -851,6 +881,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
           </div>
         </div>
       )}
+
     </SapModal>
   );
 };

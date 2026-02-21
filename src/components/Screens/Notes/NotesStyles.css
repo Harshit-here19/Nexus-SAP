@@ -1,98 +1,8 @@
 /* src/components/Screens/Notes/NotesStyles.css */
 
-/* ========== TOOLBAR ========== */
-.notes-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 10px 12px;
-  background: linear-gradient(180deg, #f8f9fa 0%, #eef0f2 100%);
-  border: 1px solid var(--sap-border);
-  border-radius: 6px;
-  margin-bottom: 16px;
-  align-items: center;
-  width: 80vw;
-}
-
-.notes-toolbar-formatting {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  flex: 1;
-}
-
-.notes-toolbar-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.notes-toolbar-separator {
-  width: 1px;
-  height: 24px;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    #c0c8d0 20%,
-    #c0c8d0 80%,
-    transparent 100%
-  );
-  margin: 0 6px;
-}
-
-.notes-toolbar-button {
-  width: 32px;
-  height: 28px;
-  border: 1px solid var(--sap-border);
-  background: white;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: var(--sap-text-primary);
-  transition: all 0.15s ease;
-}
-
-.notes-toolbar-button:hover:not(:disabled) {
-  background: var(--sap-highlight);
-  border-color: var(--sap-brand);
-  color: var(--sap-brand);
-}
-
-.notes-toolbar-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.notes-toolbar-preview {
-  padding: 6px 14px;
-  border: 1px solid var(--sap-border);
-  background: white;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  transition: all 0.15s ease;
-}
-
-.notes-toolbar-preview:hover {
-  background: var(--sap-highlight);
-  border-color: var(--sap-brand);
-}
-
-.notes-toolbar-preview.active {
-  background: var(--sap-brand);
-  color: white;
-  border-color: var(--sap-brand-dark);
-}
-
 /* ========== EDITOR ========== */
 .notes-editor-container {
   display: flex;
-  flex-direction: column;
   gap: 12px;
 }
 
@@ -506,16 +416,6 @@
     grid-template-columns: 1fr;
   }
 
-  .notes-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .notes-toolbar-actions {
-    margin-top: 8px;
-    justify-content: center;
-  }
-
   .notes-history-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -543,33 +443,6 @@
 }
 
 /* ========== DARK THEME ========== */
-[data-theme="dark"] .notes-toolbar {
-  background: linear-gradient(180deg, #2a3a4a 0%, #1e2d3a 100%);
-  border-color: #3a4a5a;
-}
-
-[data-theme="dark"] .notes-toolbar-button {
-  background: #243342;
-  border-color: #3a4a5a;
-  color: #d0d0d0;
-}
-
-[data-theme="dark"] .notes-toolbar-button:hover:not(:disabled) {
-  background: #2a3a4a;
-  border-color: #5b9bd5;
-  color: #a8d5ff;
-}
-
-[data-theme="dark"] .notes-toolbar-preview {
-  background: #243342;
-  border-color: #3a4a5a;
-  color: #d0d0d0;
-}
-
-[data-theme="dark"] .notes-toolbar-preview.active {
-  background: #3b82f6;
-  color: white;
-}
 
 [data-theme="dark"] .notes-editor {
   background: #1e2d3a;

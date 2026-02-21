@@ -387,16 +387,16 @@ const NotesScreen = ({ mode = "create" }) => {
   };
 
   //Delete in search modal
-  const DeleteInSearchModal = async (id) => {
-    if (!id) return;
+  const deleteInSearchModal = async (noteNumber) => {
+    if (!noteNumber) return;
 
     const confirmed = await confirm(
       "Are you sure you want to delete this Note?",
       "danger",
     );
     if (confirmed) {
-      const expenses = getTableData("notes");
-      const filtered = expenses.filter((e) => e.id !== id);
+      const note = getTableData("notes");
+      const filtered = note.filter((e) => e.noteNumber !== noteNumber);
       const allData = getAllData();
       allData.notes = filtered;
       saveAllData(allData);
@@ -630,7 +630,7 @@ const NotesScreen = ({ mode = "create" }) => {
         searchResults={searchResults}
         onSearch={handleSearch}
         onSelectNote={handleSelectNote}
-        DeleteInSearchModal={DeleteInSearchModal}
+        deleteInSearchModal={deleteInSearchModal}
       />
 
       <NotesLinkModal

@@ -2,23 +2,23 @@
 
 import React from 'react';
 import { FORMATTING_OPTIONS } from './NotesConstants';
-import './NotesStyles.css';
+import styles from "./NotesToolbar.module.css"
 
-const NotesToolbar = ({ 
-  onFormat, 
-  showPreview, 
+const NotesToolbar = ({
+  onFormat,
+  showPreview,
   onTogglePreview,
-  disabled = false 
+  disabled = false
 }) => {
   return (
-    <div className="notes-toolbar">
-      <div className="notes-toolbar-formatting">
+    <div className={styles["notes-toolbar"]}>
+      <div className={styles["notes-toolbar-formatting"]}>
         {FORMATTING_OPTIONS.map((opt, idx) => {
           if (opt.action === 'separator') {
             return (
               <div
                 key={`sep-${idx}`}
-                className="notes-toolbar-separator"
+                className={styles["notes-toolbar-separator"]}
               />
             );
           }
@@ -27,7 +27,7 @@ const NotesToolbar = ({
               key={opt.action}
               onClick={() => onFormat(opt.action)}
               title={opt.title}
-              className="notes-toolbar-button"
+              className={styles["notes-toolbar-button"]}
               disabled={disabled}
               style={{
                 fontWeight: opt.style?.fontWeight || 'normal',
@@ -40,11 +40,11 @@ const NotesToolbar = ({
           );
         })}
       </div>
-      
-      <div className="notes-toolbar-actions">
+
+      <div className={styles["notes-toolbar-actions"]}>
         <button
           onClick={onTogglePreview}
-          className={`notes-toolbar-preview ${showPreview ? 'active' : ''}`}
+          className={`${styles["notes-toolbar-preview"]} ${showPreview ? styles.active : ''}`}
           disabled={disabled}
         >
           {showPreview ? '✏️ Edit' : '👁️ Preview'}
