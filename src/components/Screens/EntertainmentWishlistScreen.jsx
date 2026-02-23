@@ -18,6 +18,10 @@ import {
   saveAllData,
 } from "../../utils/storage";
 
+// =======================================
+//          📌📌📌 CONSTANTS 📌📌📌
+// =======================================
+
 // Entertainment Categories with prefixes
 const ENTERTAINMENT_CATEGORIES = [
   { value: "MO", label: "🎬 Movies", color: "#e91e63", icon: "🎬" },
@@ -106,33 +110,10 @@ const PLATFORM_OPTIONS = [
   { value: "other", label: "📁 Other" },
 ];
 
-const EntertainmentWishlistScreen = ({ mode = "create" }) => {
-  const isMobile = window.innerWidth <= 768;
-  
-  const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
-  const { user } = useAuth();
-  const { registerAction, clearAction } = useAction();
-  const confirm = useConfirm();
-
-  const saveRef = useRef(null);
-  const clearRef = useRef(null);
-  const deleteRef = useRef(null);
-
-  const [itemId, setItemId] = useState("");
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [showSearchModal, setShowSearchModal] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [filterPriority, setFilterPriority] = useState("all");
-
-  // Form data
-  const [formData, setFormData] = useState({
+const initialFormState = (user) => ({
     itemNumber: "",
     category: "",
     title: "",
-    originalTitle: "",
     description: "",
     year: "",
     status: "planned",
@@ -153,13 +134,36 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     developer: "",
     director: "",
     cast: "",
-    startDate: "",
-    endDate: "",
     notes: "",
     tags: "",
     isNsfw: false,
     createdBy: user?.username || "SAPUSER",
-  });
+})
+
+const EntertainmentWishlistScreen = ({ mode = "create" }) => {
+  const isMobile = window.innerWidth <= 768;
+
+  const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
+  const { user } = useAuth();
+  const { registerAction, clearAction } = useAction();
+  const confirm = useConfirm();
+
+  const saveRef = useRef(null);
+  const clearRef = useRef(null);
+  const deleteRef = useRef(null);
+  const printRef = useRef(null);
+
+  const [itemId, setItemId] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
+
+  // Form data
+  const [formData, setFormData] = useState(initialFormState(user));
 
   const [errors, setErrors] = useState({});
 
@@ -192,7 +196,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const handleCategoryChange = (category) => {
     handleChange("category", category);
     if (mode === "create") {
-      const newId = generateNextId(categorygenerateN);
+      const newId = generateNextId(category);
       setFormData((prev) => ({ ...prev, category, itemNumber: newId }));
     }
   };
@@ -240,7 +244,6 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
         (i) =>
           i.itemNumber?.toLowerCase().includes(term) ||
           i.title?.toLowerCase().includes(term) ||
-          i.originalTitle?.toLowerCase().includes(term) ||
           i.description?.toLowerCase().includes(term) ||
           i.tags?.toLowerCase().includes(term),
       );
@@ -351,38 +354,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
 
   // Clear form
   clearRef.current = () => {
-    setFormData({
-      itemNumber: "",
-      category: "",
-      title: "",
-      originalTitle: "",
-      description: "",
-      year: "",
-      status: "planned",
-      priority: "medium",
-      rating: "",
-      genres: [],
-      platform: "",
-      url: "",
-      imageUrl: "",
-      episodes: "",
-      currentEpisode: "",
-      chapters: "",
-      currentChapter: "",
-      seasons: "",
-      currentSeason: "",
-      duration: "",
-      studio: "",
-      developer: "",
-      director: "",
-      cast: "",
-      startDate: "",
-      endDate: "",
-      notes: "",
-      tags: "",
-      isNsfw: false,
-      createdBy: user?.username || "SAPUSER",
-    });
+    setFormData(initialFormState(user));
     setItemId("");
     setIsLoaded(false);
     setErrors({});
@@ -400,11 +372,15 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     registerAction("DELETE", () => {
       deleteRef.current?.();
     });
+    registerAction("PRINT", () => {
+      printRef.current?.();
+    });
 
     return () => {
       clearAction("SAVE");
       clearAction("CLEAR");
       clearAction("DELETE");
+      clearAction("PRINT");
     };
   }, []);
 
@@ -447,6 +423,23 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       setSearchResults(filtered);
     }
     markAsSaved();
+  };
+
+  // Print function
+  printRef.current = () => {
+    const mediaItems = getTableData("entertainment_wishlist") || []; // Adjust key as needed
+    const html = generateMediaReport(mediaItems);
+
+    if (!html) return;
+
+    const printWindow = window.open("", "_blank", "width=1000,height=800");
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+
+    // setTimeout(() => {
+    //   printWindow.print();
+    // }, 500);
   };
 
   // Get category info
@@ -604,14 +597,6 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           />
 
           <SapInput
-            label="Original Title"
-            value={formData.originalTitle}
-            onChange={(val) => handleChange("originalTitle", val)}
-            disabled={isReadOnly}
-            placeholder="Original/Japanese/Korean title..."
-          />
-
-          <SapInput
             label="Year"
             value={formData.year}
             onChange={(val) => handleChange("year", val)}
@@ -701,7 +686,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           />
 
           <SapInput
-            label="URL/Link"
+            label="Season"
             value={formData.url}
             onChange={(val) => handleChange("url", val)}
             disabled={isReadOnly}
@@ -821,17 +806,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             >
               {formData.title}
             </div>
-            {formData.originalTitle && (
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "var(--sap-text-secondary)",
-                  marginBottom: "8px",
-                }}
-              >
-                {formData.originalTitle}
-              </div>
-            )}
+            
             <div
               style={{
                 display: "flex",
@@ -841,17 +816,16 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
               }}
             >
               <span
-                className={`sap-badge ${
-                  formData.status === "completed"
-                    ? "success"
-                    : formData.status === "in_progress"
-                      ? "info"
-                      : formData.status === "dropped"
-                        ? "error"
-                        : formData.status === "on_hold"
-                          ? "warning"
-                          : ""
-                }`}
+                className={`sap-badge ${formData.status === "completed"
+                  ? "success"
+                  : formData.status === "in_progress"
+                    ? "info"
+                    : formData.status === "dropped"
+                      ? "error"
+                      : formData.status === "on_hold"
+                        ? "warning"
+                        : ""
+                  }`}
               >
                 {getStatusInfo(formData.status).label}
               </span>
@@ -1063,60 +1037,6 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                   }}
                 />
               </div>
-            </div>
-          )}
-        </div>
-
-        <div>
-          <h4
-            style={{
-              marginBottom: "14px",
-              color: "var(--sap-brand)",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              fontSize: "13px",
-            }}
-          >
-            <span>📅</span> Dates
-          </h4>
-
-          <SapInput
-            label="Start Date"
-            value={formData.startDate}
-            onChange={(val) => handleChange("startDate", val)}
-            type="date"
-            disabled={isReadOnly}
-          />
-
-          <SapInput
-            label="End Date"
-            value={formData.endDate}
-            onChange={(val) => handleChange("endDate", val)}
-            type="date"
-            disabled={isReadOnly}
-          />
-
-          {formData.startDate && formData.endDate && (
-            <div
-              style={{
-                marginTop: "12px",
-                padding: "10px",
-                background: "var(--sap-content-bg)",
-                borderRadius: "6px",
-                fontSize: "12px",
-              }}
-            >
-              <span style={{ color: "var(--sap-text-secondary)" }}>
-                Duration:{" "}
-              </span>
-              <span style={{ fontWeight: "600" }}>
-                {Math.ceil(
-                  (new Date(formData.endDate) - new Date(formData.startDate)) /
-                    (1000 * 60 * 60 * 24),
-                )}{" "}
-                days
-              </span>
             </div>
           )}
         </div>
@@ -1492,17 +1412,16 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           </div>
           <div>
             <span
-              className={`sap-badge ${
-                formData.status === "completed"
-                  ? "success"
-                  : formData.status === "dropped"
-                    ? "error"
-                    : formData.status === "in_progress"
-                      ? "info"
-                      : formData.status === "on_hold"
-                        ? "warning"
-                        : ""
-              }`}
+              className={`sap-badge ${formData.status === "completed"
+                ? "success"
+                : formData.status === "dropped"
+                  ? "error"
+                  : formData.status === "in_progress"
+                    ? "info"
+                    : formData.status === "on_hold"
+                      ? "warning"
+                      : ""
+                }`}
             >
               {getStatusInfo(formData.status).label}
             </span>
@@ -1617,7 +1536,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                   Load
                 </SapButton>
                 <SapButton
-                type="search"
+                  type="search"
                   onClick={() => {
                     setSearchResults(
                       getTableData("entertainment_wishlist") || [],
@@ -1909,17 +1828,16 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     </td>
                     <td>
                       <span
-                        className={`sap-badge ${
-                          item.status === "completed"
-                            ? "success"
-                            : item.status === "in_progress"
-                              ? "info"
-                              : item.status === "dropped"
-                                ? "error"
-                                : item.status === "on_hold"
-                                  ? "warning"
-                                  : ""
-                        }`}
+                        className={`sap-badge ${item.status === "completed"
+                          ? "success"
+                          : item.status === "in_progress"
+                            ? "info"
+                            : item.status === "dropped"
+                              ? "error"
+                              : item.status === "on_hold"
+                                ? "warning"
+                                : ""
+                          }`}
                         style={{ fontSize: "10px" }}
                       >
                         {getStatusInfo(item.status).label}
@@ -1950,21 +1868,21 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                       )}
                     </td>
                     <td>
-                      <span style={{ marginRight: "8px",width: "4rem", display: "inline-block" }}>
-                      <SapButton
-                        onClick={() => handleSelectItem(item)}
-                        type="primary"
-                      >
-                        👁️
-                      </SapButton>
-                      </span>
-                      {currentTransaction === "WS02" && (<span style={{ marginLeft: "8px",width: "4rem", display: "inline-block" }}>
+                      <span style={{ marginRight: "8px", width: "4rem", display: "inline-block" }}>
                         <SapButton
-                        onClick={() => DeleteInSearchModal(item.id)}
-                        type="danger"
-                      >
-                        🗑️
-                      </SapButton>
+                          onClick={() => handleSelectItem(item)}
+                          type="primary"
+                        >
+                          👁️
+                        </SapButton>
+                      </span>
+                      {currentTransaction === "WS02" && (<span style={{ marginLeft: "8px", width: "4rem", display: "inline-block" }}>
+                        <SapButton
+                          onClick={() => DeleteInSearchModal(item.id)}
+                          type="danger"
+                        >
+                          🗑️
+                        </SapButton>
                       </span>)}
                     </td>
                   </tr>
@@ -2025,3 +1943,551 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
 };
 
 export default EntertainmentWishlistScreen;
+
+const generateMediaReport = (mediaItems) => {
+  if (!mediaItems || mediaItems.length === 0) {
+    alert("No media items to print!");
+    return "";
+  }
+
+  // Calculate stats
+  const totalItems = mediaItems.length;
+  const categoryCount = [...new Set(mediaItems.map(item => item.category))].length;
+  const watchedCount = mediaItems.filter(item => item.status === "completed").length;
+  const plannedCount = mediaItems.filter(item => item.status === "planned").length;
+  const watchingCount = mediaItems.filter(item => item.status === "watching").length;
+  const totalDuration = mediaItems.reduce((sum, item) => {
+    const duration = item.duration || "0h 0m";
+    const match = duration.match(/(\d+)h?\s*(\d*)m?/);
+    if (match) {
+      const hours = parseInt(match[1]) || 0;
+      const minutes = parseInt(match[2]) || 0;
+      return sum + (hours * 60 + minutes);
+    }
+    return sum;
+  }, 0);
+  const totalHours = Math.floor(totalDuration / 60);
+  const totalMinutes = totalDuration % 60;
+
+  // Status colors
+  const getStatusColor = (status) => {
+    const colors = {
+      completed: { bg: "#d1fae5", color: "#065f46" },
+      watching: { bg: "#dbeafe", color: "#1e40af" },
+      planned: { bg: "#fef3c7", color: "#92400e" },
+      dropped: { bg: "#fee2e2", color: "#991b1b" },
+      default: { bg: "#f3f4f6", color: "#374151" }
+    };
+    return colors[status] || colors.default;
+  };
+
+  // Priority badge
+  const getPriorityBadge = (priority) => {
+    const badges = {
+      high: { bg: "#fee2e2", color: "#991b1b" },
+      medium: { bg: "#fef3c7", color: "#92400e" },
+      low: { bg: "#f3f4f6", color: "#374151" }
+    };
+    const style = badges[priority] || badges.low;
+    return `<span class="priority-badge" style="background:${style.bg}; color:${style.color};">
+      ${priority ? priority.charAt(0).toUpperCase() + priority.slice(1) : "—"}
+    </span>`;
+  };
+
+  // Rating stars
+  const getRatingStars = (rating) => {
+    if (!rating) return "—";
+    const fullStars = Math.floor(rating / 2);
+    const halfStar = rating % 2 === 1;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+    //IoIosStar, IoIosStarHalf, IoIosStarOutline
+
+    return `
+    ${'<span style="color: gold;">★</span>'.repeat(fullStars)}
+    ${halfStar ? `
+      <span style="
+        background: linear-gradient(90deg, gold 50%, #ccc 50%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      ">★</span>
+    ` : ''}
+    ${'<span style="color: #ccc;">★</span>'.repeat(emptyStars)}
+  `;
+  };
+
+  // Category icon
+  const getCategoryIcon = (category) => {
+    const icons = {
+      MO: "🎬",
+      TV: "📺",
+      AN: "🎌",
+      GA: "🎮",
+      BO: "📚",
+      MU: "🎵",
+      default: "🎬"
+    };
+    return icons[category] || icons.default;
+  };
+
+  // Media items HTML
+  const mediaContent = mediaItems
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+    .map((item, index) => {
+      const statusStyle = getStatusColor(item.status || "planned");
+      const imageUrl = item.imageUrl || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI3NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=";
+
+      return `
+        <div class="media-card">
+          <div class="media-poster">
+            <img src="${imageUrl}" alt="${item.title || "Unknown Title"}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI3NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='" />
+            <div class="rating-badge">${getRatingStars(item.rating)}</div>
+          </div>
+          
+          <div class="media-info">
+            <div class="media-header">
+              <div class="title-section">
+                <span class="category-icon">${getCategoryIcon(item.category)}</span>
+                <h3 class="media-title">${item.title || "Untitled"}</h3>
+              </div>
+              <div class="media-badges">
+                ${getPriorityBadge(item.priority)}
+                <span class="status-badge" style="background:${statusStyle.bg}; color:${statusStyle.color};">
+                  ${item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : "Planned"}
+                </span>
+              </div>
+            </div>
+            
+            <div class="media-meta">
+              <span class="meta-item"><strong>Year:</strong> ${item.year || "—"}</span>
+              <span class="meta-item"><strong>Duration:</strong> ${item.duration || "—"}</span>
+              <span class="meta-item"><strong>Platform:</strong> ${item.platform || "—"}</span>
+            </div>
+            
+            ${item.genres && item.genres.length > 0 ? `
+              <div class="genres">
+                ${item.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join("")}
+              </div>
+            ` : ''}
+            
+            <div class="info-row">
+              ${item.cast ? `<div class="info-item"><strong>Cast:</strong> ${item.cast}</div>` : ''}
+              ${item.director ? `<div class="info-item"><strong>Director:</strong> ${item.director}</div>` : ''}
+              ${item.studio ? `<div class="info-item"><strong>Studio:</strong> ${item.studio}</div>` : ''}
+            </div>
+            
+            ${item.description ? `
+              <div class="description">
+                <p>${item.description}</p>
+              </div>
+            ` : ''}
+            
+            ${item.notes ? `
+              <div class="notes">
+                <strong>Notes:</strong>
+                <p>${item.notes}</p>
+              </div>
+            ` : ''}
+            
+            <div class="media-footer">
+              <span class="item-number">${item.itemNumber || `#${index + 1}`}</span>
+              <span class="added-info">Added by ${item.createdBy || "Unknown"} on ${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>My Media Collection</title>
+        <meta charset="utf-8">
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+
+          @page {
+            margin: 15mm;
+            size: A4;
+          }
+
+          body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 25px;
+            background: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.5;
+          }
+
+          /* Header */
+          .report-header {
+            text-align: center;
+            padding-bottom: 25px;
+            border-bottom: 3px solid #000000;
+            margin-bottom: 30px;
+          }
+
+          .report-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 8px;
+          }
+
+          .report-header .subtitle {
+            font-size: 14px;
+            color: #666666;
+            margin-bottom: 10px;
+          }
+
+          .report-header .generated {
+            font-size: 11px;
+            color: #888888;
+            font-style: italic;
+          }
+
+          /* Stats Grid */
+          .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+          }
+
+          .stat-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+          }
+
+          .stat-card.main {
+            background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+            color: white;
+            border: none;
+          }
+
+          .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+          }
+
+          .stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.8;
+          }
+
+          /* Section Title */
+          .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #000000;
+            margin: 30px 0 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #000000;
+            display: inline-block;
+          }
+
+          /* Media Card - Horizontal Layout */
+          .media-card {
+            display: flex;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            page-break-inside: avoid;
+            background: white;
+          }
+
+          /* Poster - Left Side */
+          .media-poster {
+            width: 120px;
+            min-width: 120px;
+            height: 180px;
+            position: relative;
+            flex-shrink: 0;
+          }
+
+          .media-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .rating-badge {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 8px 6px 6px;
+            color: #fbbf24;
+            font-size: 12px;
+            text-align: center;
+            letter-spacing: 1px;
+          }
+
+          /* Media Info - Right Side */
+          .media-info {
+            flex: 1;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+          }
+
+          .media-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            gap: 10px;
+          }
+
+          .title-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+          }
+
+          .category-icon {
+            font-size: 20px;
+          }
+
+          .media-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.3;
+          }
+
+          .media-badges {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+          }
+
+          .priority-badge, .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+          }
+
+          .media-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            flex-wrap: wrap;
+          }
+
+          .meta-item {
+            font-size: 11px;
+            color: #555555;
+          }
+
+          .meta-item strong {
+            color: #000000;
+          }
+
+          .genres {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+          }
+
+          .genre-tag {
+            background: #e9ecef;
+            color: #495057;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 500;
+          }
+
+          .info-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+          }
+
+          .info-item {
+            font-size: 11px;
+            color: #555555;
+          }
+
+          .info-item strong {
+            color: #000000;
+          }
+
+          .description {
+            margin: 8px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+          }
+
+          .description p {
+            font-size: 11px;
+            line-height: 1.6;
+            color: #444444;
+          }
+
+          .notes {
+            margin: 8px 0;
+            padding: 10px;
+            background: #fff8dc;
+            border-radius: 6px;
+            border-left: 3px solid #ffc107;
+          }
+
+          .notes strong {
+            font-size: 10px;
+            color: #856404;
+          }
+
+          .notes p {
+            font-size: 11px;
+            font-style: italic;
+            color: #665c00;
+            margin-top: 4px;
+          }
+
+          .media-footer {
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px dashed #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #888888;
+          }
+
+          .item-number {
+            font-family: monospace;
+            font-weight: 600;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+          }
+
+          /* Report Footer */
+          .report-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #000000;
+            text-align: center;
+            color: #666666;
+            font-size: 11px;
+          }
+
+          /* Print Styles */
+          @media print {
+            body { 
+              padding: 10px; 
+              font-size: 10px;
+            }
+            
+            .media-card { 
+              break-inside: avoid;
+              margin-bottom: 15px;
+            }
+            
+            .media-poster {
+              width: 100px;
+              min-width: 100px;
+              height: 150px;
+            }
+            
+            .stats-grid { 
+              grid-template-columns: repeat(5, 1fr);
+              gap: 10px;
+            }
+            
+            .stat-card {
+              padding: 10px;
+            }
+            
+            .stat-value {
+              font-size: 18px;
+            }
+            
+            .media-title {
+              font-size: 14px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="report-header">
+          <h1>🎬 My Media Collection</h1>
+          <p class="subtitle">Movies • TV Shows • Anime • Games • Books</p>
+          <p class="generated">Generated on ${new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })}</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card main">
+            <div class="stat-value">${totalItems}</div>
+            <div class="stat-label">Total Items</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${watchedCount}</div>
+            <div class="stat-label">Completed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${watchingCount}</div>
+            <div class="stat-label">Watching</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${plannedCount}</div>
+            <div class="stat-label">Planned</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${totalHours}h ${totalMinutes}m</div>
+            <div class="stat-label">Watch Time</div>
+          </div>
+        </div>
+
+        <h2 class="section-title">📋 Collection Details</h2>
+        
+        <div class="media-list">
+          ${mediaContent}
+        </div>
+
+        <div class="report-footer">
+          <p>SAP GUI Media Collection • ${totalItems} titles in your library</p>
+          <p>Printed on ${new Date().toLocaleDateString()}</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return html;
+};
