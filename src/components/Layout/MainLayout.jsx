@@ -104,13 +104,6 @@ const MainLayout = ({ children }) => {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <UserProfileDropdown />
-          <div className="window-controls">
-            <button title="Minimize">─</button>
-            <button title="Maximize">□</button>
-            <button title="Close" className="close">
-              ✕
-            </button>
-          </div>
         </div>
       </div>
 
