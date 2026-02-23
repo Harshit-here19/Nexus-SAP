@@ -938,6 +938,43 @@ body {
   max-width: 100%;
 }
 
+.amountInput {
+  height: 30px;
+  width: 100%;
+  border: 1px solid #cbd5e0;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 12px;
+  background: white;
+  transition: all 0.15s;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.amountInput:hover:not(:disabled) {
+  border-color: #a0aec0;
+}
+
+.amountInput:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.amountInput:disabled {
+  background: #edf2f7;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.amountInput.error {
+  border-color: #e53e3e;
+  background: #fff5f5;
+}
+
+.amountInput.error:focus {
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
 .sap-input {
   height: 28px;
   width: 100%;
@@ -1013,7 +1050,7 @@ body {
   box-shadow: 0 0 0 2px var(--sap-brand-lighter);
 }
 
-.sap-select {
+/* .sap-select {
   height: 28px;
   min-width: 100px;
   width: 100%;
@@ -1024,13 +1061,62 @@ body {
   font-size: 12px;
   background: white;
   cursor: pointer;
+} */
+
+.sap-select {
+  height: 30px;
+  width: 100%;
+  min-width: 160px;
+  border: 1px solid #cbd5e0;
+  border-radius: 5px;
+  padding: 0 28px 0 10px;
+  font-size: 12px;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  appearance: none;
+  line-height: 28px;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%234a5568' d='M4 6l4 4 4-4z'/%3E%3C/svg%3E");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 10px;
+}
+
+.sap-select:hover:not(:disabled) {
+  border-color: #a0aec0;
 }
 
 .sap-select:focus {
   outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.sap-select:disabled {
+  background: #edf2f7;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.sap-select-error {
+  border-color: #e53e3e !important;
+  background: #fff5f5;
+}
+
+.sap-error-text {
+  color: #e53e3e;
+  font-size: 11px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* .sap-select:focus {
+  outline: none;
   border-color: var(--sap-brand);
   box-shadow: 0 0 0 2px var(--sap-brand-lighter);
-}
+} */
 
 .sap-checkbox-container {
   display: flex;
@@ -2012,12 +2098,12 @@ scrollbar-width: none; /* Firefox */
     width: 100%;
   }
 
-  .sap-input,
+  /* .sap-input,
   .sap-select {
     height: 36px;
     font-size: 14px;
     padding: 4px 10px;
-  }
+  } */
 
   .sap-tabs-header {
     padding: 0;

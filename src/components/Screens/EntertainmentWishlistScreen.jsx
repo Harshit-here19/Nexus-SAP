@@ -494,14 +494,14 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     const currentRating = parseInt(rating) || 0;
 
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "4px", justifyContent: "space-around" }}>
         {[...Array(maxRating)].map((_, i) => (
           <span
             key={i}
             onClick={() => editable && handleChange("rating", i + 1)}
             style={{
               cursor: editable ? "pointer" : "default",
-              fontSize: "18px",
+              fontSize: "22px",
               color: i < currentRating ? "#ffc107" : "#e0e0e0",
               transition: "transform 0.1s",
             }}
@@ -655,7 +655,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           />
 
           <div className="sap-form-group">
-            <label className="sap-form-label">Rating</label>
+            <label className="sap-form-label" style={{width: "130px"}}>Rating</label>
             <div className="sap-form-field">
               {renderRating(formData.rating, !isReadOnly)}
               {!isReadOnly && formData.rating && (
@@ -1048,7 +1048,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const creditsTab = (
     <div className="sap-form">
       <div
-        style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "20px" }}
+        style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}
       >
         <div>
           <h4

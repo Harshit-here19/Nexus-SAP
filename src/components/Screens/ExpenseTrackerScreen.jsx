@@ -371,7 +371,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
             </h4>
 
             <div className="sap-form-group">
-              <label className="sap-form-label required">Amount</label>
+              <label className="sap-form-label required" style={{width:"130px"}}>Amount</label>
               <div
                 className="sap-form-field"
                 style={{ display: "flex", gap: "8px" }}
@@ -391,7 +391,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                 </select>
                 <input
                   type="number"
-                  className={`sap-input ${errors.amount ? "error" : ""}`}
+                  className={`amountInput ${errors.amount ? "error" : ""}`}
                   value={formData.amount}
                   onChange={(e) => handleChange("amount", e.target.value)}
                   disabled={isReadOnly}

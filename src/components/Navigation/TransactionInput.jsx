@@ -1,10 +1,46 @@
 // src/components/Navigation/TransactionInput.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTransaction } from '../../context/TransactionContext';
 
 const TransactionInput = () => {
   const [tcode, setTcode] = useState('');
   const { navigateToTransaction, isTransactionActive, currentTransaction } = useTransaction();
+
+  const inputRef = React.useRef(null);
+
+  useEffect(() => {
+    // console.log('Focus Input');
+    
+    const focusOnInput = () => {
+      // const inputElement = document.querySelector('.sap-tcode-input');
+      //   if (inputElement) {
+      //      inputElement.focus();
+      // }
+      inputRef.current?.focus();
+    };
+
+    const handleKeyDown = (e) => {
+      const activeElement = document.activeElement;
+      const isTypingField =
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.isContentEditable;
+
+      // 🚫 Do nothing if user is already typing
+      if (isTypingField) return;
+
+      if (e.key === '.') {
+        e.preventDefault();
+        focusOnInput();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isTransactionActive]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && tcode.trim()) {
@@ -30,6 +66,7 @@ const TransactionInput = () => {
     }}>
       <input
         type="text"
+        ref={inputRef}
         className="sap-tcode-input"
         placeholder={isTransactionActive ? `[${currentTransaction}] Press F3 to exit` : "/nXXXX"}
         value={tcode}
@@ -40,7 +77,7 @@ const TransactionInput = () => {
           background: isTransactionActive ? 'var(--sap-highlight)' : 'white'
         }}
       />
-      <button 
+      <button
         className="sap-toolbar-button"
         onClick={handleExecute}
         title="Execute Transaction"
@@ -52,7 +89,7 @@ const TransactionInput = () => {
       >
         ✓
       </button>
-      
+
       {/* Transaction Lock Indicator */}
       {isTransactionActive && (
         <div style={{

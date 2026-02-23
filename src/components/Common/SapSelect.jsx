@@ -9,24 +9,38 @@ const SapSelect = ({
   required = false,
   disabled = false,
   placeholder = 'Select...',
-  width = '200px'
+   error = ''
 }) => {
 const isMobile = window.innerWidth <= 768; // Simple mobile check
 
   return (
     <div className="sap-form-group"  >
       {label && (
-        <label className={`sap-form-label ${required ? 'required' : ''}`}>
-          {label}
-        </label>
+        <label
+        style={{
+          width: 130,
+          minWidth: 90,
+          textAlign: "right",
+          paddingRight: 10,
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#4a5568",
+          lineHeight: "26px",
+          flexShrink: 0,
+          textTransform: "uppercase",
+          letterSpacing: "0.5px"
+        }}
+      >
+        {label}
+      </label>
       )}
-      <div className="sap-form-field">
+      <div className="sap-form-field" style={{minWidth: "160px"}}>
         <select
-          className="sap-select"
+          className={`sap-select ${error ? 'sap-select-error' : ''}`}
           value={value || ''}
           onChange={(e) => onChange && onChange(e.target.value)}
           disabled={disabled}
-          style={{ width: isMobile ? '100%' : width }}
+          style={{ width: '100%' }}
         >
           <option value="">{placeholder}</option>
           {options.map((option, index) => (
@@ -35,6 +49,13 @@ const isMobile = window.innerWidth <= 768; // Simple mobile check
             </option>
           ))}
         </select>
+
+        {error && (
+          <div className="sap-error-text">
+            {error}
+          </div>
+        )}
+        
       </div>
     </div>
   );

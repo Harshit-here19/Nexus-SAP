@@ -1,55 +1,63 @@
-// src/components/Common/SapInput.jsx
-import React from 'react';
+import React from "react";
+import styles from "./SapInput.module.css";
 
 const SapInput = ({
   label,
   value,
   onChange,
-  type = 'text',
+  type = "text",
   required = false,
   disabled = false,
   readOnly = false,
-  error = '',
-  placeholder = '',
+  error = "",
+  placeholder = "",
   maxLength,
-  width = '100%',
+  width = "100%",
   icon,
   onIconClick,
-  className=''
+  className = ""
 }) => {
   const isMobile = window.innerWidth <= 768;
 
   return (
-    <div className="sap-form-group" style={{ width: isMobile ? '100%' : 'auto'}} >
+    <div
+      className={styles.formGroup}
+      style={{ width: isMobile ? "100%" : "auto" }}
+    >
       {label && (
-        <label className={`sap-form-label ${required ? 'required' : ''}`}>
+        <label
+          className={`${styles.formLabel} ${
+            required ? styles.formLabelRequired : ""
+          }`}
+        >
           {label}
         </label>
       )}
-      <div className="sap-form-field">
-        <div className={`sap-input-icon`} style={{ width }}>
+      <div className={styles.formField}>
+        <div
+          className={styles.inputIconWrapper}
+          style={{ width }}
+        >
           <input
             type={type}
-            className={className ? className : `sap-input ${error ? 'error' : ''}`}
-            value={value || ''}
+            className={`${className ? className : styles.input} ${
+              error ? styles.inputError : ""
+            } ${readOnly ? styles.inputReadOnly : ""}`}
+            value={value || ""}
             onChange={(e) => onChange && onChange(e.target.value)}
             disabled={disabled}
             readOnly={readOnly}
             placeholder={placeholder}
             maxLength={maxLength}
-            style={{ width: '100%' }}
+            style={{ width: "100%" }}
           />
           {icon && (
-            <span className="icon" onClick={onIconClick}>
+            <span className={styles.icon} onClick={onIconClick}>
               {icon}
             </span>
           )}
         </div>
-        {error && (
-          <div style={{ color: 'var(--sap-negative)', fontSize: '12px', marginTop: '4px' }}>
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.errorText}>{error}</div>}
       </div>
     </div>
   );
@@ -57,24 +65,26 @@ const SapInput = ({
 
 export default SapInput;
 
-// 1️SimpleInput: minimal reusable input
+// Simple reusable input
 export const SimpleInput = ({
   value,
   onChange,
-  placeholder = '',
-  type = 'text',
-  className = '',
-  error = '',
+  placeholder = "",
+  type = "text",
+  className = "",
+  error = "",
   disabled = false,
   readOnly = false,
   maxLength,
-  width = '100%',
+  width = "100%"
 }) => {
   return (
     <input
       type={type}
-      className={className ? className : `sap-input ${error ? 'error' : ''}`}
-      value={value || ''}
+      className={`${className ? className : styles.input} ${
+        error ? styles.inputError : ""
+      } ${readOnly ? styles.inputReadOnly : ""}`}
+      value={value || ""}
       onChange={(e) => onChange && onChange(e.target.value)}
       disabled={disabled}
       readOnly={readOnly}

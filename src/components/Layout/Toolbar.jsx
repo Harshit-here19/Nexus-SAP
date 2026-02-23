@@ -42,7 +42,7 @@ const Toolbar = ({ children }) => {
       always: true,
       highlight:
         isTransactionActive &&
-        ["MM01", "VA01", "WS01","NT01","MM02", "VA02", "WS02","NT02"].includes(
+        ["MM01", "VA01", "WS01", "NT01", "MM02", "VA02", "WS02", "NT02"].includes(
           currentTransaction,
         ),
     },
@@ -66,7 +66,7 @@ const Toolbar = ({ children }) => {
       action: "clear",
       highlight:
         isTransactionActive &&
-        ["MM01", "VA01", "WS01","NT01", "MM02", "VA02", "WS02","NT02"].includes(
+        ["MM01", "VA01", "WS01", "NT01", "MM02", "VA02", "WS02", "NT02"].includes(
           currentTransaction,
         ),
     },
@@ -89,7 +89,7 @@ const Toolbar = ({ children }) => {
       action: "delete",
       highlight:
         isTransactionActive &&
-        ["VA02", "WS02","NT02"].includes(currentTransaction),
+        ["VA02", "WS02", "NT02"].includes(currentTransaction),
       disabled: !isTransactionActive,
     },
     // { separator: true },
@@ -150,6 +150,7 @@ const Toolbar = ({ children }) => {
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e) => {
+
       if (e.key === "F3" && !e.shiftKey) {
         e.preventDefault();
         goBack();
@@ -176,16 +177,16 @@ const Toolbar = ({ children }) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [goBack, exitTransaction, cancelOperation]);
+  }, [goBack, exitTransaction, triggerAction, isTransactionActive]);
 
   return (
     <>
       <div className={styles.sapToolbar}>
-      <div style={{order:0}}>
-        {children}
-      </div>
-        
-        <div className={styles.sapToolbarSeparator}/>
+        <div style={{ order: 0 }}>
+          {children}
+        </div>
+
+        <div className={styles.sapToolbarSeparator} />
 
         {toolbarButtons.map((btn, index) => {
           if (btn.separator) {
