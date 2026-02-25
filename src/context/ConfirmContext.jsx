@@ -8,16 +8,46 @@ export const useConfirm = () => {
 };
 
 export const ConfirmProvider = ({ children }) => {
-  const [confirmState, setConfirmState] = useState({
+  const [dialogState, setDialogState] = useState({
     open: false,
+    mode: "confirm", // "confirm" | "prompt"
     message: "",
-    type: "normal", // default type is "normal", can be "danger", "warning", "success"
+    type: "normal",
+    inputValue: "",
+    placeholder: ""
   });
 
   const resolver = useRef(null);
 
+  // ✅ CONFIRM FUNCTION
   const confirm = (message, type = "normal") => {
-    setConfirmState({ open: true, message, type });
+    setDialogState({
+      open: true,
+      mode: "confirm",
+      message,
+      type,
+      inputValue: "",
+      placeholder: ""
+    });
+
+    return new Promise((resolve) => {
+      resolver.current = resolve;
+    });
+  };
+
+  // ✅ PROMPT FUNCTION
+  const prompt = (
+    message,
+    { type = "normal", defaultValue = "", placeholder = "" } = {}
+  ) => {
+    setDialogState({
+      open: true,
+      mode: "prompt",
+      message,
+      type,
+      inputValue: defaultValue,
+      placeholder
+    });
 
     return new Promise((resolve) => {
       resolver.current = resolve;
@@ -25,7 +55,14 @@ export const ConfirmProvider = ({ children }) => {
   };
 
   const handleClose = (result) => {
-    setConfirmState({ open: false, message: "", type: "normal" });
+    setDialogState({
+      open: false,
+      mode: "confirm",
+      message: "",
+      type: "normal",
+      inputValue: "",
+      placeholder: ""
+    });
 
     if (resolver.current) {
       resolver.current(result);
@@ -34,26 +71,49 @@ export const ConfirmProvider = ({ children }) => {
   };
 
   return (
-    <ConfirmContext.Provider value={confirm}>
+    <ConfirmContext.Provider value={{ confirm, prompt }}>
       {children}
 
-      {confirmState.open && (
+      {dialogState.open && (
         <div className="confirm-overlay">
-          <div className={`confirm-box ${confirmState.type}`}>
+          <div className={`confirm-box ${dialogState.type}`}>
             <div className="confirm-message">
-              {confirmState.message}
+              {dialogState.message}
             </div>
+
+            {/* ✅ Prompt Input Field */}
+            {dialogState.mode === "prompt" && (
+              <input
+                className="confirm-input"
+                type="text"
+                value={dialogState.inputValue}
+                placeholder={dialogState.placeholder}
+                onChange={(e) =>
+                  setDialogState((prev) => ({
+                    ...prev,
+                    inputValue: e.target.value
+                  }))
+                }
+              />
+            )}
 
             <div className="confirm-actions">
               <button
                 className="btn cancel"
-                onClick={() => handleClose(false)}
+                onClick={() => handleClose(null)}
               >
                 Cancel
               </button>
+
               <button
-                className={`btn confirm ${confirmState.type}`}
-                onClick={() => handleClose(true)}
+                className={`btn confirm ${dialogState.type}`}
+                onClick={() =>
+                  handleClose(
+                    dialogState.mode === "prompt"
+                      ? dialogState.inputValue
+                      : true
+                  )
+                }
               >
                 OK
               </button>

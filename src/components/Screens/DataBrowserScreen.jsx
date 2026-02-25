@@ -317,6 +317,16 @@ const DataBrowserScreen = () => {
     setShowDetailModal(true);
   };
 
+  // Toggle all rows on the current filtered view
+  const handleSelectAll = () => {
+    if (selectedRows.length === processedData.length) {
+      setSelectedRows([]);
+    } else {
+      // Select indices based on the currently processed (filtered/searched) data
+      setSelectedRows(processedData.map((_, index) => index));
+    }
+  };
+
   // Add filter
   const handleAddFilter = () => {
     if (activeFilterColumn && filterValue) {
@@ -341,14 +351,20 @@ const DataBrowserScreen = () => {
   };
 
   // Export to CSV
+  // Export to CSV
   const handleExportCSV = () => {
-    if (processedData.length === 0) {
+    // Determine if we export selected rows or all processed rows
+    const dataToExport = selectedRows.length > 0 
+      ? selectedRows.map(index => processedData[index])
+      : processedData;
+
+    if (dataToExport.length === 0) {
       updateStatus('No data to export', 'warning');
       return;
     }
 
     const headers = columns.map(col => col.label).join(',');
-    const rows = processedData.map(row =>
+    const rows = dataToExport.map(row =>
       columns.map(col => `"${row[col.key] || ''}"`).join(',')
     ).join('\n');
 
@@ -358,35 +374,42 @@ const DataBrowserScreen = () => {
 
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${selectedTable}_export.csv`;
+    const suffix = selectedRows.length > 0 ? 'selection' : 'all';
+    link.download = `${selectedTable}_${suffix}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    updateStatus(`Exported ${processedData.length} records to CSV`, 'success');
+    updateStatus(`Exported ${dataToExport.length} records to CSV`, 'success');
   };
 
   // Export to JSON
   const handleExportJSON = () => {
-    if (processedData.length === 0) {
+    // Determine if we export selected rows or all processed rows
+    const dataToExport = selectedRows.length > 0 
+      ? selectedRows.map(index => processedData[index])
+      : processedData;
+
+    if (dataToExport.length === 0) {
       updateStatus('No data to export', 'warning');
       return;
     }
 
-    const json = JSON.stringify(processedData, null, 2);
+    const json = JSON.stringify(dataToExport, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
 
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${selectedTable}_export.json`;
+    const suffix = selectedRows.length > 0 ? 'selection' : 'all';
+    link.download = `${selectedTable}_${suffix}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    updateStatus(`Exported ${processedData.length} records to JSON`, 'success');
+    updateStatus(`Exported ${dataToExport.length} records to JSON`, 'success');
   };
 
   // Get sort icon
@@ -602,7 +625,7 @@ const DataBrowserScreen = () => {
                 <table className={styles["sap-table"]}>
                   <thead>
                     <tr>
-                      <th style={{ width: '40px', textAlign: 'center' }}>#</th>
+                      <th onClick={handleSelectAll} style={{ width: '40px', textAlign: 'center' }}>#</th>
                       {columns.map((col, index) => (
                         <th
                           key={index}
@@ -836,3 +859,4 @@ const hexToRGBA = (hex, alpha = 0.08) => {
 
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
+

@@ -1,0 +1,359 @@
+/* NotesVerticalToolbar.module.css - Modern Solid Theme */
+
+:root {
+  --toolbar-width: 52px;
+  --toolbar-width-expanded: 180px;
+  --toolbar-bg: #ffffff;
+  --toolbar-bg-hover: #f8fafc;
+  --toolbar-border: #e2e8f0;
+  --toolbar-text: #1e293b;
+  --toolbar-text-muted: #64748b;
+  --toolbar-accent: #3b82f6;
+  --toolbar-accent-light: #eff6ff;
+  --toolbar-radius: 12px;
+  --toolbar-button-size: 38px;
+  --toolbar-gap: 4px;
+  --toolbar-padding: 10px;
+  --toolbar-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+}
+
+/* Dark Mode */
+[data-theme="dark"] {
+  --toolbar-bg: #1e293b;
+  --toolbar-bg-hover: #334155;
+  --toolbar-border: #334155;
+  --toolbar-text: #f1f5f9;
+  --toolbar-text-muted: #94a3b8;
+  --toolbar-accent: #60a5fa;
+  --toolbar-accent-light: rgba(96, 165, 250, 0.15);
+  --toolbar-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  width: var(--toolbar-width);
+  height: 100%;
+  padding: var(--toolbar-padding);
+
+  background: var(--toolbar-bg);
+  border: 1px solid var(--toolbar-border);
+  border-radius: var(--toolbar-radius);
+
+  box-shadow: var(--toolbar-shadow);
+  transition: width 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.toolbar.left {
+  border-radius: 0 var(--toolbar-radius) var(--toolbar-radius) 0;
+  border-left: none;
+}
+
+.toolbar.right {
+  border-radius: var(--toolbar-radius) 0 0 var(--toolbar-radius);
+  border-right: none;
+}
+
+.toolbar:not(.collapsed) {
+  width: var(--toolbar-width-expanded);
+}
+
+/* Collapse Toggle */
+.collapseToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 28px;
+  margin-bottom: 10px;
+
+  background: var(--toolbar-bg-hover);
+  border: 1px solid var(--toolbar-border);
+  border-radius: 8px;
+
+  color: var(--toolbar-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.collapseToggle:hover {
+  background: var(--toolbar-accent-light);
+  color: var(--toolbar-accent);
+  border-color: var(--toolbar-accent);
+}
+
+/* Toolbar Content */
+.toolbarContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  gap: var(--toolbar-gap);
+}
+
+.toolbarContent::-webkit-scrollbar {
+  width: 3px;
+}
+
+.toolbarContent::-webkit-scrollbar-thumb {
+  background: var(--toolbar-border);
+  border-radius: 3px;
+}
+
+/* Sections */
+.formattingSection,
+.actionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--toolbar-gap);
+}
+
+.actionsSection {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--toolbar-border);
+}
+
+.spacer {
+  flex: 1;
+  min-height: 8px;
+}
+
+/* Separator */
+.separator {
+  width: 100%;
+  height: 1px;
+  margin: 6px 0;
+  background: var(--toolbar-border);
+}
+
+/* Button Wrapper */
+.buttonWrapper {
+  position: relative;
+}
+
+/* Toolbar Button */
+.toolbarButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: var(--toolbar-button-size);
+  padding: 0 10px;
+
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+  color: var(--toolbar-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+
+  transition: all 0.15s ease;
+}
+
+.toolbar.collapsed .toolbarButton {
+  justify-content: center;
+  padding: 0;
+}
+
+.toolbarButton:hover {
+  background: var(--toolbar-bg-hover);
+  border-color: var(--toolbar-border);
+}
+
+.toolbarButton:active {
+  transform: scale(0.97);
+}
+
+.toolbarButton.active {
+  background: var(--toolbar-accent-light);
+  border-color: var(--toolbar-accent);
+  color: var(--toolbar-accent);
+}
+
+/* Button Icon */
+.buttonIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Button Label */
+.buttonLabel {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.toolbar.collapsed .buttonLabel {
+  display: none;
+}
+
+/* Preview Button */
+.previewButton {
+  background: var(--toolbar-accent-light);
+}
+
+.previewButton.active {
+  background: var(--toolbar-accent);
+  color: white;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 8px 12px;
+
+  background: var(--toolbar-text);
+  border-radius: 6px;
+
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  pointer-events: none;
+
+  animation: tooltipAppear 0.15s ease;
+}
+
+.tooltip.left {
+  left: calc(100% + 10px);
+}
+
+.tooltip.right {
+  right: calc(100% + 10px);
+}
+
+@keyframes tooltipAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+.shortcut {
+  margin-left: 8px;
+  padding: 2px 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  font-size: 10px;
+  font-family: monospace;
+}
+
+/* Shortcut Hint */
+.shortcutHint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  margin-top: 8px;
+
+  background: var(--toolbar-bg-hover);
+  border-radius: 6px;
+  border: 1px dashed var(--toolbar-border);
+
+  font-size: 10px;
+  color: var(--toolbar-text-muted);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  :root {
+    --toolbar-width: 46px;
+    --toolbar-width-expanded: 150px;
+    --toolbar-button-size: 34px;
+  }
+
+  .shortcutHint {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .toolbar {
+    width: 100% !important;
+    display: flex;
+    height: 4rem;
+    flex-direction: row;
+
+    background: var(--toolbar-bg);
+    border: 1px solid var(--toolbar-border);
+    border-radius: var(--toolbar-radius);
+
+    overflow: auto;
+
+    box-shadow: var(--toolbar-shadow);
+    transition: width 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .toolbar.left,
+  .toolbar.right {
+    border-radius: 0;
+  }
+
+  .toolbarContent {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 4px;
+  }
+
+  .formattingSection,
+  .actionsSection {
+    flex-direction: row;
+    flex-shrink: 0;
+  }
+
+  .separator {
+    width: 1px;
+    height: 28px;
+    margin: 0 6px;
+  }
+
+  .spacer {
+    display: none;
+  }
+
+  .collapseToggle,
+  .shortcutHint {
+    display: none;
+  }
+
+  .toolbarButton {
+    width: var(--toolbar-button-size);
+    height: var(--toolbar-button-size);
+    flex-shrink: 0;
+  }
+
+  .buttonLabel {
+    display: none !important;
+  }
+
+  .collapseToggle {
+    display: none;
+  }
+}

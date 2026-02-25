@@ -55,6 +55,7 @@ const NotesScreen = ({ mode = "create" }) => {
   const [noteId, setNoteId] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [summary, setSummary] = useState("");
 
   // Modals
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -293,6 +294,16 @@ const NotesScreen = ({ mode = "create" }) => {
 
   // Select note from search
   const handleSelectNote = (note) => {
+    if (note.isLocked) {
+      const enteredPassword = window.prompt("This note is locked. Enter password:");
+  
+      // Replace this with your real password validation logic
+      if (enteredPassword !== note.password) {
+        updateStatus("Incorrect password", "error");
+        return;
+      }
+    }
+    
     setNoteId(note.noteNumber);
     setFormData(note);
     setIsLoaded(true);
@@ -306,8 +317,26 @@ const NotesScreen = ({ mode = "create" }) => {
     if (!formData.title?.trim()) {
       newErrors.title = "Title is required";
     }
+
+    if (!formData.summary?.trim()) {
+      newErrors.summary = "Summary is required";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle Summary
+  const handleSummaryChange = (value) => {
+    setFormData(prev => ({ ...prev, summary: value }));
+    
+    // Validation
+    if (!value || value.trim().length < 10) {
+      setErrors(prev => ({ ...prev, summary: 'Summary must be at least 10 characters' }));
+    } else if (value.length > 300) {
+      setErrors(prev => ({ ...prev, summary: 'Summary cannot exceed 300 characters' }));
+    } else {
+      setErrors(prev => ({ ...prev, summary: '' }));
+    }
   };
 
   // Save note
@@ -561,6 +590,8 @@ const NotesScreen = ({ mode = "create" }) => {
           onFormat={handleFormat}
           loadDemoNote={loadDemoNote}
           mode={mode}
+          summary={summary}
+          onSummaryChange={handleSummaryChange}
         />
       ),
     },
@@ -572,6 +603,7 @@ const NotesScreen = ({ mode = "create" }) => {
           formData={formData}
           isReadOnly={isReadOnly}
           onChange={handleChange}
+          errors={errors}
         />
       ),
     },

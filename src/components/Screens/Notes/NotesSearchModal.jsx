@@ -116,7 +116,7 @@ const NotesSearchModal = ({
                     {note.noteNumber}
                   </td>
                   <td>
-                    <div 
+                    <div
                       className="notes-search-title"
                       style={{
                         borderLeft: note.color ? `3px solid ${note.color}` : 'none',
@@ -125,14 +125,18 @@ const NotesSearchModal = ({
                     >
                       {note.title}
                     </div>
-                    {note.summary && (
+                    {note.summary && !note.isLocked ? (
                       <div className="notes-search-summary">
                         {note.summary.substring(0, 50)}...
                       </div>
-                    )}
+                    ) :
+                      <div className="notes-search-summary">
+                        {"- ".repeat(20)}
+                      </div>
+                    }
                   </td>
                   <td>
-                    <span 
+                    <span
                       className="notes-category-badge"
                       style={{
                         background: `${getCategoryInfo(note.category).color}20`,
@@ -153,25 +157,25 @@ const NotesSearchModal = ({
                   <td className="notes-search-date">
                     {note.updatedAt ? new Date(note.updatedAt).toLocaleDateString() : '-'}
                   </td>
-                  
+
                   <td>
-                      <span style={{ marginRight: "8px",width: "4rem", display: "inline-block" }}>
+                    <span style={{ marginRight: "8px", width: "4rem", display: "inline-block" }}>
                       <SapButton
                         onClick={() => onSelectNote(note)}
                         type="primary"
                       >
                         👁️
                       </SapButton>
-                      </span>
-                      {currentTransaction === "NT02" && (<span style={{ marginLeft: "8px",width: "4rem", display: "inline-block" }}>
-                        <SapButton
+                    </span>
+                    {currentTransaction === "NT02" && (<span style={{ marginLeft: "8px", width: "4rem", display: "inline-block" }}>
+                      <SapButton
                         onClick={() => deleteInSearchModal(note.noteNumber)}
                         type="danger"
                       >
                         🗑️
                       </SapButton>
-                      </span>)}
-                    </td>
+                    </span>)}
+                  </td>
                 </tr>
               ))
             )}

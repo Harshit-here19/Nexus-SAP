@@ -152,6 +152,10 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
       duplicateField: "title",
       existingKey: "itemNumber"
     },
+    materials: {
+      duplicateField: "description",
+      existingKey: "materialNumber"
+    },
   };
 
   // Handle Export
@@ -345,14 +349,16 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
         );
       } else {
         // 8️⃣ If table is empty, just save new data
-        let nextNumber = 1000000000;
+        let nextNumber = 100000000;
         const value = newData[0][existingKey];
         const prefix = value.slice(0, value.length - 9);
         const processedData = newData.map((record) => {
           nextNumber += 1;
-          const numberPart = String(nextNumber).padStart(9, "0");
-          let ID = `${prefix}${String(numberPart).slice(1)}`
+          // const numberPart = String(nextNumber).padStart(9, "0");
+          const numberPart = nextNumber;
+          let ID = `${prefix}${numberPart}`
           // console.log(newData[0][existingKey], newData, existingKey)
+          // console.log(ID);
           return {
             ...record,
             [existingKey]: ID,

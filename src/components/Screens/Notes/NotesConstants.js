@@ -54,6 +54,135 @@ export const FORMATTING_OPTIONS = [
   { action: 'image', icon: '🖼️', title: 'Insert Image' },
   { action: 'table', icon: '▦', title: 'Insert Table' }
 ];
+// src/components/Screens/Notes/NotesConstants.js
+
+export const VERTICAL_FORMATTING_OPTIONS = [
+  { 
+    action: 'bold', 
+    icon: 'B', 
+    title: 'Bold', 
+    label: 'Bold',
+    shortcut: 'Ctrl+B',
+    style: { fontWeight: 'bold' } 
+  },
+  { 
+    action: 'italic', 
+    icon: 'I', 
+    title: 'Italic', 
+    label: 'Italic',
+    shortcut: 'Ctrl+I',
+    style: { fontStyle: 'italic' } 
+  },
+  { 
+    action: 'underline', 
+    icon: 'U', 
+    title: 'Underline', 
+    label: 'Underline',
+    shortcut: 'Ctrl+U',
+    style: { textDecoration: 'underline' } 
+  },
+  { 
+    action: 'strikethrough', 
+    icon: 'S', 
+    title: 'Strikethrough', 
+    label: 'Strike',
+    shortcut: 'Ctrl+Shift+S',
+    style: { textDecoration: 'line-through' } 
+  },
+  { action: 'separator' },
+  { 
+    action: 'h1', 
+    icon: 'H1', 
+    title: 'Heading 1', 
+    label: 'H1',
+    shortcut: 'Ctrl+1'
+  },
+  { 
+    action: 'h2', 
+    icon: 'H2', 
+    title: 'Heading 2', 
+    label: 'H2',
+    shortcut: 'Ctrl+2'
+  },
+  { 
+    action: 'h3', 
+    icon: 'H3', 
+    title: 'Heading 3', 
+    label: 'H3',
+    shortcut: 'Ctrl+3'
+  },
+  { action: 'separator' },
+  { 
+    action: 'bullet', 
+    icon: '•', 
+    title: 'Bullet List', 
+    label: 'Bullets',
+    shortcut: 'Ctrl+Shift+8'
+  },
+  { 
+    action: 'number', 
+    icon: '1.', 
+    title: 'Numbered List', 
+    label: 'Numbers',
+    shortcut: 'Ctrl+Shift+7'
+  },
+  { 
+    action: 'checklist', 
+    icon: '☐', 
+    title: 'Checklist', 
+    label: 'Tasks',
+    shortcut: 'Ctrl+Shift+9'
+  },
+  { 
+    action: 'checkdone', 
+    icon: '☑', 
+    title: 'Checklist Done', 
+    label: 'Tasks',
+    shortcut: 'Ctrl+Shift+9'
+  },
+  { action: 'separator' },
+  { 
+    action: 'quote', 
+    icon: '❝', 
+    title: 'Quote', 
+    label: 'Quote',
+    shortcut: 'Ctrl+Shift+.'
+  },
+  { 
+    action: 'code', 
+    icon: '</>', 
+    title: 'Code Block', 
+    label: 'Code',
+    shortcut: 'Ctrl+`'
+  },
+  { 
+    action: 'link', 
+    icon: '🔗', 
+    title: 'Insert Link', 
+    label: 'Link',
+    shortcut: 'Ctrl+K'
+  },
+  { 
+    action: 'image', 
+    icon: '🖼️', 
+    title: 'Insert Image', 
+    label: 'Image',
+    shortcut: 'Ctrl+Shift+I'
+  },
+  { action: 'separator' },
+  { 
+    action: 'table', 
+    icon: '▦', 
+    title: 'Insert Table', 
+    label: 'Table'
+  },
+  { 
+    action: 'hr', 
+    icon: '—', 
+    title: 'Horizontal Line', 
+    label: 'Divider'
+  },
+];
 
 // Color options for notes
 export const COLOR_OPTIONS = [
