@@ -203,7 +203,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     }
 
     // Sort by date descending
-    expenses = expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // expenses = expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     setSearchResults(expenses);
     setShowSearchModal(true);
@@ -389,11 +389,11 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                   <option value="INR">INR</option>
                   <option value="JPY">JPY</option>
                 </select>
-                <input
+                <SapInput
                   type="number"
                   className={`amountInput ${errors.amount ? "error" : ""}`}
                   value={formData.amount}
-                  onChange={(e) => handleChange("amount", e.target.value)}
+                  onChange={(val) => handleChange("amount", val)}
                   disabled={isReadOnly}
                   placeholder="0.00"
                   step="0.01"

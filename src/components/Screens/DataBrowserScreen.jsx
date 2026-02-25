@@ -7,12 +7,32 @@ import SapModal from '../Common/SapModal';
 import { useTransaction } from '../../context/TransactionContext';
 import { getAllData } from '../../utils/storage';
 
+import { ENTERTAINMENT_CATEGORIES } from "./EntertainmentWishlistScreen";
+import { getExpenseCategories } from "../../utils/storage"
+import { NOTE_CATEGORIES } from "./Notes/NotesConstants"
+
+import styles from "./DataBrowserScreen.module.css"
+
+const isMobile = window.innerWidth <= 768;
+
+const CATEGORY_MAP_ENTERTAINMENT = Object.fromEntries(
+  ENTERTAINMENT_CATEGORIES.map(cat => [cat.value, cat])
+);
+
+const CATEGORY_MAP_EXPENSES = Object.fromEntries(
+  getExpenseCategories().map(cat => [cat.value, cat])
+);
+
+const CATEGORY_MAP_NOTES = Object.fromEntries(
+  NOTE_CATEGORIES.map(cat => [cat.value, cat])
+);
+
 // Define available tables
 const availableTables = [
   { value: 'expenses', label: 'ZEXP - Expenses', icon: '💰' },
   { value: 'materials', label: 'MARA - Material Master', icon: '📦' },
-  { value: 'salesOrders', label: 'VBAK - Sales Order Header', icon: '🛒' },
-  { value: 'customers', label: 'KNA1 - Customer Master', icon: '👥' },
+  { value: 'entertainment_wishlist', label: 'ENTW - Entertainment Wishlist', icon: '🎬' },
+  { value: 'notes', label: 'NOTE - Notes', icon: '📝' },
   { value: 'vendors', label: 'LFA1 - Vendor Master', icon: '🏭' },
   { value: 'plants', label: 'T001W - Plants', icon: '🏢' },
   { value: 'storageLocations', label: 'T001L - Storage Locations', icon: '📍' },
@@ -23,15 +43,30 @@ const availableTables = [
 const tableColumns = {
   expenses: [
     { key: 'expenseNumber', label: 'Expense ID', width: '120px' },
-    { key: 'date', label: 'Date', width: '100px' },
-    { key: 'category', label: 'Category', width: '100px' },
+    { key: 'date', label: '🗓️ Date', width: '120px' },
+    { key: 'category', label: 'Category', width: '150px' },
     { key: 'description', label: 'Description', width: '200px' },
-    { key: 'amount', label: 'Amount', width: '100px', align: 'right' },
-    { key: 'currency', label: 'Curr', width: '60px' },
+    { key: 'amount', label: 'Amount', width: '100px' },
     { key: 'paymentMethod', label: 'Payment', width: '100px' },
     { key: 'vendor', label: 'Vendor', width: '150px' },
-    { key: 'status', label: 'Status', width: '100px' },
-    { key: 'createdAt', label: 'Created', width: '150px' }
+  ],
+  entertainment_wishlist: [
+    { key: 'itemNumber', label: 'Item ID', width: '120px' },
+    { key: 'title', label: 'Title', width: '220px' },
+    { key: 'category', label: 'Category', width: '120px' },
+    { key: 'priority', label: 'Priority', width: '100px' },
+    { key: 'seasons', label: 'Season', width: '120px' },
+    { key: 'platform', label: 'Platform', width: '140px' },
+    { key: 'year', label: 'Year', width: '80px' },
+    { key: 'genres', label: 'Genres', width: '100px' },
+  ],
+  notes: [
+    { key: 'noteNumber', label: 'Note ID', width: '120px' },
+    { key: 'title', label: 'Title', width: '220px' },
+    { key: 'category', label: 'Category', width: '120px' },
+    { key: 'summary', label: 'Summary', width: '300px' },
+    { key: 'wordCount', label: 'Words', width: '100px' },
+    { key: 'createdAt', label: 'Created On', width: '150px' }
   ],
   materials: [
     { key: 'materialNumber', label: 'Material', width: '120px' },
@@ -41,7 +76,7 @@ const tableColumns = {
     { key: 'baseUnit', label: 'Base UoM', width: '80px' },
     { key: 'plant', label: 'Plant', width: '80px' },
     { key: 'storageLocation', label: 'SLoc', width: '80px' },
-    { key: 'salesPrice', label: 'Price', width: '100px', align: 'right' },
+    { key: 'salesPrice', label: 'Price', width: '100px' },
     { key: 'currency', label: 'Curr.', width: '60px' },
     { key: 'createdAt', label: 'Created On', width: '150px' }
   ],
@@ -49,7 +84,7 @@ const tableColumns = {
     { key: 'orderNumber', label: 'Sales Order', width: '120px' },
     { key: 'customer', label: 'Customer', width: '150px' },
     { key: 'orderDate', label: 'Order Date', width: '120px' },
-    { key: 'netValue', label: 'Net Value', width: '120px', align: 'right' },
+    { key: 'netValue', label: 'Net Value', width: '120px' },
     { key: 'currency', label: 'Curr.', width: '60px' },
     { key: 'status', label: 'Status', width: '100px' }
   ],
@@ -97,31 +132,31 @@ const DataBrowserScreen = () => {
   const [activeFilterColumn, setActiveFilterColumn] = useState('');
   const [filterValue, setFilterValue] = useState('');
 
-useEffect(() => {
-  const backHandler = () => {
-    if (isTableLoaded) {
-      setIsTableLoaded(false);
-      setSelectedTable('');
-      setTableData([]);
-      setColumns([]);
-      setSearchTerm('');
-      setFilters({});
-      setSelectedRows([]);
-      setCurrentPage(1);
-      updateStatus('Back to table selection', 'info');
-      return true; // handled internally
-    }
+  useEffect(() => {
+    const backHandler = () => {
+      if (isTableLoaded) {
+        setIsTableLoaded(false);
+        setSelectedTable('');
+        setTableData([]);
+        setColumns([]);
+        setSearchTerm('');
+        setFilters({});
+        setSelectedRows([]);
+        setCurrentPage(1);
+        updateStatus('Back to table selection', 'info');
+        return true; // handled internally
+      }
 
-    return false; // let transaction handle it
-  };
+      return false; // let transaction handle it
+    };
 
-  registerBackHandler(backHandler);
+    registerBackHandler(backHandler);
 
-  return () => clearBackHandler();
-}, [isTableLoaded]);
+    return () => clearBackHandler();
+  }, [isTableLoaded]);
 
 
-  
+
   // Sort state
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
@@ -147,8 +182,61 @@ useEffect(() => {
     }
 
     const allData = getAllData();
-    const data = allData[selectedTable] || [];
+    let data = allData[selectedTable] || [];
     const cols = tableColumns[selectedTable] || [];
+
+    if (selectedTable === 'entertainment_wishlist') {
+      data = data.map(item => {
+        const categoryObj = CATEGORY_MAP_ENTERTAINMENT[item.category];
+
+        return {
+          ...item,
+          originalCategory: item.category,
+          category: categoryObj?.label || item.category,
+          categoryColor: hexToRGBA(categoryObj?.color, 0.08),
+        };
+      });
+    }
+
+    if (selectedTable === 'expenses') {
+      data = data.map((item, index) => {
+        // console.log(`Item ${index}:`, item.amount, typeof item.amount);
+        const categoryObj = CATEGORY_MAP_EXPENSES[item.category];
+        return {
+          ...item,
+          originalCategory: item.category, // preserve key
+          categoryColor: hexToRGBA(categoryObj?.color, 0.08),
+          date: new Date(item.date).toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          }).replace(/(\w{3}) (\d{4})/, '$1, $2'),
+          amount: item?.amount
+            ? "₹ " + parseFloat(item.amount).toFixed(1).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            : "₹ 0.0",
+          category: categoryObj?.label || item.category
+        }
+      });
+    }
+
+    if(selectedTable ==='notes') {
+      data = data.map((item, index) => {
+        console.log(`Item ${index}:`, item.createdAt, typeof item.createdAt);
+        const categoryObj = CATEGORY_MAP_NOTES[item.category];
+        return {
+          ...item,
+          originalCategory: item.category, // preserve key
+          categoryColor: hexToRGBA(categoryObj?.color, 0.08),
+          createdAt: new Date(item.createdAt).toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          }).replace(/(\w{3}) (\d{4})/, '$1, $2'),
+          category: categoryObj?.label || item.category
+        }
+      });
+    }
+
 
     setTableData(data);
     setColumns(cols);
@@ -311,76 +399,92 @@ useEffect(() => {
   const formatCellValue = (value, column) => {
     if (value === null || value === undefined) return '';
 
-    if (column.key.includes('createdAt') || column.key.includes('Date') || column.key.includes('timestamp')) {
-      try {
-        return new Date(value).toLocaleString();
-      } catch {
-        return value;
-      }
+    const key = column.key.toLowerCase();
+
+    // 1️⃣ Skip formatting for ID / Number / Code fields
+    if (
+      key.includes('id') ||
+      key.includes('number') ||
+      key.includes('code') ||
+      key.includes('category')
+    ) {
+      return String(value); // return as-is
     }
 
+    // 3️⃣ Format numbers (right aligned)
     if (column.align === 'right' && !isNaN(value)) {
       return Number(value).toLocaleString();
     }
 
-    return String(value);
+    // 4️⃣ Apply Title Case to normal text
+    return String(value)
+      .toLowerCase()
+      .replace(/\b\w/g, char => char.toUpperCase());
   };
 
   return (
     <div>
       {/* Header Panel */}
-      <div className="sap-panel">
-        <div className="sap-panel-header">
+      <div className={styles.panel}>
+
+        <div className={styles.panelHeader} style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}>
           <span>
-            <span className="sap-panel-header-icon">🔍</span>
+            <span className={styles.panelHeaderIcon}>🔍</span>
             Data Browser - SE16
           </span>
-          <span className="sap-badge info">DISPLAY</span>
+          <span className={`${styles['sap-badge']} ${styles.info}`}>DISPLAY</span>
         </div>
-        <div className="sap-panel-content">
+        <div className={styles.panelContent}>
           {!isTableLoaded ? (
             /* Table Selection */
             <div>
-              <div className="sap-message-strip info" style={{ marginBottom: '20px' }}>
-                <span className="sap-message-strip-icon">ℹ️</span>
+              <div className={`${styles['sap-message-strip']} ${styles.info}`} style={{ marginBottom: '20px' }}>
+                <span className={styles['sap-message-strip-icon']}>ℹ️</span>
                 <span>Select a table to view its contents. Data is stored locally in your browser.</span>
               </div>
 
-              <div className="sap-form">
-                <SapSelect
-                  label="Table Name"
-                  value={selectedTable}
-                  onChange={setSelectedTable}
-                  options={availableTables}
-                  placeholder="Select a table..."
-                  width="350px"
-                />
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'flex-end',
+                  gap: '16px'
+                }}
+              >
+                <div style={{ minWidth: '250px', flex: '1 1 250px' }}>
+                  <SapSelect
+                    label="Table Name"
+                    value={selectedTable}
+                    onChange={setSelectedTable}
+                    options={availableTables}
+                    placeholder="Select a table..."
+                  />
+                </div>
 
                 {selectedTable && (
-                  <div className="sap-form-group">
-                    <label className="sap-form-label"></label>
-                    <div className="sap-form-field">
-                      <div style={{
-                        background: 'var(--sap-content-bg)',
-                        padding: '12px 16px',
-                        borderRadius: '6px',
-                        border: '1px solid var(--sap-border)'
-                      }}>
-                        <strong>Selected:</strong> {availableTables.find(t => t.value === selectedTable)?.label}
-                      </div>
-                    </div>
+                  <div
+                    style={{
+                      background: 'var(--sap-content-bg)',
+                      padding: '5px 14px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--sap-border)',
+                      minWidth: '200px',
+                      flex: '1 1 200px'
+                    }}
+                  >
+                    <strong>Selected:</strong>{' '}
+                    {availableTables.find(t => t.value === selectedTable)?.label}
                   </div>
                 )}
 
-                <div className="sap-form-group">
-                  <label className="sap-form-label"></label>
-                  <div className="sap-form-field">
-                    <div className="sap-button-group">
-                      <SapButton onClick={handleLoadTable} type="primary" icon="▶️">
-                        Execute
-                      </SapButton>
-                    </div>
-                  </div>
+                <div style={{ flex: '0 0 auto' }}>
+                  <SapButton
+                    onClick={handleLoadTable}
+                    type="primary"
+                    icon="▶️"
+                  >
+                    Execute
+                  </SapButton>
                 </div>
               </div>
             </div>
@@ -388,62 +492,48 @@ useEffect(() => {
             /* Data Grid */
             <div>
               {/* Toolbar */}
-              <div className="sap-table-toolbar" style={{ marginBottom: '0', borderRadius: '8px 8px 0 0' }}>
-                <div className="sap-table-toolbar-left">
+              <div className={styles["sap-table-toolbar"]} style={{ marginBottom: '0', borderRadius: '8px 8px 0 0' }}>
+                <div className={styles["sap-table-toolbar-left"]}>
                   <span style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {availableTables.find(t => t.value === selectedTable)?.icon}
                     {availableTables.find(t => t.value === selectedTable)?.label}
                   </span>
-                  <span className="sap-badge info" style={{ marginLeft: '12px' }}>
+                  <span className={`${styles['sap-badge']} ${styles.info}`} style={{ marginLeft: '12px' }}>
                     {processedData.length} entries
                   </span>
                 </div>
-                <div className="sap-table-toolbar-right">
+                <div className={styles["sap-table-toolbar-right"]}>
                   <input
                     type="text"
-                    className="sap-table-search"
+                    className={styles["sap-table-search"]}
                     placeholder="🔍 Quick search..."
                     value={searchTerm}
                     onChange={(e) => {
                       setSearchTerm(e.target.value);
                       setCurrentPage(1);
                     }}
-                    style={{ width: '200px' }}
+                    style={{ width: isMobile ? "100%" : '200px' }}
                   />
-                  <SapButton onClick={() => setShowFilterModal(true)} icon="🔧">
+                  <SapButton type='glass' onClick={() => setShowFilterModal(true)} icon="🔧">
                     Filter
                   </SapButton>
-                  <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'relative', width: isMobile ? "100%" : "" }}>
                     <SapButton
+                      type='glass'
                       onClick={() => setShowExportDropdown(!showExportDropdown)}
                       icon="📤"
                     >
                       Export ▼
                     </SapButton>
                     {showExportDropdown && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        right: 0,
-                        background: 'white',
-                        border: '1px solid var(--sap-border)',
-                        borderRadius: '4px',
-                        boxShadow: 'var(--sap-shadow-medium)',
-                        zIndex: 100,
-                        minWidth: '150px'
-                      }}>
+                      <div className={styles['export-dropdown']}>
                         <div
+                          className={styles['export-dropdown-item']}
                           onClick={() => {
                             handleExportCSV();
                             setShowExportDropdown(false);
                           }}
-                          style={{
-                            padding: '10px 16px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                          }}
+
                           onMouseOver={(e) => e.currentTarget.style.background = 'var(--sap-highlight)'}
                           onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                         >
@@ -454,13 +544,7 @@ useEffect(() => {
                             handleExportJSON();
                             setShowExportDropdown(false);
                           }}
-                          style={{
-                            padding: '10px 16px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                          }}
+                          className={styles['export-dropdown-item']}
                           onMouseOver={(e) => e.currentTarget.style.background = 'var(--sap-highlight)'}
                           onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                         >
@@ -469,7 +553,7 @@ useEffect(() => {
                       </div>
                     )}
                   </div>
-                  <SapButton onClick={() => {
+                  <SapButton type='glass' onClick={() => {
                     setIsTableLoaded(false);
                     setSelectedTable('');
                   }} icon="🔄">
@@ -489,20 +573,11 @@ useEffect(() => {
                   flexWrap: 'wrap',
                   borderBottom: '1px solid var(--sap-border)'
                 }}>
-                  <span style={{ fontWeight: '600', fontSize: '12px' }}>Active Filters:</span>
+                  <span className={styles['active-filter-bar']}>Active Filters:</span>
                   {Object.entries(filters).map(([key, value]) => (
                     <span
                       key={key}
-                      style={{
-                        background: 'var(--sap-brand)',
-                        color: 'white',
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
+                      className={styles['filter-chip']}
                     >
                       {columns.find(c => c.key === key)?.label}: "{value}"
                       <span
@@ -523,8 +598,8 @@ useEffect(() => {
               )}
 
               {/* Data Table */}
-              <div className="sap-table-wrapper" style={{ maxHeight: '450px' }}>
-                <table className="sap-table">
+              <div className={styles["sap-table-wrapper"]} style={{ maxHeight: '450px' }}>
+                <table className={styles["sap-table"]}>
                   <thead>
                     <tr>
                       <th style={{ width: '40px', textAlign: 'center' }}>#</th>
@@ -535,7 +610,7 @@ useEffect(() => {
                           style={{ width: col.width, cursor: 'pointer' }}
                         >
                           {col.label}
-                          <span className="sort-icon" style={{ marginLeft: '6px' }}>
+                          <span className={styles["sort-icon"]} style={{ marginLeft: '6px' }}>
                             {getSortIcon(col.key)}
                           </span>
                         </th>
@@ -561,16 +636,22 @@ useEffect(() => {
                         return (
                           <tr
                             key={rowIndex}
-                            className={selectedRows.includes(actualIndex) ? 'selected' : ''}
+                            className={selectedRows.includes(actualIndex) ? styles.selected : ''}
                             onClick={() => handleRowClick(actualIndex)}
                             onDoubleClick={() => handleRowDoubleClick(row)}
-                            style={{ cursor: 'pointer' }}
+                            style={{
+                              cursor: 'pointer',
+                              backgroundColor: selectedRows.includes(actualIndex)
+                                ? undefined
+                                : row.categoryColor || undefined
+                            }}
                           >
                             <td style={{ textAlign: 'center', color: 'var(--sap-text-secondary)' }}>
                               {actualIndex + 1}
                             </td>
                             {columns.map((col, colIndex) => (
                               <td
+                                data-label={col.label}
                                 key={colIndex}
                                 style={{ textAlign: col.align || 'left' }}
                               >
@@ -586,7 +667,7 @@ useEffect(() => {
               </div>
 
               {/* Footer / Pagination */}
-              <div className="sap-table-footer">
+              <div className={styles.panelFooter}>
                 <span>
                   Showing {((currentPage - 1) * rowsPerPage) + 1} - {Math.min(currentPage * rowsPerPage, processedData.length)} of {processedData.length} entries
                   {selectedRows.length > 0 && (
@@ -595,9 +676,9 @@ useEffect(() => {
                     </span>
                   )}
                 </span>
-                <div className="sap-table-pagination">
+                <div className={styles["sap-table-pagination"]}>
                   <select
-                    className="sap-select"
+                    className={styles["sap-select"]}
                     value={rowsPerPage}
                     onChange={(e) => {
                       setRowsPerPage(Number(e.target.value));
@@ -611,7 +692,7 @@ useEffect(() => {
                     <option value={100}>100</option>
                   </select>
                   <button
-                    className="sap-button"
+                    className={styles["sap-button"]}
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
                     style={{ height: '28px', padding: '0 8px' }}
@@ -619,7 +700,7 @@ useEffect(() => {
                     ⏮️
                   </button>
                   <button
-                    className="sap-button"
+                    className={styles["sap-button"]}
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
                     style={{ height: '28px', padding: '0 8px' }}
@@ -630,7 +711,7 @@ useEffect(() => {
                     Page {currentPage} of {totalPages || 1}
                   </span>
                   <button
-                    className="sap-button"
+                    className={styles["sap-button"]}
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages || totalPages === 0}
                     style={{ height: '28px', padding: '0 8px' }}
@@ -638,7 +719,7 @@ useEffect(() => {
                     ▶️
                   </button>
                   <button
-                    className="sap-button"
+                    className={styles["sap-button"]}
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages || totalPages === 0}
                     style={{ height: '28px', padding: '0 8px' }}
@@ -709,7 +790,7 @@ useEffect(() => {
                       background: 'var(--sap-content-bg)',
                       width: '150px'
                     }}>
-                      {key}
+                      {toTitleCase(key)}
                     </td>
                     <td>
                       {typeof value === 'object'
@@ -728,3 +809,30 @@ useEffect(() => {
 };
 
 export default DataBrowserScreen;
+
+// Helper Function
+const toTitleCase = (text) => {
+  return String(text)
+    .toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase());
+};
+
+// Convert HEX to rgba with custom opacity
+const hexToRGBA = (hex, alpha = 0.08) => {
+  if (!hex) return undefined;
+
+  let cleaned = hex.replace('#', '');
+
+  if (cleaned.length === 3) {
+    cleaned = cleaned
+      .split('')
+      .map(c => c + c)
+      .join('');
+  }
+
+  const r = parseInt(cleaned.substring(0, 2), 16);
+  const g = parseInt(cleaned.substring(2, 4), 16);
+  const b = parseInt(cleaned.substring(4, 6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};

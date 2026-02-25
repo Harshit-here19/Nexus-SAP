@@ -1,0 +1,127 @@
+.sapFormGroup {
+    display: flex;
+    align-items: flex-start;
+    margin: 2px 0;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.sapFormField {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 160px;
+}
+
+.sapSelect {
+    height: 30px;
+    width: 100%;
+    min-width: 160px;
+    border: 1px solid #cbd5e0;
+    border-radius: 5px;
+    padding: 0 28px 0 10px;
+    font-size: 12px;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    appearance: none;
+    line-height: 28px;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%234a5568' d='M4 6l4 4 4-4z'/%3E%3C/svg%3E");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 10px;
+}
+
+.sapSelect:hover:not(:disabled) {
+    border-color: #a0aec0;
+}
+
+.sapSelect:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.sapSelect:disabled {
+    background: #edf2f7;
+    color: #a0aec0;
+    cursor: not-allowed;
+}
+
+.sapSelectError {
+    border-color: #e53e3e !important;
+    background: #fff5f5;
+}
+
+.sapSelectLabel {
+    width: 130px;
+    min-width: 90px;
+    text-align: right;
+    padding-right: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #4a5568;
+    line-height: 26px;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.sapSelectLabelRequired::after {
+    content: "*";
+    color: #e53e3e;
+    margin-left: 2px;
+    font-weight: 700;
+}
+
+.sapErrorText {
+    color: #e53e3e;
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* ========================================
+   RESPONSIVE (Mobile & Tablet)
+   ======================================== */
+
+@media (max-width: 768px) {
+
+    .sapFormGroup {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .sapSelectLabel {
+        width: 100%;
+        min-width: unset;
+        text-align: left;
+        padding-right: 0;
+        line-height: 1.4;
+        margin-bottom: 2px;
+    }
+
+    .sapFormField {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .sapSelect {
+        height: 36px;
+        font-size: 14px;
+        line-height: 34px;
+    }
+
+    .sapErrorText {
+        font-size: 12px;
+    }
+}
+
+/* Optional Tablet Adjustment */
+@media (max-width: 1024px) {
+    .sapSelectLabel {
+        width: 110px;
+    }
+}

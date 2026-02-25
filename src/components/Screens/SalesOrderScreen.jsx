@@ -505,33 +505,33 @@ const SalesOrderScreen = ({ mode = 'create' }) => {
             </div>
             <div>
               <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Quantity</label>
-              <input
+              <SapInput
                 type="number"
                 className="sap-input"
                 value={currentLine.quantity}
-                onChange={(e) => handleLineChange('quantity', e.target.value)}
+                onChange={(val) => handleLineChange('quantity', val)}
                 placeholder="Qty"
                 min="1"
               />
             </div>
             <div>
               <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Unit Price</label>
-              <input
+              <SapInput
                 type="number"
                 className="sap-input"
                 value={currentLine.unitPrice}
-                onChange={(e) => handleLineChange('unitPrice', e.target.value)}
+                onChange={(val) => handleLineChange('unitPrice', val)}
                 placeholder="Price"
                 step="0.01"
               />
             </div>
             <div>
               <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Discount %</label>
-              <input
+              <SapInput
                 type="number"
                 className="sap-input"
                 value={currentLine.discount}
-                onChange={(e) => handleLineChange('discount', e.target.value)}
+                onChange={(val) => handleLineChange('discount', val)}
                 placeholder="%"
                 min="0"
                 max="100"

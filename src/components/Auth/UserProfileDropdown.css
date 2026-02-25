@@ -563,6 +563,7 @@
   justify-content: center;
   align-items: center;
   gap: 24px;
+  color: black;
 }
 
 .sap-user-footer-item {
@@ -699,6 +700,7 @@
 [data-theme="dark"] .sap-user-footer {
   background: rgba(20, 20, 40, 0.6);
   border-top-color: rgba(100, 100, 150, 0.2);
+  color: white;
 }
 
 [data-theme="dark"] .sap-user-footer-label {

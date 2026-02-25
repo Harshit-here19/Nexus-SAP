@@ -59,7 +59,30 @@ export const saveAllData = (data, userId = null) => {
 // Get specific table data for current user
 export const getTableData = (tableName, userId = null) => {
   const allData = getAllData(userId);
-  return allData[tableName] || [];
+  // return allData[tableName] || [];
+  
+  const data = allData[tableName] || [];
+
+  if (data.length === 0) return data;
+
+  // Get first key of the first row to use for sorting
+  const sortKey = Object.keys(data[0])[0];
+
+  return [...data].sort((a, b) => {
+    const valA = a[sortKey] || 0;
+    const valB = b[sortKey] || 0;
+
+    // If numeric, compare numerically
+    const numA = parseInt(String(valA).replace(/^\D+/g, ""), 10);
+    const numB = parseInt(String(valB).replace(/^\D+/g, ""), 10);
+
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return numA - numB;
+    }
+
+    // Otherwise, fallback to string comparison
+    return String(valA).localeCompare(String(valB));
+  });
 };
 
 // Save table data for current user

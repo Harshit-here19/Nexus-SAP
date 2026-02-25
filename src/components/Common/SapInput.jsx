@@ -15,9 +15,34 @@ const SapInput = ({
   width = "100%",
   icon,
   onIconClick,
-  className = ""
+  className = "",
+  min,
+  max,
+  step = "any"
 }) => {
   const isMobile = window.innerWidth <= 768;
+
+  const handleChange = (e) => {
+    if (!onChange) return;
+
+    if (type === "number") {
+      const val = e.target.value;
+
+      // Allow empty
+      if (val === "") {
+        onChange("");
+        return;
+      }
+
+      const parsed = Number(val);
+
+      if (!isNaN(parsed)) {
+        onChange(parsed);
+      }
+    } else {
+      onChange(e.target.value);
+    }
+  };
 
   return (
     <div
@@ -33,6 +58,7 @@ const SapInput = ({
           {label}
         </label>
       )}
+
       <div className={styles.formField}>
         <div
           className={styles.inputIconWrapper}
@@ -43,20 +69,25 @@ const SapInput = ({
             className={`${className ? className : styles.input} ${
               error ? styles.inputError : ""
             } ${readOnly ? styles.inputReadOnly : ""}`}
-            value={value || ""}
-            onChange={(e) => onChange && onChange(e.target.value)}
+            value={value ?? ""}
+            onChange={handleChange}
             disabled={disabled}
             readOnly={readOnly}
             placeholder={placeholder}
-            maxLength={maxLength}
+            maxLength={type !== "number" ? maxLength : undefined}
+            min={type === "number" ? min : undefined}
+            max={type === "number" ? max : undefined}
+            step={type === "number" ? step : undefined}
             style={{ width: "100%" }}
           />
+
           {icon && (
             <span className={styles.icon} onClick={onIconClick}>
               {icon}
             </span>
           )}
         </div>
+
         {error && <div className={styles.errorText}>{error}</div>}
       </div>
     </div>
@@ -76,20 +107,48 @@ export const SimpleInput = ({
   disabled = false,
   readOnly = false,
   maxLength,
-  width = "100%"
+  width = "100%",
+  min,
+  max,
+  step = "any"
 }) => {
+
+  const handleChange = (e) => {
+    if (!onChange) return;
+
+    if (type === "number") {
+      const val = e.target.value;
+
+      if (val === "") {
+        onChange("");
+        return;
+      }
+
+      const parsed = Number(val);
+
+      if (!isNaN(parsed)) {
+        onChange(parsed);
+      }
+    } else {
+      onChange(e.target.value);
+    }
+  };
+
   return (
     <input
       type={type}
       className={`${className ? className : styles.input} ${
         error ? styles.inputError : ""
       } ${readOnly ? styles.inputReadOnly : ""}`}
-      value={value || ""}
-      onChange={(e) => onChange && onChange(e.target.value)}
+      value={value ?? ""}
+      onChange={handleChange}
       disabled={disabled}
       readOnly={readOnly}
       placeholder={placeholder}
-      maxLength={maxLength}
+      maxLength={type !== "number" ? maxLength : undefined}
+      min={type === "number" ? min : undefined}
+      max={type === "number" ? max : undefined}
+      step={type === "number" ? step : undefined}
       style={{ width }}
     />
   );

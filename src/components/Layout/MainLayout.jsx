@@ -1,5 +1,8 @@
 // src/components/Layout/MainLayout.jsx
 import React, { useState } from "react";
+import { useSwipeable } from "react-swipeable";
+import { IoMdMenu } from "react-icons/io";
+
 import MenuBar from "./MenuBar";
 import Toolbar from "./Toolbar";
 import StatusBar from "./StatusBar";
@@ -20,6 +23,15 @@ const MainLayout = ({ children }) => {
   const [showImportExport, setShowImportExport] = useState(false);
 
   const confirm = useConfirm();
+  const isMobile = window.innerWidth <= 768
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => setSidebarVisible(false), // swipe left → close
+    onSwipedRight: () => setSidebarVisible(true), // swipe right → open
+    delta: 50, // minimum swipe distance
+    preventDefaultTouchmoveEvent: true,
+    // trackMouse: true, // allows testing on desktop
+  });
 
   const {
     currentTransaction,
@@ -67,7 +79,7 @@ const MainLayout = ({ children }) => {
   };
 
   return (
-    <div className="sap-window">
+    <div {...handlers} className="sap-window" >
       {/* Title Bar */}
       <div className="sap-title-bar">
         <div className="title">
@@ -86,7 +98,7 @@ const MainLayout = ({ children }) => {
               }}
             >
               • {currentTransaction}
-              {isTransactionActive && (
+              {!isMobile && isTransactionActive && (
                 <span
                   style={{
                     background: "var(--sap-critical)",
@@ -119,11 +131,12 @@ const MainLayout = ({ children }) => {
 
       {/* Toolbar with Transaction Input */}
       <Toolbar>
+        {/* {isMobile && <span onClick={() => setSidebarVisible(!sidebarVisible)}>{sidebarVisible ? "X" : <IoMdMenu />}</span>} */}
         <TransactionInput />
       </Toolbar>
 
       {/* Main Content */}
-      <div className="sap-main-container" style={{marginBottom: '2rem'}}>
+      <div className="sap-main-container" style={{ marginBottom: '2rem' }}>
         {sidebarVisible && (
           <div
             className="sap-sidebar-overlay"

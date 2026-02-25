@@ -23,7 +23,7 @@ import {
 // =======================================
 
 // Entertainment Categories with prefixes
-const ENTERTAINMENT_CATEGORIES = [
+export const ENTERTAINMENT_CATEGORIES = [
   { value: "MO", label: "🎬 Movies", color: "#e91e63", icon: "🎬" },
   { value: "SE", label: "📺 Series", color: "#9c27b0", icon: "📺" },
   { value: "AN", label: "🎌 Anime", color: "#2196f3", icon: "🎌" },
@@ -111,33 +111,32 @@ const PLATFORM_OPTIONS = [
 ];
 
 const initialFormState = (user) => ({
-    itemNumber: "",
-    category: "",
-    title: "",
-    description: "",
-    year: "",
-    status: "planned",
-    priority: "medium",
-    rating: "",
-    genres: [],
-    platform: "",
-    url: "",
-    imageUrl: "",
-    episodes: "",
-    currentEpisode: "",
-    chapters: "",
-    currentChapter: "",
-    seasons: "",
-    currentSeason: "",
-    duration: "",
-    studio: "",
-    developer: "",
-    director: "",
-    cast: "",
-    notes: "",
-    tags: "",
-    isNsfw: false,
-    createdBy: user?.username || "SAPUSER",
+  itemNumber: "",
+  category: "",
+  title: "",
+  description: "",
+  year: "",
+  status: "planned",
+  priority: "medium",
+  rating: "",
+  genres: [],
+  platform: "",
+  imageUrl: "",
+  episodes: "",
+  currentEpisode: "",
+  chapters: "",
+  currentChapter: "",
+  seasons: "",
+  currentSeason: "",
+  duration: "",
+  studio: "",
+  developer: "",
+  director: "",
+  cast: "",
+  notes: "",
+  tags: "",
+  isNsfw: false,
+  createdBy: user?.username || "SAPUSER",
 })
 
 const EntertainmentWishlistScreen = ({ mode = "create" }) => {
@@ -655,7 +654,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           />
 
           <div className="sap-form-group">
-            <label className="sap-form-label" style={{width: "130px"}}>Rating</label>
+            <label className="sap-form-label" style={{ width: "130px" }}>Rating</label>
             <div className="sap-form-field">
               {renderRating(formData.rating, !isReadOnly)}
               {!isReadOnly && formData.rating && (
@@ -683,14 +682,6 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             options={PLATFORM_OPTIONS}
             disabled={isReadOnly}
             placeholder="Where to watch/play..."
-          />
-
-          <SapInput
-            label="Season"
-            value={formData.url}
-            onChange={(val) => handleChange("url", val)}
-            disabled={isReadOnly}
-            placeholder="Link to content..."
           />
 
           <div style={{ marginTop: "12px" }}>
@@ -738,23 +729,24 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       {/* Preview Card */}
       {formData.title && (
         <div
-          style={{
-            marginTop: "20px",
-            padding: "16px",
-            background: `linear-gradient(135deg, ${getCategoryInfo(formData.category).color}15 0%, ${getCategoryInfo(formData.category).color}05 100%)`,
-            borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
-            borderRadius: "6px",
-            display: "flex",
-            gap: "16px",
-          }}
+        style={{
+          marginTop: "20px",
+          padding: isMobile ? "12px" : "16px",
+          background: `linear-gradient(135deg, ${getCategoryInfo(formData.category).color}15 0%, ${getCategoryInfo(formData.category).color}05 100%)`,
+          borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
+          borderRadius: "6px",
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: isMobile ? "12px" : "16px",
+        }}
         >
           {formData.imageUrl && (
             <img
               src={formData.imageUrl}
               alt={formData.title}
               style={{
-                width: "80px",
-                height: "120px",
+                width: isMobile ? "100%" : "80px",
+                height: isMobile ? "180px" : "120px",
                 objectFit: "cover",
                 borderRadius: "4px",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
@@ -800,19 +792,20 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             <div
               style={{
                 fontWeight: "700",
-                fontSize: "16px",
+                fontSize: isMobile ? "15px" : "16px",
                 marginBottom: "4px",
               }}
             >
               {formData.title}
             </div>
-            
+
             <div
               style={{
                 display: "flex",
                 gap: "12px",
                 alignItems: "center",
                 flexWrap: "wrap",
+                rowGap: "6px",
               }}
             >
               <span
@@ -856,6 +849,22 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 </span>
               )}
             </div>
+            <div
+              style={{
+                marginTop: "10px",
+                fontSize: isMobile ? "14px" : "13px",
+                fontWeight: "500",
+                lineHeight: "1.6",
+                color: "#6b7280",
+                maxHeight: isMobile ? "none" : "90px",
+                overflow: "hidden",
+                display: "-webkit-box",
+                WebkitLineClamp: isMobile ? 5 : 2,
+                WebkitBoxOrient: "vertical",
+              }}
+            >
+              {formData.description}
+            </div>
           </div>
         </div>
       )}
@@ -883,107 +892,39 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           </h4>
 
           {showEpisodeFields && (
-            <>
-              <div className="sap-form-group">
-                <label className="sap-form-label">Episodes</label>
-                <div
-                  className="sap-form-field"
-                  style={{ display: "flex", gap: "8px", alignItems: "center" }}
-                >
-                  <input
-                    type="number"
-                    className="sap-input"
-                    value={formData.currentEpisode}
-                    onChange={(e) =>
-                      handleChange("currentEpisode", e.target.value)
-                    }
-                    disabled={isReadOnly}
-                    placeholder="Current"
-                    min="0"
-                    style={{ width: "80px" }}
-                  />
-                  <span style={{ color: "var(--sap-text-secondary)" }}>/</span>
-                  <input
-                    type="number"
-                    className="sap-input"
-                    value={formData.episodes}
-                    onChange={(e) => handleChange("episodes", e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="Total"
-                    min="0"
-                    style={{ width: "80px" }}
-                  />
-                </div>
-              </div>
-            </>
+            <SapInput
+              label='Episodes'
+              type="number"
+              value={formData.episodes}
+              onChange={(val) => handleChange("episodes", val)}
+              disabled={isReadOnly}
+              placeholder="Total"
+              min="0"
+            />
           )}
 
           {showSeasonFields && (
-            <div className="sap-form-group">
-              <label className="sap-form-label">Seasons</label>
-              <div
-                className="sap-form-field"
-                style={{ display: "flex", gap: "8px", alignItems: "center" }}
-              >
-                <input
-                  type="number"
-                  className="sap-input"
-                  value={formData.currentSeason}
-                  onChange={(e) =>
-                    handleChange("currentSeason", e.target.value)
-                  }
-                  disabled={isReadOnly}
-                  placeholder="Current"
-                  min="0"
-                  style={{ width: "80px" }}
-                />
-                <span style={{ color: "var(--sap-text-secondary)" }}>/</span>
-                <input
-                  type="number"
-                  className="sap-input"
-                  value={formData.seasons}
-                  onChange={(e) => handleChange("seasons", e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Total"
-                  min="0"
-                  style={{ width: "80px" }}
-                />
-              </div>
-            </div>
+            <SapInput
+              label="Seasons"
+              type="number"
+              value={formData.seasons}
+              onChange={(val) => handleChange("seasons", val)}
+              disabled={isReadOnly}
+              placeholder="Total"
+              min="0"
+            />
           )}
 
           {showChapterFields && (
-            <div className="sap-form-group">
-              <label className="sap-form-label">Chapters</label>
-              <div
-                className="sap-form-field"
-                style={{ display: "flex", gap: "8px", alignItems: "center" }}
-              >
-                <input
-                  type="number"
-                  className="sap-input"
-                  value={formData.currentChapter}
-                  onChange={(e) =>
-                    handleChange("currentChapter", e.target.value)
-                  }
-                  disabled={isReadOnly}
-                  placeholder="Current"
-                  min="0"
-                  style={{ width: "80px" }}
-                />
-                <span style={{ color: "var(--sap-text-secondary)" }}>/</span>
-                <input
-                  type="number"
-                  className="sap-input"
-                  value={formData.chapters}
-                  onChange={(e) => handleChange("chapters", e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Total"
-                  min="0"
-                  style={{ width: "80px" }}
-                />
-              </div>
-            </div>
+            <SapInput
+              label='Chapters'
+              type="number"
+              value={formData.chapters}
+              onChange={(val) => handleChange("chapters", val)}
+              disabled={isReadOnly}
+              placeholder="Total"
+              min={0}
+            />
           )}
 
           <SapInput
@@ -2004,15 +1945,16 @@ const generateMediaReport = (mediaItems) => {
     //IoIosStar, IoIosStarHalf, IoIosStarOutline
 
     return `
-    ${'<span style="color: gold;">★</span>'.repeat(fullStars)}
+    ${'<span style="color: gold;font-size: 1rem;">★</span>'.repeat(fullStars)}
     ${halfStar ? `
       <span style="
         background: linear-gradient(90deg, gold 50%, #ccc 50%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        font-size: 1rem;
       ">★</span>
     ` : ''}
-    ${'<span style="color: #ccc;">★</span>'.repeat(emptyStars)}
+    ${'<span style="color: #ccc;font-size: 1rem;">★</span>'.repeat(emptyStars)}
   `;
   };
 
@@ -2212,15 +2154,13 @@ const generateMediaReport = (mediaItems) => {
 
           /* Poster - Left Side */
           .media-poster {
-            width: 120px;
             min-width: 120px;
-            height: 180px;
             position: relative;
             flex-shrink: 0;
           }
 
           .media-poster img {
-            width: 100%;
+            width: 14rem;
             height: 100%;
             object-fit: cover;
           }
@@ -2399,42 +2339,6 @@ const generateMediaReport = (mediaItems) => {
             text-align: center;
             color: #666666;
             font-size: 11px;
-          }
-
-          /* Print Styles */
-          @media print {
-            body { 
-              padding: 10px; 
-              font-size: 10px;
-            }
-            
-            .media-card { 
-              break-inside: avoid;
-              margin-bottom: 15px;
-            }
-            
-            .media-poster {
-              width: 100px;
-              min-width: 100px;
-              height: 150px;
-            }
-            
-            .stats-grid { 
-              grid-template-columns: repeat(5, 1fr);
-              gap: 10px;
-            }
-            
-            .stat-card {
-              padding: 10px;
-            }
-            
-            .stat-value {
-              font-size: 18px;
-            }
-            
-            .media-title {
-              font-size: 14px;
-            }
           }
         </style>
       </head>

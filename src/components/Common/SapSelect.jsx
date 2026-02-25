@@ -1,5 +1,5 @@
-// src/components/Common/SapSelect.jsx
-import React from 'react';
+import React from "react";
+import styles from "./SapSelect.module.css";
 
 const SapSelect = ({
   label,
@@ -8,39 +8,30 @@ const SapSelect = ({
   options = [],
   required = false,
   disabled = false,
-  placeholder = 'Select...',
-   error = ''
+  placeholder = "Select...",
+  error = ""
 }) => {
-const isMobile = window.innerWidth <= 768; // Simple mobile check
 
   return (
-    <div className="sap-form-group"  >
+    <div className={styles.sapFormGroup}>
       {label && (
         <label
-        style={{
-          width: 130,
-          minWidth: 90,
-          textAlign: "right",
-          paddingRight: 10,
-          fontSize: 11,
-          fontWeight: 600,
-          color: "#4a5568",
-          lineHeight: "26px",
-          flexShrink: 0,
-          textTransform: "uppercase",
-          letterSpacing: "0.5px"
-        }}
-      >
-        {label}
-      </label>
+          className={`${styles.sapSelectLabel} ${
+            required ? styles.sapSelectLabelRequired : ""
+          }`}
+        >
+          {label}
+        </label>
       )}
-      <div className="sap-form-field" style={{minWidth: "160px"}}>
+
+      <div className={styles.sapFormField}>
         <select
-          className={`sap-select ${error ? 'sap-select-error' : ''}`}
-          value={value || ''}
+          className={`${styles.sapSelect} ${
+            error ? styles.sapSelectError : ""
+          }`}
+          value={value || ""}
           onChange={(e) => onChange && onChange(e.target.value)}
           disabled={disabled}
-          style={{ width: '100%' }}
         >
           <option value="">{placeholder}</option>
           {options.map((option, index) => (
@@ -51,11 +42,10 @@ const isMobile = window.innerWidth <= 768; // Simple mobile check
         </select>
 
         {error && (
-          <div className="sap-error-text">
+          <div className={styles.sapErrorText}>
             {error}
           </div>
         )}
-        
       </div>
     </div>
   );

@@ -60,6 +60,73 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
       { key: "salesPrice", label: "Sales Price" },
       { key: "currency", label: "Currency" },
     ],
+    notes: [
+      { key: 'noteNumber', label: 'Note ID' },
+      { key: 'category', label: 'Category' },
+      { key: 'title', label: 'Title' },
+      { key: 'content', label: 'Content' },
+      { key: 'summary', label: 'Summary' },
+      { key: 'status', label: 'Status' },
+      { key: 'priority', label: 'Priority' },
+      { key: 'tags', label: 'Tags' },
+      { key: 'color', label: 'Color' },
+      { key: 'isPinned', label: 'Pinned' },
+      { key: 'isFavorite', label: 'Favorite' },
+      { key: 'isLocked', label: 'Locked' },
+      { key: 'password', label: 'Password' },
+      { key: 'reminder', label: 'Reminder' },
+      { key: 'dueDate', label: 'Due Date' },
+      { key: 'attachments', label: 'Attachments' },
+      { key: 'linkedNotes', label: 'Linked Notes' },
+      { key: 'wordCount', label: 'Words' },
+      { key: 'charCount', label: 'Chars' },
+      { key: 'createdBy', label: 'Created By' }
+    ],
+    expenses: [
+      { key: 'expenseNumber', label: 'Expense ID' },
+      { key: 'date', label: 'Date' },
+      { key: 'category', label: 'Category' },
+      { key: 'description', label: 'Description' },
+      { key: 'amount', label: 'Amount' },
+      { key: 'currency', label: 'Curr' },
+      { key: 'paymentMethod', label: 'Payment Method' },
+      { key: 'vendor', label: 'Vendor' },
+      { key: 'receiptNumber', label: 'Receipt No' },
+      { key: 'notes', label: 'Notes' },
+      { key: 'tags', label: 'Tags' },
+      { key: 'isRecurring', label: 'Recurring' },
+      { key: 'recurringFrequency', label: 'Frequency' },
+      { key: 'status', label: 'Status' },
+      { key: 'createdBy', label: 'Created By' }
+    ],
+    entertainment_wishlist: [
+      { key: 'itemNumber', label: 'Item Number' },
+      { key: 'category', label: 'Category' },
+      { key: 'title', label: 'Title' },
+      { key: 'description', label: 'Description' },
+      { key: 'year', label: 'Year', align: 'center' },
+      { key: 'status', label: 'Status', align: 'center' },
+      { key: 'priority', label: 'Priority', align: 'center' },
+      { key: 'rating', label: 'Rating', align: 'center' },
+      { key: 'genres', label: 'Genres' },
+      { key: 'platform', label: 'Platform' },
+      { key: 'imageUrl', label: 'Image URL' },
+      { key: 'episodes', label: 'Episodes', align: 'right' },
+      { key: 'currentEpisode', label: 'Curr. Episode', align: 'right' },
+      { key: 'chapters', label: 'Chapters', align: 'right' },
+      { key: 'currentChapter', label: 'Curr. Chapter', align: 'right' },
+      { key: 'seasons', label: 'Seasons', align: 'right' },
+      { key: 'currentSeason', label: 'Curr. Season', align: 'right' },
+      { key: 'duration', label: 'Duration' },
+      { key: 'studio', label: 'Studio' },
+      { key: 'developer', label: 'Developer' },
+      { key: 'director', label: 'Director' },
+      { key: 'cast', label: 'Cast' },
+      { key: 'notes', label: 'Notes' },
+      { key: 'tags', label: 'Tags' },
+      { key: 'isNsfw', label: 'NSFW', align: 'center' },
+      { key: 'createdBy', label: 'Created By' }
+    ],
     plants: [
       { key: "plantCode", label: "Plant Code" },
       { key: "plantName", label: "Plant Name" },
@@ -70,6 +137,21 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
       { key: "name", label: "Name" },
       { key: "plantCode", label: "Plant Code" },
     ],
+  };
+
+  const tableConfig = {
+    notes: {
+      duplicateField: "title",
+      existingKey: "noteNumber"
+    },
+    expenses: {
+      duplicateField: "description",
+      existingKey: "expenseNumber"
+    },
+    entertainment_wishlist: {
+      duplicateField: "title",
+      existingKey: "itemNumber"
+    },
   };
 
   // Handle Export
@@ -167,12 +249,12 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
       onStatusMessage("Please select a file first", "warning");
       return;
     }
-  
+
     setIsProcessing(true);
-  
+
     try {
       const importData = importPreview.data;
-  
+
       // 2️⃣ Full backup file
       if (importData.version && importData.data) {
         await restoreBackup(selectedFile);
@@ -182,25 +264,30 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
         );
         return;
       }
-  
+
       // 3️⃣ Ensure a target table is selected
       if (!selectedTable || selectedTable === "all") {
         onStatusMessage("Please select a target table for import", "warning");
         return;
       }
-  
-      const existingData = getTableData(selectedTable);
+
+      const existingData = getTableData(selectedTable) || [];
       const newData = importData;
-  
+
+      if (!newData.length) {
+        throw new Error("Imported file is empty.")
+      }
+
+      const existingKey = tableConfig[selectedTable]?.existingKey;
+
       // 4️⃣ If table has existing data, validate structure
       if (existingData.length > 0) {
-        const existingKey = Object.keys(existingData[0])[0];
         const newKey = Object.keys(newData[0])[0];
-  
+
         if (existingKey !== newKey) {
           throw new Error("The imported file structure does not match the table.");
         }
-  
+
         // 5️⃣ Prepare ID sequence and find missing numbers
         const numbers = existingData
           .map((row) => {
@@ -210,10 +297,10 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
             return { prefix, number: parseInt(numericPart, 10) };
           })
           .filter((n) => !isNaN(n.number));
-  
+
         const existingNumbers = numbers.map((n) => n.number);
         const prefix = numbers[0]?.prefix || "";
-  
+
         // Find missing numbers in sequence
         const minNumber = Math.min(...existingNumbers);
         const maxNumber = Math.max(...existingNumbers);
@@ -221,61 +308,65 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
         for (let i = minNumber; i <= maxNumber; i++) {
           if (!existingNumbers.includes(i)) missingNumbers.push(i);
         }
-  
-        const existingTitles = new Set(existingData.map((r) => r.title));
-  
+
+        const duplicateField = tableConfig[selectedTable]?.duplicateField;
+
+        const existingTitles = new Set(existingData.map((r) => r[duplicateField]));
+
         // 6️⃣ Process imported records, skip duplicates by title
         const processedData = [];
         let nextNumber = maxNumber;
-  
+
         newData
-          .filter((record) => !existingTitles.has(record.title))
+          .filter((record) => !existingTitles.has(record[duplicateField]))
           .forEach((record) => {
             // Use a missing number first if available
             const numberToUse = missingNumbers.length
               ? missingNumbers.shift()
               : ++nextNumber;
-  
+
             const numberPart = String(numberToUse).padStart(9, "0");
-  
+
             processedData.push({
               ...record,
               [existingKey]: prefix + numberPart,
               importedAt: new Date().toISOString(),
             });
           });
-  
+
         // 7️⃣ Merge new data
         const mergedData = [...existingData, ...processedData];
         saveTableData(selectedTable, mergedData);
-  
+
         onStatusMessage(
-          `Imported ${processedData.length} new records to ${selectedTable}. Skipped ${
-            newData.length - processedData.length
+          `Imported ${processedData.length} new records to ${selectedTable}. Skipped ${newData.length - processedData.length
           } duplicates.`,
           "success"
         );
       } else {
         // 8️⃣ If table is empty, just save new data
-        const existingKey = Object.keys(newData[0])[0];
-        let nextNumber = 100000000;
+        let nextNumber = 1000000000;
+        const value = newData[0][existingKey];
+        const prefix = value.slice(0, value.length - 9);
         const processedData = newData.map((record) => {
           nextNumber += 1;
           const numberPart = String(nextNumber).padStart(9, "0");
+          let ID = `${prefix}${String(numberPart).slice(1)}`
+          // console.log(newData[0][existingKey], newData, existingKey)
           return {
             ...record,
-            [existingKey]: numberPart,
+            [existingKey]: ID,
             importedAt: new Date().toISOString(),
           };
         });
-  
+
         saveTableData(selectedTable, processedData);
         onStatusMessage(
           `Imported ${processedData.length} records to ${selectedTable}`,
           "success"
         );
       }
-  
+
       // 9️⃣ Reset state and clear file input
       setSelectedFile(null);
       setImportPreview(null);
@@ -535,7 +626,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
                     : `Table: ${tables.find((t) => t.value === selectedTable)?.label}`}
                 </div>
               </div>
-            )}          
+            )}
           </div>
 
           <div
@@ -555,7 +646,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
             >
               {isProcessing ? "Exporting..." : "Export"}
             </SapButton>
-            
+
           </div>
         </div>
       )}
@@ -692,7 +783,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
             >
               {isProcessing ? "Importing..." : "Import"}
             </SapButton>
-            </div>
+          </div>
         </div>
       )}
 

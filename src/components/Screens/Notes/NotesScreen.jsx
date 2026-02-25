@@ -279,11 +279,13 @@ const NotesScreen = ({ mode = "create" }) => {
       notes = notes.filter((n) => n.status === filterStatus);
     }
 
-    notes = notes.sort((a, b) => {
-      if (a.isPinned && !b.isPinned) return -1;
-      if (!a.isPinned && b.isPinned) return 1;
-      return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
-    });
+    // notes = notes.sort((a, b) => {
+    //   const numA = parseInt(a.noteNumber?.replace(/^\D+/g, "") || "0", 10);
+    //   const numB = parseInt(b.noteNumber?.replace(/^\D+/g, "") || "0", 10);
+    //   return numA - numB;
+    // });
+
+    console.log(notes);
 
     setSearchResults(notes);
     setShowSearchModal(true);
@@ -402,7 +404,7 @@ const NotesScreen = ({ mode = "create" }) => {
       allData.notes = filtered;
       saveAllData(allData);
       clearRef.current?.();
-      updateStatus("Note deleted successfully", "success");
+      updateStatus("Note deleted successfully", "success");      
       setSearchResults(filtered);
     }
     markAsSaved();
@@ -428,12 +430,12 @@ const NotesScreen = ({ mode = "create" }) => {
   // Print Function 
   printRef.current = () => {
     const notes = getTableData("notes") || [];
-  
+
     if (!notes.length) {
       alert("No notes to print!");
       return;
     }
-  
+
     // Summary table
     const tableRows = notes
       .map(
@@ -447,7 +449,7 @@ const NotesScreen = ({ mode = "create" }) => {
       `
       )
       .join("");
-  
+
     // Detailed content using your parseMarkdown function
     const detailedContent = notes
       .map(
@@ -468,7 +470,7 @@ const NotesScreen = ({ mode = "create" }) => {
       `
       )
       .join("");
-  
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -500,7 +502,7 @@ const NotesScreen = ({ mode = "create" }) => {
           <table class="summary-table">
             <thead>
               <tr>
-                <th>#</th>
+                <th>ID</th>
                 <th>Category</th>
                 <th>Title</th>
                 <th>Date</th>
@@ -515,7 +517,7 @@ const NotesScreen = ({ mode = "create" }) => {
         </body>
       </html>
     `;
-  
+
     const printWindow = window.open("", "_blank", "width=900,height=700");
     printWindow.document.write(html);
     printWindow.document.close();
