@@ -1,6 +1,7 @@
 // src/App.js
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { useRegisterSW } from 'virtual:pwa-register/react';
 import {
   TransactionProvider,
   useTransaction,
@@ -42,33 +43,56 @@ const AppContent = () => {
   const { currentTransaction } = useTransaction();
   const { isAuthenticated, isLoading, user, checkIsAdmin } = useAuth();
 
+  // 1. Initialize PWA Update Hook
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW();
+
   useEffect(() => {
     initializeData();
   }, []);
 
+  // 2. Create a small helper for the notification UI
+  const UpdateToast = () => (
+    needRefresh ? (
+      <div className="pwa-update-toast">
+        <span>🚀 New version available!</span>
+        <button onClick={() => updateServiceWorker(true)}>Update</button>
+      </div>
+    ) : null
+  );
+
   // Show loading while checking session
   if (isLoading) {
     return (
-      <div
-        style={{
-          height: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(135deg, #1a365d 0%, #2c5282 100%)",
-        }}
-      >
-        <div style={{ textAlign: "center", color: "white" }}>
-          <div className="sap-spinner" style={{ margin: "0 auto 16px" }}></div>
-          <div>Loading SAP GUI...</div>
+      <>
+        <UpdateToast /> {/* Show even on loading */}
+        <div
+          style={{
+            height: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "linear-gradient(135deg, #1a365d 0%, #2c5282 100%)",
+          }}
+        >
+          <div style={{ textAlign: "center", color: "white" }}>
+            <div className="sap-spinner" style={{ margin: "0 auto 16px" }}></div>
+            <div>Loading SAP GUI...</div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   // Show login if not authenticated
   if (!isAuthenticated) {
-    return <LoginScreen />;
+    return (<>
+      <UpdateToast /> {/* Show on login screen */}
+      <LoginScreen />
+    </>
+    );
   }
 
   const renderScreen = () => {
@@ -113,13 +137,13 @@ const AppContent = () => {
         return <EntertainmentWishlistScreen mode="display" />;
 
       case "NT01":
-        return <NotesScreen mode="create"/>;
+        return <NotesScreen mode="create" />;
 
       case "NT02":
-        return <NotesScreen mode="change"/>;
+        return <NotesScreen mode="change" />;
 
       case "NT03":
-        return <NotesScreen mode="display"/>;
+        return <NotesScreen mode="display" />;
 
       case "SM37":
         return (
@@ -216,6 +240,7 @@ const AppContent = () => {
         <SessionProvider>
           <ConfirmProvider>
             <TransactionTracker>
+              <UpdateToast />
               <MainLayout>{renderScreen()}</MainLayout>
             </TransactionTracker>
           </ConfirmProvider>
@@ -226,6 +251,12 @@ const AppContent = () => {
 };
 
 function App() {
+  const {
+    offlineReady: [offlineReady, setOfflineReady],
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW();
+
   return (
     <AuthProvider>
       <TransactionProvider>

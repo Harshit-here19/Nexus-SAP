@@ -13,3 +13,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
 }
+
+.pwa-update-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000; /* Higher than any SAP panel */
+  background: #2d3748;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  border: 1px solid #4a5568;
+}
+
+.pwa-update-toast button {
+  background: #48bb78;
+  border: none;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
