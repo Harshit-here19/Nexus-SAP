@@ -16,7 +16,7 @@ const SessionTabs = () => {
   const { isTransactionActive, currentTransaction } = useTransaction();
   const [showContextMenu, setShowContextMenu] = useState(null);
 
-  const confirm = useConfirm();
+  const {confirm} = useConfirm();
 
   const handleCreateSession =  () => {
     if (sessions.length >= 6) {
@@ -34,19 +34,19 @@ const SessionTabs = () => {
       return;
     }
     
-    if (isTransactionActive && sessionId === activeSessionId) {
-      confirm('Please exit current transaction before closing session','warning');
-      return;
-    }
+    // if (isTransactionActive && sessionId === activeSessionId) {
+    //   confirm('Please exit current transaction before closing session','warning');
+    //   return;
+    // }
     
     closeSession(sessionId);
   };
 
   const handleSwitchSession = (sessionId) => {
-    if (isTransactionActive && sessionId !== activeSessionId) {
-      confirm('Please exit current transaction before switching sessions','warning');
-      return;
-    }
+    // if (isTransactionActive && sessionId !== activeSessionId) {
+    //   confirm('Please exit current transaction before switching sessions','warning');
+    //   return;
+    // }
     switchSession(sessionId);
   };
 
@@ -81,7 +81,7 @@ const SessionTabs = () => {
               ? 'var(--sap-text-primary)' 
               : 'rgba(255,255,255,0.8)',
             borderRadius: '6px 6px 0 0',
-            cursor: isTransactionActive && session.id !== activeSessionId 
+            cursor: session.id !== activeSessionId 
               ? 'not-allowed' 
               : 'pointer',
             marginRight: '2px',
@@ -89,7 +89,7 @@ const SessionTabs = () => {
             fontWeight: session.id === activeSessionId ? '600' : '400',
             transition: 'all 0.2s',
             position: 'relative',
-            opacity: isTransactionActive && session.id !== activeSessionId ? 0.5 : 1
+            opacity: session.id !== activeSessionId ? 0.5 : 1
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -146,7 +146,7 @@ const SessionTabs = () => {
       {/* New Session Button */}
       <button
         onClick={handleCreateSession}
-        disabled={sessions.length >= 6 || isTransactionActive}
+        disabled={sessions.length >= 6}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -157,14 +157,14 @@ const SessionTabs = () => {
           border: 'none',
           borderRadius: '4px',
           color: 'rgba(255,255,255,0.8)',
-          cursor: sessions.length >= 6 || isTransactionActive ? 'not-allowed' : 'pointer',
+          cursor: sessions.length >= 6 ? 'not-allowed' : 'pointer',
           marginLeft: '4px',
           fontSize: '16px',
-          opacity: sessions.length >= 6 || isTransactionActive ? 0.3 : 1
+          opacity: sessions.length >= 6 ? 0.3 : 1
         }}
         title={sessions.length >= 6 ? 'Maximum sessions reached' : 'Create new session'}
         onMouseOver={(e) => {
-          if (sessions.length < 6 && !isTransactionActive) {
+          if (sessions.length < 6) {
             e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
           }
         }}

@@ -1,11 +1,9 @@
 // src/components/Screens/Notes/NotesEditor.jsx
 
 import { forwardRef, useState, useEffect, useRef } from "react";
-import { SimpleInput } from "../../Common/SapInput";
-import NotesToolbar from "./NotesToolbar";
-import { parseMarkdown } from "./NotesUtils";
 import styles from "./NotesEditor.module.css";
 import NotesVerticalToolbar from "./NotesVerticalToolbar";
+import MarkdownPreview from "../../Common/MarkdownPreview";
 
 const isMobile = window.innerWidth <= 768;
 
@@ -23,6 +21,7 @@ const NotesEditor = forwardRef(
       onFormat,
       loadDemoNote,
       mode,
+      codeTheme
     },
     ref,
   ) => {
@@ -30,10 +29,11 @@ const NotesEditor = forwardRef(
     const [hasProceeded, setHasProceeded] = useState(false);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [toolbarCollapsed, setToolbarCollapsed] = useState(false);
-    
+
     const summaryRef = useRef(null);
     const titleInputRef = useRef(null);
 
+  
     // Check if title and summary are valid
     const isTitleValid = formData.title && formData.title.trim().length >= 3;
     const isSummaryValid = formData.summary && formData.summary.trim().length >= 10;
@@ -214,12 +214,12 @@ const NotesEditor = forwardRef(
               </span>
               <span className={styles['button-icon']}>→</span>
             </button>
-            
+
             {!canProceed && (
               <p className={styles['notes-proceed-hint']}>
-                {!isTitleValid && !isSummaryValid 
+                {!isTitleValid && !isSummaryValid
                   ? 'Please enter both title and summary to continue'
-                  : !isTitleValid 
+                  : !isTitleValid
                     ? 'Title must be at least 3 characters'
                     : 'Summary must be at least 10 characters'
                 }
@@ -249,7 +249,7 @@ const NotesEditor = forwardRef(
     // Render the content step (Editor)
     const renderContentStep = () => (
       <div className={`${styles['notes-content-step']} ${isTransitioning ? styles['fade-out'] : styles['fade-in']}`}>
-        
+
         {/* Header with Title & Summary Preview */}
         <div className={styles['notes-content-header-bar']}>
           {!(mode === "display") && <button
@@ -301,12 +301,9 @@ const NotesEditor = forwardRef(
               <div className={styles["notes-editor-inner"]}>
                 {showPreview || isReadOnly ? (
                   <div className={styles["notes-preview-wrapper"]}>
-                    <div
-                      className={styles["notes-preview"]}
-                      dangerouslySetInnerHTML={{
-                        __html: parseMarkdown(formData.content),
-                      }}
-                    />
+                    <MarkdownPreview codeTheme={codeTheme}>
+                      {formData.content}
+                    </MarkdownPreview>
                   </div>
                 ) : (
                   <div className={styles["notes-textarea-wrapper"]}>

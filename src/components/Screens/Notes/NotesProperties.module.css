@@ -322,6 +322,7 @@
     appearance: none;
     cursor: pointer;
     padding-right: 44px;
+    height: 100%;
 }
 
 .selectArrow {

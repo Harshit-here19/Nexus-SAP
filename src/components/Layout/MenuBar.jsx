@@ -38,13 +38,13 @@ const menuItems = [
   {
     label: 'Extras',
     items: [
-      { label: '📤 Export Data...', action: 'exportData', highlight: true },
-      { label: '📥 Import Data...', action: 'importData', highlight: true },
+      { label: '📤 Export Data...', action: 'export', highlight: true },
+      { label: '📥 Import Data...', action: 'import', highlight: true },
       { separator: true },
       { label: '💾 Create Backup', action: 'createBackup' },
       { label: '📂 Restore Backup...', action: 'restoreBackup' },
       { separator: true },
-      { label: '🧹 Erase Table', action: 'eraseTable' },
+      { label: '🧹 Erase Table', action: 'erase' },
       { separator: true },
       { label: '⚙️ Settings', action: 'settings' }
     ]
@@ -76,7 +76,7 @@ const MenuBar = ({ onNewSession, onToggleSidebar, onOpenImportExport }) => {
   const [activeMenu, setActiveMenu] = useState(null);
   const { isTransactionActive, updateStatus } = useTransaction();
 
-  const confirm = useConfirm();
+  const {confirm} = useConfirm();
 
   const handleMenuClick = (index) => {
     setActiveMenu(activeMenu === index ? null : index);
@@ -92,11 +92,11 @@ const MenuBar = ({ onNewSession, onToggleSidebar, onOpenImportExport }) => {
       case 'toggleSidebar':
         onToggleSidebar && onToggleSidebar();
         break;
-      case 'exportData':
-      case 'importData':
+      case 'export':
+      case 'import':
       case 'createBackup':
       case 'restoreBackup':
-      case 'eraseTable':
+      case 'erase':
         if (isTransactionActive) {
           updateStatus('Please exit current transaction before importing/exporting', 'warning');
         } else {

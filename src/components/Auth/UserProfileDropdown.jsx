@@ -13,7 +13,7 @@ const UserProfileDropdown = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  const confirm = useConfirm();
+  const {confirm} = useConfirm();
 
   const isMobile = window.innerWidth <= 786;
 

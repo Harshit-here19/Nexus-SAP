@@ -7,7 +7,10 @@ export const useConfirm = () => {
   return useContext(ConfirmContext);
 };
 
+
 export const ConfirmProvider = ({ children }) => {
+  const previousFocus = useRef(null);
+
   const [dialogState, setDialogState] = useState({
     open: false,
     mode: "confirm", // "confirm" | "prompt"
@@ -21,6 +24,10 @@ export const ConfirmProvider = ({ children }) => {
 
   // ✅ CONFIRM FUNCTION
   const confirm = (message, type = "normal") => {
+    // Capture the element that has focus right now (the button or input in your modal)
+    previousFocus.current = document.activeElement;
+    // console.log(previousFocus?.current);
+
     setDialogState({
       open: true,
       mode: "confirm",
@@ -40,6 +47,10 @@ export const ConfirmProvider = ({ children }) => {
     message,
     { type = "normal", defaultValue = "", placeholder = "" } = {}
   ) => {
+    // Capture the element that has focus right now (the button or input in your modal)
+    previousFocus.current = document.activeElement;
+    // console.log(previousFocus?.current);
+
     setDialogState({
       open: true,
       mode: "prompt",
@@ -68,6 +79,25 @@ export const ConfirmProvider = ({ children }) => {
       resolver.current(result);
       resolver.current = null;
     }
+
+    // RETURN FOCUS: Wait for the next tick to ensure the DOM has hidden the modal
+    setTimeout(() => {
+      if (previousFocus.current && previousFocus.current.focus) {
+        previousFocus.current.focus();
+      }
+    }, 0);
+
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation(); // ✋ Stops the event from hitting the background modal
+      handleClose(dialogState.mode === "prompt" ? dialogState.inputValue : true);
+    }
+    if (e.key === "Escape") {
+      handleClose(null);
+    }
   };
 
   return (
@@ -75,7 +105,12 @@ export const ConfirmProvider = ({ children }) => {
       {children}
 
       {dialogState.open && (
-        <div className="confirm-overlay">
+        <div
+          className="confirm-overlay"
+          onKeyDown={handleKeyDown} // Listen here
+          tabIndex="-1" // Makes the div focusable
+          ref={(el) => el && el.focus()} // Auto-focus when it opens
+        >
           <div className={`confirm-box ${dialogState.type}`}>
             <div className="confirm-message">
               {dialogState.message}
@@ -106,6 +141,7 @@ export const ConfirmProvider = ({ children }) => {
               </button>
 
               <button
+                autoFocus
                 className={`btn confirm ${dialogState.type}`}
                 onClick={() =>
                   handleClose(

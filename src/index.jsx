@@ -9,3 +9,21 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+window.copyCodeSnippet = (btn) => {
+  const code = decodeURIComponent(btn.getAttribute('data-code'));
+  
+  navigator.clipboard.writeText(code).then(() => {
+    const originalText = btn.innerText;
+    btn.innerText = 'Copied!';
+    btn.style.background = '#10b981'; // Green success color
+    
+    setTimeout(() => {
+      btn.innerText = originalText;
+      btn.style.background = '#444';
+    }, 2000);
+  }).catch(err => {
+    console.error('Failed to copy!', err);
+    btn.innerText = 'Error';
+  });
+};

@@ -88,7 +88,7 @@ const NotesSearchModal = ({
               <th>Status</th>
               <th>Words</th>
               <th>Updated</th>
-              <th>Action</th>
+              {currentTransaction === "NT02" && <th>Action</th>}
             </tr>
           </thead>
           <tbody>
@@ -106,7 +106,13 @@ const NotesSearchModal = ({
               </tr>
             ) : (
               searchResults.map((note, index) => (
-                <tr key={index}>
+                <tr key={index}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    onSelectNote(note)
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
                   <td>
                     {note.isPinned && '📌'}
                     {note.isFavorite && '⭐'}
@@ -125,13 +131,13 @@ const NotesSearchModal = ({
                     >
                       {note.title}
                     </div>
-                    {note.summary && !note.isLocked ? (
+                    {note.summary && note.isLocked ? (
                       <div className="notes-search-summary">
-                        {note.summary.substring(0, 50)}...
+                        {"- ".repeat(20)}
                       </div>
                     ) :
                       <div className="notes-search-summary">
-                        {"- ".repeat(20)}
+                        {note.summary.substring(0, 50)}...
                       </div>
                     }
                   </td>
@@ -158,24 +164,21 @@ const NotesSearchModal = ({
                     {note.updatedAt ? new Date(note.updatedAt).toLocaleDateString() : '-'}
                   </td>
 
-                  <td>
-                    <span style={{ marginRight: "8px", width: "4rem", display: "inline-block" }}>
-                      <SapButton
-                        onClick={() => onSelectNote(note)}
-                        type="primary"
-                      >
-                        👁️
-                      </SapButton>
-                    </span>
-                    {currentTransaction === "NT02" && (<span style={{ marginLeft: "8px", width: "4rem", display: "inline-block" }}>
-                      <SapButton
-                        onClick={() => deleteInSearchModal(note.noteNumber)}
-                        type="danger"
-                      >
-                        🗑️
-                      </SapButton>
-                    </span>)}
-                  </td>
+                  {currentTransaction === "NT02" && (
+                    <td>
+                      <span style={{ marginLeft: "8px", width: "4rem", display: "inline-block" }}>
+                        <SapButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteInSearchModal(note.noteNumber)
+                          }}
+                          type="danger"
+                        >
+                          🗑️
+                        </SapButton>
+                      </span>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

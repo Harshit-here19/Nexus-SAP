@@ -12,8 +12,8 @@ const NotesProperties = ({
   onChange,
   errors
 }) => {
-  const {prompt} = useConfirm();
-  
+  const { prompt } = useConfirm();
+
   // Password section state
   const [showPassword, setShowPassword] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -23,31 +23,33 @@ const NotesProperties = ({
   });
   const [passwordErrors, setPasswordErrors] = useState({});
   const [passwordStrength, setPasswordStrength] = useState(0);
-  
+
   const passwordSectionRef = useRef(null);
 
   // Handle lock toggle
   const handleLockToggle = async (checked) => {
     if (formData.isLocked) {
-      const enteredPassword = await prompt("This note is locked. Enter password:", {type:'warning',placeholder:'Enter Password...'});
-  
+      const enteredPassword = await prompt("This note is locked. Enter password:", 
+        { type: 'warning', placeholder: 'Enter Password...' }
+      );
+
       // Replace this with your real password validation logic
       if (enteredPassword !== formData.password) {
-        setPasswordErrors(prev => ({ 
-          ...prev, 
-          password: 'Wrong Password' 
+        setPasswordErrors(prev => ({
+          ...prev,
+          password: 'Wrong Password'
         }));
         return;
       }
     }
-    
+
     onChange('isLocked', checked);
     if (checked) {
       // Show password section with animation
       setTimeout(() => {
-        passwordSectionRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
+        passwordSectionRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
         });
       }, 100);
     } else {
@@ -82,43 +84,43 @@ const NotesProperties = ({
   // Handle password change
   const handlePasswordChange = (field, value) => {
     setPasswordData(prev => ({ ...prev, [field]: value }));
-    
+
     if (field === 'password') {
       setPasswordStrength(calculatePasswordStrength(value));
       onChange('password', value);
-      
+
       // Validate
       if (value && value.length < 6) {
-        setPasswordErrors(prev => ({ 
-          ...prev, 
-          password: 'Password must be at least 6 characters' 
+        setPasswordErrors(prev => ({
+          ...prev,
+          password: 'Password must be at least 6 characters'
         }));
       } else {
         setPasswordErrors(prev => ({ ...prev, password: '' }));
       }
-      
+
       // Check confirm password match
       if (passwordData.confirmPassword && value !== passwordData.confirmPassword) {
-        setPasswordErrors(prev => ({ 
-          ...prev, 
-          confirmPassword: 'Passwords do not match' 
+        setPasswordErrors(prev => ({
+          ...prev,
+          confirmPassword: 'Passwords do not match'
         }));
       } else if (passwordData.confirmPassword) {
         setPasswordErrors(prev => ({ ...prev, confirmPassword: '' }));
       }
     }
-    
+
     if (field === 'confirmPassword') {
       if (value !== passwordData.password) {
-        setPasswordErrors(prev => ({ 
-          ...prev, 
-          confirmPassword: 'Passwords do not match' 
+        setPasswordErrors(prev => ({
+          ...prev,
+          confirmPassword: 'Passwords do not match'
         }));
       } else {
         setPasswordErrors(prev => ({ ...prev, confirmPassword: '' }));
       }
     }
-    
+
     if (field === 'hint') {
       onChange('passwordHint', value);
     }
@@ -152,7 +154,7 @@ const NotesProperties = ({
               <span className={styles.sectionIcon}>📋</span>
               <h4 className={styles.sectionTitle}>Basic Information</h4>
             </div>
-            
+
             <div className={styles.sectionContent}>
               {/* Note ID */}
               <div className={styles.fieldGroup}>
@@ -209,9 +211,8 @@ const NotesProperties = ({
                       type="button"
                       onClick={() => !isReadOnly && onChange('status', status.value)}
                       disabled={isReadOnly}
-                      className={`${styles.statusOption} ${
-                        formData.status === status.value ? styles.active : ''
-                      } ${styles[`status-${status.value}`]}`}
+                      className={`${styles.statusOption} ${formData.status === status.value ? styles.active : ''
+                        } ${styles[`status-${status.value}`]}`}
                     >
                       <span className={styles.statusIcon}>{status.icon || '○'}</span>
                       <span className={styles.statusLabel}>{status.label}</span>
@@ -233,9 +234,8 @@ const NotesProperties = ({
                       type="button"
                       onClick={() => !isReadOnly && onChange('priority', priority.value)}
                       disabled={isReadOnly}
-                      className={`${styles.priorityOption} ${
-                        formData.priority === priority.value ? styles.active : ''
-                      } ${styles[`priority-${priority.value}`]}`}
+                      className={`${styles.priorityOption} ${formData.priority === priority.value ? styles.active : ''
+                        } ${styles[`priority-${priority.value}`]}`}
                       title={priority.label}
                     >
                       <span className={styles.priorityDot} />
@@ -284,7 +284,7 @@ const NotesProperties = ({
               <span className={styles.sectionIcon}>🔧</span>
               <h4 className={styles.sectionTitle}>Settings & Options</h4>
             </div>
-            
+
             <div className={styles.sectionContent}>
               {/* Quick Toggles */}
               <div className={styles.toggleGroup}>
@@ -458,7 +458,7 @@ const NotesProperties = ({
 
       {/* Password Section - Conditional */}
       {formData.isLocked && (
-        <div 
+        <div
           ref={passwordSectionRef}
           className={`${styles.passwordSection} ${formData.isLocked ? styles.visible : ''}`}
         >
@@ -495,9 +495,8 @@ const NotesProperties = ({
                       onChange={(e) => handlePasswordChange('password', e.target.value)}
                       disabled={isReadOnly}
                       placeholder="Enter password..."
-                      className={`${styles.fieldInput} ${styles.passwordInput} ${
-                        passwordErrors.password ? styles.hasError : ''
-                      }`}
+                      className={`${styles.fieldInput} ${styles.passwordInput} ${passwordErrors.password ? styles.hasError : ''
+                        }`}
                       autoComplete="new-password"
                     />
                     <button
@@ -509,20 +508,20 @@ const NotesProperties = ({
                       {showPasswordText ? '🙈' : '👁️'}
                     </button>
                   </div>
-                  
+
                   {/* Password Strength Indicator */}
                   {passwordData.password && (
                     <div className={styles.strengthIndicator}>
                       <div className={styles.strengthBar}>
-                        <div 
+                        <div
                           className={styles.strengthFill}
-                          style={{ 
+                          style={{
                             width: `${passwordStrength}%`,
                             background: strengthInfo.color
                           }}
                         />
                       </div>
-                      <span 
+                      <span
                         className={styles.strengthLabel}
                         style={{ color: strengthInfo.color }}
                       >
@@ -530,7 +529,7 @@ const NotesProperties = ({
                       </span>
                     </div>
                   )}
-                  
+
                   {passwordErrors.password && (
                     <span className={styles.fieldError}>{passwordErrors.password}</span>
                   )}
@@ -550,13 +549,11 @@ const NotesProperties = ({
                       onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
                       disabled={isReadOnly}
                       placeholder="Confirm password..."
-                      className={`${styles.fieldInput} ${styles.passwordInput} ${
-                        passwordErrors.confirmPassword ? styles.hasError : ''
-                      } ${
-                        passwordData.confirmPassword && 
-                        passwordData.confirmPassword === passwordData.password ? 
-                        styles.isValid : ''
-                      }`}
+                      className={`${styles.fieldInput} ${styles.passwordInput} ${passwordErrors.confirmPassword ? styles.hasError : ''
+                        } ${passwordData.confirmPassword &&
+                          passwordData.confirmPassword === passwordData.password ?
+                          styles.isValid : ''
+                        }`}
                       autoComplete="new-password"
                     />
                     <button
@@ -567,10 +564,10 @@ const NotesProperties = ({
                     >
                       {showConfirmText ? '🙈' : '👁️'}
                     </button>
-                    {passwordData.confirmPassword && 
-                     passwordData.confirmPassword === passwordData.password && (
-                      <span className={styles.matchIcon}>✓</span>
-                    )}
+                    {passwordData.confirmPassword &&
+                      passwordData.confirmPassword === passwordData.password && (
+                        <span className={styles.matchIcon}>✓</span>
+                      )}
                   </div>
                   {passwordErrors.confirmPassword && (
                     <span className={styles.fieldError}>{passwordErrors.confirmPassword}</span>
@@ -649,7 +646,7 @@ const NotesProperties = ({
             <span className={styles.sectionIcon}>🎨</span>
             <h4 className={styles.sectionTitle}>Note Color</h4>
           </div>
-          
+
           <div className={styles.colorContent}>
             <p className={styles.colorDescription}>
               Choose a color to organize and identify your note quickly
@@ -660,14 +657,13 @@ const NotesProperties = ({
                 type="button"
                 onClick={() => !isReadOnly && onChange('color', '')}
                 disabled={isReadOnly}
-                className={`${styles.colorSwatch} ${styles.noColor} ${
-                  !formData.color ? styles.selected : ''
-                }`}
+                className={`${styles.colorSwatch} ${styles.noColor} ${!formData.color ? styles.selected : ''
+                  }`}
                 title="No color"
               >
                 <span className={styles.noColorIcon}>✕</span>
               </button>
-              
+
               {/* Color Options */}
               {COLOR_OPTIONS.filter(c => c).map(color => (
                 <button
@@ -675,9 +671,8 @@ const NotesProperties = ({
                   type="button"
                   onClick={() => !isReadOnly && onChange('color', color)}
                   disabled={isReadOnly}
-                  className={`${styles.colorSwatch} ${
-                    formData.color === color ? styles.selected : ''
-                  }`}
+                  className={`${styles.colorSwatch} ${formData.color === color ? styles.selected : ''
+                    }`}
                   style={{ '--swatch-color': color }}
                   title={color}
                 >
@@ -687,10 +682,10 @@ const NotesProperties = ({
                 </button>
               ))}
             </div>
-            
+
             {/* Color Preview */}
             {formData.color && (
-              <div 
+              <div
                 className={styles.colorPreview}
                 style={{ '--preview-color': formData.color }}
               >
@@ -715,46 +710,46 @@ const NotesProperties = ({
             <span className={styles.sectionIcon}>ℹ️</span>
             <h4 className={styles.sectionTitle}>Metadata</h4>
           </div>
-          
+
           <div className={styles.metadataGrid}>
             <div className={styles.metadataItem}>
               <span className={styles.metadataIcon}>📅</span>
               <div className={styles.metadataInfo}>
                 <span className={styles.metadataLabel}>Created</span>
                 <span className={styles.metadataValue}>
-                  {formData.createdAt 
+                  {formData.createdAt
                     ? new Date(formData.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })
                     : 'Not yet saved'
                   }
                 </span>
               </div>
             </div>
-            
+
             <div className={styles.metadataItem}>
               <span className={styles.metadataIcon}>✏️</span>
               <div className={styles.metadataInfo}>
                 <span className={styles.metadataLabel}>Last Modified</span>
                 <span className={styles.metadataValue}>
-                  {formData.updatedAt 
+                  {formData.updatedAt
                     ? new Date(formData.updatedAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })
                     : 'Never'
                   }
                 </span>
               </div>
             </div>
-            
+
             <div className={styles.metadataItem}>
               <span className={styles.metadataIcon}>👤</span>
               <div className={styles.metadataInfo}>
@@ -764,7 +759,7 @@ const NotesProperties = ({
                 </span>
               </div>
             </div>
-            
+
             <div className={styles.metadataItem}>
               <span className={styles.metadataIcon}>📊</span>
               <div className={styles.metadataInfo}>

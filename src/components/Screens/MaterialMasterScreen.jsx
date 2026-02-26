@@ -27,7 +27,7 @@ const MaterialMasterScreen = ({ mode = "create" }) => {
   const { registerAction, clearAction } = useAction();
   const { user } = useAuth();
 
-  const confirm = useConfirm();
+  const {confirm} = useConfirm();
 
   const saveRef = useRef(null);
   const clearRef = useRef(null);

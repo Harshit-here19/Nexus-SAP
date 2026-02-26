@@ -4,8 +4,6 @@ import React, { useState } from 'react';
 import { VERTICAL_FORMATTING_OPTIONS } from './NotesConstants';
 import styles from "./NotesVerticalToolbar.module.css";
 
-console.log(VERTICAL_FORMATTING_OPTIONS);
-
 const NotesVerticalToolbar = ({
   onFormat,
   showPreview,

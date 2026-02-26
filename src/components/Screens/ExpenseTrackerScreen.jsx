@@ -61,7 +61,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
-  const confirm = useConfirm();
+  const { confirm } = useConfirm();
 
   const saveRef = useRef(null);
   const clearRef = useRef(null);
@@ -371,7 +371,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
             </h4>
 
             <div className="sap-form-group">
-              <label className="sap-form-label required" style={{width:"130px"}}>Amount</label>
+              <label className="sap-form-label required" style={{ width: "130px" }}>Amount</label>
               <div
                 className="sap-form-field"
                 style={{ display: "flex", gap: "8px" }}
@@ -951,7 +951,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                 <th>Category</th>
                 <th>Description</th>
                 <th style={{ textAlign: "right" }}>Amount</th>
-                <th>Action</th>
+                {currentTransaction === "VA02" && <th>Action</th>}
               </tr>
             </thead>
             <tbody>
@@ -971,7 +971,13 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                 </tr>
               ) : (
                 searchResults.map((expense, index) => (
-                  <tr key={index}>
+                  <tr key={index}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectExpense(expense)
+                    }}
+                    style={{ cursor: "pointer" }}
+                  >
                     <td style={{ fontWeight: "600" }}>
                       {expense.expenseNumber}
                     </td>
@@ -996,24 +1002,18 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                       {expense.currency} {parseFloat(expense.amount).toFixed(2)}
                     </td>
 
-                    <td>
-                      <span style={{ marginRight: "8px", width: "4rem", display: "inline-block" }}>
-                        <SapButton
-                          onClick={() => handleSelectExpense(expense)}
-                          type="primary"
-                        >
-                          👁️
-                        </SapButton>
-                      </span>
-                      {currentTransaction === "VA02" && (<span style={{ marginLeft: "8px", width: "4rem", display: "inline-block" }}>
-                        <SapButton
-                          onClick={() => DeleteInSearchModal(expense.id)}
-                          type="danger"
-                        >
-                          🗑️
-                        </SapButton>
-                      </span>)}
-                    </td>
+                    {currentTransaction === "VA02" && (
+                      <td>
+                        <span style={{ marginLeft: "8px", width: "4rem", display: "inline-block" }}>
+                          <SapButton
+                            onClick={() => DeleteInSearchModal(expense.id)}
+                            type="danger"
+                          >
+                            🗑️
+                          </SapButton>
+                        </span>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

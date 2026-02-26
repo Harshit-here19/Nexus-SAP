@@ -77,3 +77,12 @@
   background: #16a34a;
   color: white;
 }
+
+.confirm-input {
+  width: 100%;
+  padding: 8px 10px;
+  margin: 15px 0;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}

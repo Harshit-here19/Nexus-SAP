@@ -140,6 +140,13 @@ export const VERTICAL_FORMATTING_OPTIONS = [
     label: 'Tasks',
     shortcut: 'Ctrl+Shift+9'
   },
+  { 
+    action: 'arrow', 
+    icon: '➤', 
+    title: 'Arrow', 
+    label: 'Tasks',
+    shortcut: 'Ctrl+Shift+9'
+  },
   { action: 'separator' },
   { 
     action: 'quote', 

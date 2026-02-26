@@ -16,7 +16,7 @@ const SETTINGS_KEY = 'sap_user_settings';
 
 const defaultSettings = {
   theme: 'light', // 'light', 'dark', 'blue'
-  language: 'EN',
+  codeTheme: 'Dracula', // MacOS, Githubdark, Glass, Cyberpunk, TokyoNight
   dateFormat: 'MM/DD/YYYY',
   timeFormat: '24h',
   decimalNotation: '1,234,567.89',

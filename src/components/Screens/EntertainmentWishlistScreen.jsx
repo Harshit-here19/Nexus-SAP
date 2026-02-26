@@ -145,7 +145,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
-  const confirm = useConfirm();
+  const { confirm } = useConfirm();
 
   const saveRef = useRef(null);
   const clearRef = useRef(null);
@@ -729,16 +729,16 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       {/* Preview Card */}
       {formData.title && (
         <div
-        style={{
-          marginTop: "20px",
-          padding: isMobile ? "12px" : "16px",
-          background: `linear-gradient(135deg, ${getCategoryInfo(formData.category).color}15 0%, ${getCategoryInfo(formData.category).color}05 100%)`,
-          borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
-          borderRadius: "6px",
-          display: "flex",
-          flexDirection: isMobile ? "column" : "row",
-          gap: isMobile ? "12px" : "16px",
-        }}
+          style={{
+            marginTop: "20px",
+            padding: isMobile ? "12px" : "16px",
+            background: `linear-gradient(135deg, ${getCategoryInfo(formData.category).color}15 0%, ${getCategoryInfo(formData.category).color}05 100%)`,
+            borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
+            borderRadius: "6px",
+            display: "flex",
+            flexDirection: isMobile ? "column" : "row",
+            gap: isMobile ? "12px" : "16px",
+          }}
         >
           {formData.imageUrl && (
             <img
@@ -1659,7 +1659,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 <th>Status</th>
                 <th>Priority</th>
                 <th>Rating</th>
-                <th>Action</th>
+                {currentTransaction === "WS02" && <th>Action</th>}
               </tr>
             </thead>
             <tbody>
@@ -1682,7 +1682,13 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 </tr>
               ) : (
                 searchResults.map((item, index) => (
-                  <tr key={index}>
+                  <tr key={index}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectItem(item)
+                    }}
+                    style={{ cursor: "pointer" }}
+                  >
                     <td>
                       {item.imageUrl ? (
                         <img
@@ -1808,24 +1814,18 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                         </span>
                       )}
                     </td>
-                    <td>
-                      <span style={{ marginRight: "8px", width: "4rem", display: "inline-block" }}>
-                        <SapButton
-                          onClick={() => handleSelectItem(item)}
-                          type="primary"
-                        >
-                          👁️
-                        </SapButton>
-                      </span>
-                      {currentTransaction === "WS02" && (<span style={{ marginLeft: "8px", width: "4rem", display: "inline-block" }}>
-                        <SapButton
-                          onClick={() => DeleteInSearchModal(item.id)}
-                          type="danger"
-                        >
-                          🗑️
-                        </SapButton>
-                      </span>)}
-                    </td>
+                    {currentTransaction === "WS02" && (
+                      <td>
+                        <span style={{ marginLeft: "8px", width: "4rem", display: "inline-block" }}>
+                          <SapButton
+                            onClick={() => DeleteInSearchModal(item.id)}
+                            type="danger"
+                          >
+                            🗑️
+                          </SapButton>
+                        </span>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

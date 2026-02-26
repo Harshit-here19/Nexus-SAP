@@ -1,7 +1,7 @@
 // src/components/Layout/MainLayout.jsx
 import React, { useState } from "react";
 import { useSwipeable } from "react-swipeable";
-import { IoMdMenu } from "react-icons/io";
+import SessionTabs from "../Session/SessionTabs";
 
 import MenuBar from "./MenuBar";
 import Toolbar from "./Toolbar";
@@ -20,9 +20,9 @@ const MainLayout = ({ children }) => {
   const [sidebarVisible, setSidebarVisible] = useState(() => {
     return window.innerWidth >= 768;
   });
-  const [showImportExport, setShowImportExport] = useState(false);
+  const [ImportExport, setImportExport] = useState({show:false, tab:""});
 
-  const confirm = useConfirm();
+  const {confirm} = useConfirm();
   const isMobile = window.innerWidth <= 768
 
   const handlers = useSwipeable({
@@ -74,7 +74,7 @@ const MainLayout = ({ children }) => {
       };
       input.click();
     } else {
-      setShowImportExport(true);
+      setImportExport({show:true, tab:action});
     }
   };
 
@@ -161,9 +161,10 @@ const MainLayout = ({ children }) => {
 
       {/* Import/Export Modal */}
       <ImportExportModal
-        isOpen={showImportExport}
-        onClose={() => setShowImportExport(false)}
+        isOpen={ImportExport.show}
+        onClose={() => setImportExport(prev => ({...prev, show:false}))}
         onStatusMessage={updateStatus}
+        tab={ImportExport.tab}
       />
     </div>
   );

@@ -139,9 +139,9 @@ const Toolbar = ({ children }) => {
       case "print":
         triggerAction("PRINT");
         break;
-      case "find":
-        triggerAction("FIND");
-        break;
+      // case "find":
+      //   triggerAction("FIND");
+      //   break;
       default:
         console.log("Toolbar action:", action);
     }
@@ -169,9 +169,9 @@ const Toolbar = ({ children }) => {
       } else if (e.key === "p" && e.ctrlKey) {
         e.preventDefault();
         triggerAction("PRINT");
-      } else if (e.key === "f" && e.ctrlKey) {
-        e.preventDefault();
-        triggerAction("FIND");
+      // } else if (e.key === "f" && e.ctrlKey) {
+      //   e.preventDefault();
+      //   triggerAction("FIND");
       }
     };
 

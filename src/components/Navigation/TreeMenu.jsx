@@ -119,7 +119,7 @@ const TreeMenu = () => {
   }, []);
 
   const isAdmin = checkIsAdmin();
-  const confirm = useConfirm();
+  const {confirm} = useConfirm();
 
   const treeData = [
     {

@@ -19,7 +19,7 @@ import {
 const SalesOrderScreen = ({ mode = 'create' }) => {
   const { updateStatus, markAsChanged, markAsSaved } = useTransaction();
   const { user } = useAuth();
-  const confirm = useConfirm();
+  const {confirm} = useConfirm();
   
   const [orderNumber, setOrderNumber] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);

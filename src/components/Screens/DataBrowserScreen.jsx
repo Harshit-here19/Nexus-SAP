@@ -5,13 +5,14 @@ import SapSelect from '../Common/SapSelect';
 import SapInput from '../Common/SapInput';
 import SapModal from '../Common/SapModal';
 import { useTransaction } from '../../context/TransactionContext';
-import { getAllData } from '../../utils/storage';
+import { getAllData,getExpenseCategories } from '../../utils/storage';
+import { parseMarkdown } from "./Notes/NotesUtils";
 
 import { ENTERTAINMENT_CATEGORIES } from "./EntertainmentWishlistScreen";
-import { getExpenseCategories } from "../../utils/storage"
 import { NOTE_CATEGORIES } from "./Notes/NotesConstants"
 
 import styles from "./DataBrowserScreen.module.css"
+import MarkdownPreview from '../Common/MarkdownPreview';
 
 const isMobile = window.innerWidth <= 768;
 
@@ -201,7 +202,6 @@ const DataBrowserScreen = () => {
     if (selectedTable === 'expenses') {
       data = data.map((item, index) => {
         // console.log(`Item ${index}:`, item.amount, typeof item.amount);
-        const categoryObj = CATEGORY_MAP_EXPENSES[item.category];
         return {
           ...item,
           originalCategory: item.category, // preserve key
@@ -219,9 +219,9 @@ const DataBrowserScreen = () => {
       });
     }
 
-    if(selectedTable ==='notes') {
+    if(selectedTable === 'notes') {
       data = data.map((item, index) => {
-        console.log(`Item ${index}:`, item.createdAt, typeof item.createdAt);
+        // console.log(`Item ${index}:`, item.createdAt, typeof item.createdAt);
         const categoryObj = CATEGORY_MAP_NOTES[item.category];
         return {
           ...item,
@@ -313,6 +313,7 @@ const DataBrowserScreen = () => {
 
   // Handle row double click (show details)
   const handleRowDoubleClick = (row) => {
+    notInDetailed = ['imageUrl', 'createdAt', 'updatedAt', 'importedAt','categoryColor', 'originalCategory','isPinned','isLocked','isFavorite','attachments','linkedNotes']
     setSelectedRecord(row);
     setShowDetailModal(true);
   };
@@ -505,6 +506,13 @@ const DataBrowserScreen = () => {
                     onClick={handleLoadTable}
                     type="primary"
                     icon="▶️"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLoadTable();
+                      }
+                    }}
                   >
                     Execute
                   </SapButton>
@@ -803,28 +811,38 @@ const DataBrowserScreen = () => {
         }
       >
         {selectedRecord && (
-          <div style={{ maxHeight: '400px', overflow: 'auto' }}>
-            <table className="sap-table" style={{ fontSize: '13px' }}>
-              <tbody>
-                {Object.entries(selectedRecord).map(([key, value], index) => (
-                  <tr key={index}>
-                    <td style={{
-                      fontWeight: '600',
-                      background: 'var(--sap-content-bg)',
-                      width: '150px'
-                    }}>
-                      {toTitleCase(key)}
-                    </td>
-                    <td>
-                      {typeof value === 'object'
-                        ? JSON.stringify(value)
-                        : String(value ?? '')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+         <div style={{ maxHeight: '400px', overflow: 'auto', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', fontFamily: 'sans-serif', textAlign: 'left' }}>
+           <tbody>
+             {Object.entries(selectedRecord || {})
+               .filter(([_, val]) => val !== "" && val !== null && val !== undefined && !notInDetailed.includes(_))
+               .map(([key, val]) => (
+                 <tr key={key} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                   <td style={{ 
+                     fontWeight: '600', 
+                     padding: '10px 12px', 
+                     width: '140px', 
+                     backgroundColor: '#f9fafb', 
+                     color: '#374151',
+                     verticalAlign: 'top',
+                     textTransform: 'capitalize' 
+                   }}>
+                     {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                   </td>
+                   <td style={{ padding: '10px 12px', color: '#111827', wordBreak: 'break-word' }}>
+                     {key === 'content' ? (
+                       <MarkdownPreview>
+                        {String(val)}
+                       </MarkdownPreview>
+                     ) : (
+                       typeof val === 'object' ? JSON.stringify(val) : String(val)
+                     )}
+                   </td>
+                 </tr>
+               ))}
+           </tbody>
+         </table>
+       </div>
         )}
       </SapModal>
     </div >
@@ -860,3 +878,4 @@ const hexToRGBA = (hex, alpha = 0.08) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+let notInDetailed = []

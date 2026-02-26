@@ -1,5 +1,5 @@
 // src/components/Common/ImportExportModal.jsx
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import SapModal from "./SapModal";
 import SapButton from "./SapButton";
 import SapSelect from "./SapSelect";
@@ -23,17 +23,23 @@ import {
 import { useConfirm } from "../../context/ConfirmContext";
 import { useAuth } from "../../context/AuthContext";
 
-const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
-  const [activeTab, setActiveTab] = useState("export");
+const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
+  const [activeTab, setActiveTab] = useState("");
   const [selectedTable, setSelectedTable] = useState("");
   const [exportFormat, setExportFormat] = useState("json");
   const [selectedFile, setSelectedFile] = useState(null);
   const [importPreview, setImportPreview] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  useEffect(() => {
+    if (tab) {
+      setActiveTab(tab)
+    }
+  }, [tab])
+
   const fileInputRef = useRef(null);
 
-  const confirm = useConfirm();
+  const {confirm} = useConfirm();
   const { user } = useAuth();
 
   const tables = [
@@ -252,6 +258,11 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage }) => {
     if (!selectedFile || !importPreview) {
       onStatusMessage("Please select a file first", "warning");
       return;
+    }
+
+    if (!validateFileType(selectedFile, ["json"])) {
+      onStatusMessage("Please select a JSON file", "warning");
+      return
     }
 
     setIsProcessing(true);

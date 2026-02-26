@@ -9,12 +9,27 @@ const SapButton = ({
   disabled = false,
   icon,
   loading = false,
+  onKeyPress
 }) => {
   const classNames = [
     styles.sapButton,
     type !== 'default' ? styles[type] : '',
     disabled || loading ? styles.disabled : '',
   ].join(' ');
+
+  // Internal handler for key events
+  const handleKeyDown = (e) => {
+    if (disabled || loading) return;
+
+    // Check if the user passed a specific function to onKeyPress
+    if (onKeyPress) {
+      onKeyPress(e);
+    } 
+    // Otherwise, if they press Enter/Space, trigger the standard onClick
+    else if (e.key === 'Enter' || e.key === ' ') {
+      if (onClick) onClick(e);
+    }
+  };
 
   return (
     <button className={classNames} onClick={onClick} disabled={disabled || loading}>

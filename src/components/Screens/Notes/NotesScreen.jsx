@@ -8,8 +8,9 @@ import { useTransaction } from "../../../context/TransactionContext";
 import { useAuth } from "../../../context/AuthContext";
 import { useAction } from "../../../context/ActionContext";
 import { useConfirm } from "../../../context/ConfirmContext";
+import { useSettings } from "../../../context/SettingsContext";
 import { getTableData, getAllData, saveAllData } from "../../../utils/storage";
-import { parseMarkdown } from "./NotesUtils";
+import { parseMarkdown } from "../../Common/MarkdownPreview";
 
 // Components
 import NotesEditor from "./NotesEditor";
@@ -40,10 +41,14 @@ import "./NotesStyles.css";
 import SapModal from "../../Common/SapModal";
 
 const NotesScreen = ({ mode = "create" }) => {
+  const { settings } = useSettings();
+
   const { updateStatus, markAsChanged, markAsSaved, goBack } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
-  const confirm = useConfirm();
+
+  const { confirm } = useConfirm();
+  const { prompt } = useConfirm();
 
   const saveRef = useRef(null);
   const clearRef = useRef(null);
@@ -165,11 +170,14 @@ const NotesScreen = ({ mode = "create" }) => {
       case "checkdone":
         insertAtCursor("\n☑ ", "", "Completed task");
         break;
+      case "arrow":
+        insertAtCursor("\n- ", "", "List item");
+        break;
       case "quote":
         insertAtCursor("\n> ", "\n", "Quote text");
         break;
       case "code":
-        insertAtCursor("\n```\n", "\n```\n", "code here");
+        insertAtCursor("\n@code\n", "\n@/code\n", "code here");
         break;
       case "hr":
         insertAtCursor("\n\n---\n\n", "", "");
@@ -268,7 +276,7 @@ const NotesScreen = ({ mode = "create" }) => {
           n.noteNumber?.toLowerCase().includes(term) ||
           n.title?.toLowerCase().includes(term) ||
           n.content?.toLowerCase().includes(term) ||
-          n.tags?.toLowerCase().includes(term),
+          n.tags?.toLowerCase().includes(term)
       );
     }
 
@@ -280,30 +288,30 @@ const NotesScreen = ({ mode = "create" }) => {
       notes = notes.filter((n) => n.status === filterStatus);
     }
 
-    // notes = notes.sort((a, b) => {
-    //   const numA = parseInt(a.noteNumber?.replace(/^\D+/g, "") || "0", 10);
-    //   const numB = parseInt(b.noteNumber?.replace(/^\D+/g, "") || "0", 10);
-    //   return numA - numB;
-    // });
-
-    console.log(notes);
+    // ✅ Sort: Pinned notes first
+    notes = notes.sort((a, b) => {
+      if (a.isPinned === b.isPinned) return 0;
+      return a.isPinned ? -1 : 1;
+    });
 
     setSearchResults(notes);
     setShowSearchModal(true);
   };
 
   // Select note from search
-  const handleSelectNote = (note) => {
+  const handleSelectNote = async (note) => {
     if (note.isLocked) {
-      const enteredPassword = window.prompt("This note is locked. Enter password:");
-  
+      const enteredPassword = await prompt("This note is locked. Enter password:",
+        { type: 'warning', placeholder: 'Enter Password...' }
+      );
+
       // Replace this with your real password validation logic
       if (enteredPassword !== note.password) {
         updateStatus("Incorrect password", "error");
         return;
       }
     }
-    
+
     setNoteId(note.noteNumber);
     setFormData(note);
     setIsLoaded(true);
@@ -328,7 +336,7 @@ const NotesScreen = ({ mode = "create" }) => {
   // Handle Summary
   const handleSummaryChange = (value) => {
     setFormData(prev => ({ ...prev, summary: value }));
-    
+
     // Validation
     if (!value || value.trim().length < 10) {
       setErrors(prev => ({ ...prev, summary: 'Summary must be at least 10 characters' }));
@@ -433,7 +441,7 @@ const NotesScreen = ({ mode = "create" }) => {
       allData.notes = filtered;
       saveAllData(allData);
       clearRef.current?.();
-      updateStatus("Note deleted successfully", "success");      
+      updateStatus("Note deleted successfully", "success");
       setSearchResults(filtered);
     }
     markAsSaved();
@@ -493,7 +501,7 @@ const NotesScreen = ({ mode = "create" }) => {
             <span>Date: <strong>${note.importedAt ? new Date(note.importedAt).toLocaleString() : new Date(note.createdAt).toLocaleString()}</strong></span>
           </div>
           <div class="detail-content">
-            ${parseMarkdown(note.content)}
+            ${parseMarkdown(note.content, settings.codeTheme)}
           </div>
         </div>
       `
@@ -506,7 +514,7 @@ const NotesScreen = ({ mode = "create" }) => {
         <head>
           <title>Notes Report</title>
           <style>
-            body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 30px; color: #1a1a1a; line-height: 1.5; }
+            body { font-family: 'JetBrains Mono','Segoe UI', Tahoma, sans-serif; padding: 30px; color: #1a1a1a; line-height: 1.5; }
             h1 { font-size: 24px; }
             .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 12px; }
             .summary-table th, .summary-table td { border: 1px solid #ddd; padding: 8px; }
@@ -592,6 +600,7 @@ const NotesScreen = ({ mode = "create" }) => {
           mode={mode}
           summary={summary}
           onSummaryChange={handleSummaryChange}
+          codeTheme={settings.codeTheme}
         />
       ),
     },
@@ -678,7 +687,8 @@ const NotesScreen = ({ mode = "create" }) => {
                   placeholder="e.g., NT000000001"
                   icon="🔍"
                   onIconClick={() => {
-                    setSearchResults(getTableData("notes") || []);
+                    // setSearchResults(getTableData("notes") || []);
+                    handleSearch();
                     setShowSearchModal(true);
                   }}
                 />
@@ -688,7 +698,8 @@ const NotesScreen = ({ mode = "create" }) => {
                 <SapButton
                   type="search"
                   onClick={() => {
-                    setSearchResults(getTableData("notes") || []);
+                    // setSearchResults(getTableData("notes") || []);
+                    handleSearch();
                     setShowSearchModal(true);
                   }}
                   icon="🔎"

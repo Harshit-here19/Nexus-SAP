@@ -1,9 +1,9 @@
 // src/components/Screens/UserProfileScreen.jsx
 import React, { useState, useEffect } from 'react';
+import styles from './UserProfileScreen.module.css';
 import SapButton from '../Common/SapButton';
 import SapInput from '../Common/SapInput';
 import SapSelect from '../Common/SapSelect';
-import SapTabs from '../Common/SapTabs';
 import SapModal from '../Common/SapModal';
 import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
@@ -19,8 +19,9 @@ const UserProfileScreen = () => {
   const { updateStatus, markAsChanged, markAsSaved } = useTransaction();
   const { user } = useAuth();
   const { settings, updateSetting, saveSettings, resetSettings } = useSettings();
-  const confirm = useConfirm();
+  const { confirm } = useConfirm();
   
+  const [activeTab, setActiveTab] = useState('profile');
   const [profileData, setProfileData] = useState({
     firstName: '',
     lastName: '',
@@ -40,6 +41,7 @@ const UserProfileScreen = () => {
   });
   const [passwordError, setPasswordError] = useState('');
   const [originalData, setOriginalData] = useState({});
+  const [saveAnimation, setSaveAnimation] = useState(false);
 
   // Load user profile data
   useEffect(() => {
@@ -71,14 +73,19 @@ const UserProfileScreen = () => {
 
   // Save profile
   const handleSaveProfile = () => {
+    setSaveAnimation(true);
     const result = updateUserProfile(user.userId, profileData);
-    if (result.success) {
-      setOriginalData(profileData);
-      markAsSaved();
-      updateStatus('Profile updated successfully', 'success');
-    } else {
-      updateStatus(result.message || 'Failed to update profile', 'error');
-    }
+    
+    setTimeout(() => {
+      setSaveAnimation(false);
+      if (result.success) {
+        setOriginalData(profileData);
+        markAsSaved();
+        updateStatus('Profile updated successfully', 'success');
+      } else {
+        updateStatus(result.message || 'Failed to update profile', 'error');
+      }
+    }, 600);
   };
 
   // Reset profile changes
@@ -148,466 +155,631 @@ const UserProfileScreen = () => {
     return `${minutes}m`;
   };
 
-  // Profile Tab
-  const profileTab = (
-    <div className="sap-form">
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-        {/* Left Column - Personal Info */}
-        <div>
-          <h4 style={{ marginBottom: '16px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>👤</span> Personal Information
-          </h4>
-          
-          <SapInput
-            label="Username"
-            value={user?.username || ''}
-            readOnly={true}
-          />
-          
-          <SapInput
-            label="First Name"
-            value={profileData.firstName}
-            onChange={(val) => handleProfileChange('firstName', val)}
-          />
-          
-          <SapInput
-            label="Last Name"
-            value={profileData.lastName}
-            onChange={(val) => handleProfileChange('lastName', val)}
-          />
-          
-          <SapInput
-            label="Email"
-            value={profileData.email}
-            onChange={(val) => handleProfileChange('email', val)}
-            type="email"
-          />
-          
-          <SapInput
-            label="Phone"
-            value={profileData.phone}
-            onChange={(val) => handleProfileChange('phone', val)}
-          />
-        </div>
+  // Get user initials
+  const getInitials = () => {
+    const first = profileData.firstName?.[0] || user?.username?.[0] || '';
+    const last = profileData.lastName?.[0] || '';
+    return (first + last).toUpperCase() || '?';
+  };
 
-        {/* Right Column - Work Info */}
-        <div>
-          <h4 style={{ marginBottom: '16px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🏢</span> Work Information
-          </h4>
-          
-          <SapInput
-            label="Role"
-            value={user?.role || ''}
-            readOnly={true}
-          />
-          
-          <SapSelect
-            label="Department"
-            value={profileData.department}
-            onChange={(val) => handleProfileChange('department', val)}
-            options={[
-              { value: '', label: 'Select...' },
-              { value: 'Sales', label: 'Sales' },
-              { value: 'Purchasing', label: 'Purchasing' },
-              { value: 'Finance', label: 'Finance' },
-              { value: 'IT', label: 'IT' },
-              { value: 'HR', label: 'HR' },
-              { value: 'Production', label: 'Production' },
-              { value: 'Logistics', label: 'Logistics' }
-            ]}
-          />
-          
-          <SapInput
-            label="Address"
-            value={profileData.address}
-            onChange={(val) => handleProfileChange('address', val)}
-          />
-          
-          <SapInput
-            label="City"
-            value={profileData.city}
-            onChange={(val) => handleProfileChange('city', val)}
-          />
-          
-          <SapSelect
-            label="Country"
-            value={profileData.country}
-            onChange={(val) => handleProfileChange('country', val)}
-            options={[
-              { value: '', label: 'Select...' },
-              { value: 'USA', label: 'United States' },
-              { value: 'UK', label: 'United Kingdom' },
-              { value: 'DE', label: 'Germany' },
-              { value: 'FR', label: 'France' },
-              { value: 'IN', label: 'India' },
-              { value: 'CN', label: 'China' },
-              { value: 'JP', label: 'Japan' }
-            ]}
-          />
-        </div>
-      </div>
+  // Check if profile has changes
+  const hasChanges = JSON.stringify(profileData) !== JSON.stringify(originalData);
 
-      {/* Action Buttons */}
-      <div style={{ 
-        marginTop: '24px', 
-        paddingTop: '16px', 
-        borderTop: '1px solid var(--sap-border)',
-        display: 'flex',
-        gap: '12px'
-      }}>
-        <SapButton onClick={handleSaveProfile} type="primary" icon="💾">
-          Save Changes
-        </SapButton>
-        <SapButton onClick={handleResetProfile} icon="↩️">
-          Reset Changes
-        </SapButton>
-        <SapButton onClick={() => setShowPasswordModal(true)} icon="🔑">
-          Change Password
-        </SapButton>
-      </div>
-    </div>
-  );
-
-  // Settings Tab
-  const settingsTab = (
-    <div className="sap-form">
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-        {/* Display Settings */}
-        <div>
-          <h4 style={{ marginBottom: '16px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🎨</span> Display Settings
-          </h4>
-          
-          <SapSelect
-            label="Theme"
-            value={settings.theme}
-            onChange={(val) => handleSettingChange('theme', val)}
-            options={[
-              { value: 'light', label: '☀️ Light' },
-              { value: 'dark', label: '🌙 Dark' }
-            ]}
-          />
-          
-          <SapSelect
-            label="Font Size"
-            value={settings.fontSize}
-            onChange={(val) => handleSettingChange('fontSize', val)}
-            options={[
-              { value: 'small', label: 'Small' },
-              { value: 'medium', label: 'Medium' },
-              { value: 'large', label: 'Large' }
-            ]}
-          />
-          
-          <SapSelect
-            label="Language"
-            value={settings.language}
-            onChange={(val) => handleSettingChange('language', val)}
-            options={[
-              { value: 'EN', label: 'English' },
-              { value: 'DE', label: 'Deutsch' },
-              { value: 'FR', label: 'Français' },
-              { value: 'ES', label: 'Español' }
-            ]}
-          />
-          
-          <SapSelect
-            label="Rows Per Page"
-            value={settings.rowsPerPage.toString()}
-            onChange={(val) => handleSettingChange('rowsPerPage', parseInt(val))}
-            options={[
-              { value: '10', label: '10' },
-              { value: '20', label: '20' },
-              { value: '50', label: '50' },
-              { value: '100', label: '100' }
-            ]}
-          />
-        </div>
-
-        {/* Format Settings */}
-        <div>
-          <h4 style={{ marginBottom: '16px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>📅</span> Format Settings
-          </h4>
-          
-          <SapSelect
-            label="Date Format"
-            value={settings.dateFormat}
-            onChange={(val) => handleSettingChange('dateFormat', val)}
-            options={[
-              { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-              { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
-              { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' }
-            ]}
-          />
-          
-          <SapSelect
-            label="Time Format"
-            value={settings.timeFormat}
-            onChange={(val) => handleSettingChange('timeFormat', val)}
-            options={[
-              { value: '12h', label: '12 Hour (AM/PM)' },
-              { value: '24h', label: '24 Hour' }
-            ]}
-          />
-          
-          <SapSelect
-            label="Decimal Notation"
-            value={settings.decimalNotation}
-            onChange={(val) => handleSettingChange('decimalNotation', val)}
-            options={[
-              { value: '1,234,567.89', label: '1,234,567.89' },
-              { value: '1.234.567,89', label: '1.234.567,89' }
-            ]}
-          />
-        </div>
-      </div>
-
-      {/* Behavior Settings */}
-      <div style={{ marginTop: '24px' }}>
-        <h4 style={{ marginBottom: '16px', color: 'var(--sap-brand)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>⚙️</span> Behavior Settings
-        </h4>
-        
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
-          gap: '12px' 
-        }}>
-          <label style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '10px',
-            padding: '12px',
-            background: 'var(--sap-content-bg)',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}>
-            <input
-              type="checkbox"
-              checked={settings.confirmOnExit}
-              onChange={(e) => handleSettingChange('confirmOnExit', e.target.checked)}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--sap-brand)' }}
-            />
-            <span>Confirm before exiting transactions</span>
-          </label>
-          
-          <label style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '10px',
-            padding: '12px',
-            background: 'var(--sap-content-bg)',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}>
-            <input
-              type="checkbox"
-              checked={settings.showTooltips}
-              onChange={(e) => handleSettingChange('showTooltips', e.target.checked)}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--sap-brand)' }}
-            />
-            <span>Show tooltips</span>
-          </label>
-          
-          <label style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '10px',
-            padding: '12px',
-            background: 'var(--sap-content-bg)',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}>
-            <input
-              type="checkbox"
-              checked={settings.showNotifications}
-              onChange={(e) => handleSettingChange('showNotifications', e.target.checked)}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--sap-brand)' }}
-            />
-            <span>Show notifications</span>
-          </label>
-          
-          <label style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '10px',
-            padding: '12px',
-            background: 'var(--sap-content-bg)',
-            borderRadius: '6px',
-            cursor: 'pointer'
-          }}>
-            <input
-              type="checkbox"
-              checked={settings.soundEnabled}
-              onChange={(e) => handleSettingChange('soundEnabled', e.target.checked)}
-              style={{ width: '18px', height: '18px', accentColor: 'var(--sap-brand)' }}
-            />
-            <span>Enable sounds</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Reset Button */}
-      <div style={{ 
-        marginTop: '24px', 
-        paddingTop: '16px', 
-        borderTop: '1px solid var(--sap-border)',
-        display: 'flex',
-        gap: '12px'
-      }}>
-        <SapButton 
-          onClick={async () => {
-            const confirmed = await confirm('Reset all settings to default? This action cannot be undone.');
-            if (confirmed) {
-              resetSettings();
-              updateStatus('Settings reset to default', 'success');
-            }
-          }} 
-          icon="🔄"
-        >
-          Reset to Defaults
-        </SapButton>
-      </div>
-    </div>
-  );
-
-  // Account Info Tab
-  const accountTab = (
-    <div>
-      <div className="sap-message-strip info" style={{ marginBottom: '20px' }}>
-        <span className="sap-message-strip-icon">ℹ️</span>
-        <span>This information is read-only. Contact your administrator for changes.</span>
-      </div>
-
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-        gap: '20px' 
-      }}>
-        {/* Account Details */}
-        <div style={{
-          padding: '20px',
-          background: 'var(--sap-content-bg)',
-          borderRadius: '8px',
-          border: '1px solid var(--sap-border)'
-        }}>
-          <h4 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>📋</span> Account Details
-          </h4>
-          <table style={{ width: '100%', fontSize: '13px' }}>
-            <tbody>
-              <tr>
-                <td style={{ padding: '8px 0', color: 'var(--sap-text-secondary)' }}>User ID:</td>
-                <td style={{ padding: '8px 0', fontWeight: '600' }}>{user?.userId}</td>
-              </tr>
-              <tr>
-                <td style={{ padding: '8px 0', color: 'var(--sap-text-secondary)' }}>Username:</td>
-                <td style={{ padding: '8px 0', fontWeight: '600' }}>{user?.username}</td>
-              </tr>
-              <tr>
-                <td style={{ padding: '8px 0', color: 'var(--sap-text-secondary)' }}>Role:</td>
-                <td style={{ padding: '8px 0' }}>
-                  <span className={`sap-badge ${user?.isAdmin ? 'error' : 'info'}`}>
-                    {user?.role}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td style={{ padding: '8px 0', color: 'var(--sap-text-secondary)' }}>Client:</td>
-                <td style={{ padding: '8px 0', fontWeight: '600' }}>{user?.client}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Session Info */}
-        <div style={{
-          padding: '20px',
-          background: 'var(--sap-content-bg)',
-          borderRadius: '8px',
-          border: '1px solid var(--sap-border)'
-        }}>
-          <h4 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🔐</span> Session Information
-          </h4>
-          <table style={{ width: '100%', fontSize: '13px' }}>
-            <tbody>
-              <tr>
-                <td style={{ padding: '8px 0', color: 'var(--sap-text-secondary)' }}>Login Time:</td>
-                <td style={{ padding: '8px 0', fontWeight: '600' }}>
-                  {user?.loginTime ? new Date(user.loginTime).toLocaleString() : '-'}
-                </td>
-              </tr>
-              <tr>
-                <td style={{ padding: '8px 0', color: 'var(--sap-text-secondary)' }}>Session Duration:</td>
-                <td style={{ padding: '8px 0', fontWeight: '600' }}>
-                  {user?.loginTime ? calculateDuration(user.loginTime) : '-'}
-                </td>
-              </tr>
-              <tr>
-                <td style={{ padding: '8px 0', color: 'var(--sap-text-secondary)' }}>Status:</td>
-                <td style={{ padding: '8px 0' }}>
-                  <span className="sap-badge success">Active</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Permissions */}
-        <div style={{
-          padding: '20px',
-          background: 'var(--sap-content-bg)',
-          borderRadius: '8px',
-          border: '1px solid var(--sap-border)'
-        }}>
-          <h4 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🔓</span> Permissions
-          </h4>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            <span className="sap-badge success">Materials (MM)</span>
-            <span className="sap-badge success">Sales (SD)</span>
-            <span className="sap-badge success">Data Browser</span>
-            {user?.isAdmin && (
-              <>
-                <span className="sap-badge error">User Admin</span>
-                <span className="sap-badge error">System Config</span>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
+  // Tabs configuration
   const tabs = [
-    { label: 'Profile', icon: '👤', content: profileTab },
-    { label: 'Settings', icon: '⚙️', content: settingsTab },
-    { label: 'Account', icon: '🔐', content: accountTab }
+    { id: 'profile', label: 'Profile', icon: '👤' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' },
+    { id: 'account', label: 'Account', icon: '🔐' }
   ];
 
   return (
-    <div>
-      <div className="sap-panel">
-        <div className="sap-panel-header">
-          <span>
-            <span className="sap-panel-header-icon">👤</span>
-            User Profile - SU01
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13px', opacity: 0.9 }}>
-              {user?.fullName}
-            </span>
-            <span className={`sap-badge ${user?.isAdmin ? 'error' : 'info'}`}>
-              {user?.role}
-            </span>
+    <div className={styles.container}>
+      {/* Header Section */}
+      <div className={styles.header}>
+        <div className={styles.headerContent}>
+          {/* Avatar Section */}
+          <div className={styles.avatarSection}>
+            <div className={styles.avatar}>
+              <span className={styles.avatarText}>{getInitials()}</span>
+              <div className={styles.avatarStatus} />
+              <button className={styles.avatarEdit}>
+                <span>📷</span>
+              </button>
+            </div>
+            
+            <div className={styles.userInfo}>
+              <h1 className={styles.userName}>
+                {profileData.firstName && profileData.lastName 
+                  ? `${profileData.firstName} ${profileData.lastName}`
+                  : user?.fullName || user?.username}
+              </h1>
+              <p className={styles.userRole}>
+                <span className={`${styles.roleBadge} ${user?.isAdmin ? styles.admin : ''}`}>
+                  {user?.role}
+                </span>
+                <span className={styles.userDept}>
+                  {profileData.department || 'No Department'}
+                </span>
+              </p>
+              <p className={styles.userEmail}>
+                {profileData.email || 'No email set'}
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Stats */}
+          <div className={styles.quickStats}>
+            <div className={styles.statCard}>
+              <span className={styles.statIcon}>🕐</span>
+              <div className={styles.statContent}>
+                <span className={styles.statValue}>
+                  {user?.loginTime ? calculateDuration(user.loginTime) : '-'}
+                </span>
+                <span className={styles.statLabel}>Session</span>
+              </div>
+            </div>
+            <div className={styles.statCard}>
+              <span className={styles.statIcon}>🏢</span>
+              <div className={styles.statContent}>
+                <span className={styles.statValue}>{user?.client || '100'}</span>
+                <span className={styles.statLabel}>Client</span>
+              </div>
+            </div>
+            <div className={styles.statCard}>
+              <span className={styles.statIcon}>🔑</span>
+              <div className={styles.statContent}>
+                <span className={styles.statValue}>{user?.userId}</span>
+                <span className={styles.statLabel}>User ID</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="sap-panel-content">
-          <SapTabs tabs={tabs} />
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className={styles.tabsContainer}>
+        <div className={styles.tabs}>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <span className={styles.tabIcon}>{tab.icon}</span>
+              <span className={styles.tabLabel}>{tab.label}</span>
+              {tab.id === 'profile' && hasChanges && (
+                <span className={styles.tabBadge}>●</span>
+              )}
+            </button>
+          ))}
         </div>
+      </div>
+
+      {/* Tab Content */}
+      <div className={styles.content}>
+        {/* Profile Tab */}
+        {activeTab === 'profile' && (
+          <div className={styles.tabContent}>
+            <div className={styles.formGrid}>
+              {/* Personal Information Card */}
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <span className={styles.cardIcon}>👤</span>
+                  <h3 className={styles.cardTitle}>Personal Information</h3>
+                </div>
+                <div className={styles.cardContent}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Username</label>
+                    <div className={styles.readOnlyField}>
+                      {user?.username}
+                      <span className={styles.lockIcon}>🔒</span>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>First Name</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        value={profileData.firstName}
+                        onChange={(e) => handleProfileChange('firstName', e.target.value)}
+                        placeholder="Enter first name"
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Last Name</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        value={profileData.lastName}
+                        onChange={(e) => handleProfileChange('lastName', e.target.value)}
+                        placeholder="Enter last name"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Email Address</label>
+                    <input
+                      type="email"
+                      className={styles.input}
+                      value={profileData.email}
+                      onChange={(e) => handleProfileChange('email', e.target.value)}
+                      placeholder="name@company.com"
+                    />
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Phone Number</label>
+                    <input
+                      type="tel"
+                      className={styles.input}
+                      value={profileData.phone}
+                      onChange={(e) => handleProfileChange('phone', e.target.value)}
+                      placeholder="+1 (555) 000-0000"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Work Information Card */}
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <span className={styles.cardIcon}>🏢</span>
+                  <h3 className={styles.cardTitle}>Work Information</h3>
+                </div>
+                <div className={styles.cardContent}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Role</label>
+                    <div className={styles.readOnlyField}>
+                      {user?.role}
+                      <span className={styles.lockIcon}>🔒</span>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Department</label>
+                    <select
+                      className={styles.select}
+                      value={profileData.department}
+                      onChange={(e) => handleProfileChange('department', e.target.value)}
+                    >
+                      <option value="">Select Department</option>
+                      <option value="Sales">Sales</option>
+                      <option value="Purchasing">Purchasing</option>
+                      <option value="Finance">Finance</option>
+                      <option value="IT">IT</option>
+                      <option value="HR">Human Resources</option>
+                      <option value="Production">Production</option>
+                      <option value="Logistics">Logistics</option>
+                    </select>
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Address</label>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      value={profileData.address}
+                      onChange={(e) => handleProfileChange('address', e.target.value)}
+                      placeholder="Street address"
+                    />
+                  </div>
+                  
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>City</label>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        value={profileData.city}
+                        onChange={(e) => handleProfileChange('city', e.target.value)}
+                        placeholder="City"
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.label}>Country</label>
+                      <select
+                        className={styles.select}
+                        value={profileData.country}
+                        onChange={(e) => handleProfileChange('country', e.target.value)}
+                      >
+                        <option value="">Select Country</option>
+                        <option value="USA">United States</option>
+                        <option value="UK">United Kingdom</option>
+                        <option value="DE">Germany</option>
+                        <option value="FR">France</option>
+                        <option value="IN">India</option>
+                        <option value="CN">China</option>
+                        <option value="JP">Japan</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className={styles.actions}>
+              <button 
+                className={`${styles.btnPrimary} ${saveAnimation ? styles.saving : ''}`}
+                onClick={handleSaveProfile}
+                disabled={!hasChanges}
+              >
+                {saveAnimation ? (
+                  <>
+                    <span className={styles.spinner}></span>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <span>💾</span>
+                    Save Changes
+                  </>
+                )}
+              </button>
+              <button 
+                className={styles.btnSecondary}
+                onClick={handleResetProfile}
+                disabled={!hasChanges}
+              >
+                <span>↩️</span>
+                Discard Changes
+              </button>
+              <button 
+                className={styles.btnOutline}
+                onClick={() => setShowPasswordModal(true)}
+              >
+                <span>🔑</span>
+                Change Password
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Settings Tab */}
+        {activeTab === 'settings' && (
+          <div className={styles.tabContent}>
+            <div className={styles.settingsGrid}>
+              {/* Display Settings */}
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <span className={styles.cardIcon}>🎨</span>
+                  <h3 className={styles.cardTitle}>Display</h3>
+                </div>
+                <div className={styles.cardContent}>
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <span className={styles.settingLabel}>Theme</span>
+                      <span className={styles.settingDesc}>Choose your preferred color scheme</span>
+                    </div>
+                    <div className={styles.themeToggle}>
+                      <button
+                        className={`${styles.themeBtn} ${settings.theme === 'light' ? styles.active : ''}`}
+                        onClick={() => handleSettingChange('theme', 'light')}
+                      >
+                        ☀️ Light
+                      </button>
+                      <button
+                        className={`${styles.themeBtn} ${settings.theme === 'dark' ? styles.active : ''}`}
+                        onClick={() => handleSettingChange('theme', 'dark')}
+                      >
+                        🌙 Dark
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <span className={styles.settingLabel}>Font Size</span>
+                      <span className={styles.settingDesc}>Adjust text size for better readability</span>
+                    </div>
+                    <select
+                      className={styles.settingSelect}
+                      value={settings.fontSize}
+                      onChange={(e) => handleSettingChange('fontSize', e.target.value)}
+                    >
+                      <option value="small">Small</option>
+                      <option value="medium">Medium</option>
+                      <option value="large">Large</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <span className={styles.settingLabel}>Code Theme</span>
+                      <span className={styles.settingDesc}>Syntax highlighting for code blocks</span>
+                    </div>
+                    <select
+                      className={styles.settingSelect}
+                      value={settings.codeTheme}
+                      onChange={(e) => handleSettingChange('codeTheme', e.target.value)}
+                    >
+                      <option value="Dracula">🦇 Dracula</option>
+                      <option value="MacOS">💻 MacOS</option>
+                      <option value="Githubdark">🐙 GitHub Dark</option>
+                      <option value="Glass">🧊 Glass</option>
+                      <option value="Cyberpunk">🤖 Cyberpunk</option>
+                      <option value="TokyoNight">🗼 Tokyo Night</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <span className={styles.settingLabel}>Rows Per Page</span>
+                      <span className={styles.settingDesc}>Number of items to display in tables</span>
+                    </div>
+                    <select
+                      className={styles.settingSelect}
+                      value={settings.rowsPerPage?.toString()}
+                      onChange={(e) => handleSettingChange('rowsPerPage', parseInt(e.target.value))}
+                    >
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Format Settings */}
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <span className={styles.cardIcon}>📅</span>
+                  <h3 className={styles.cardTitle}>Formats</h3>
+                </div>
+                <div className={styles.cardContent}>
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <span className={styles.settingLabel}>Date Format</span>
+                      <span className={styles.settingDesc}>How dates are displayed</span>
+                    </div>
+                    <select
+                      className={styles.settingSelect}
+                      value={settings.dateFormat}
+                      onChange={(e) => handleSettingChange('dateFormat', e.target.value)}
+                    >
+                      <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                      <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                      <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <span className={styles.settingLabel}>Time Format</span>
+                      <span className={styles.settingDesc}>12-hour or 24-hour clock</span>
+                    </div>
+                    <select
+                      className={styles.settingSelect}
+                      value={settings.timeFormat}
+                      onChange={(e) => handleSettingChange('timeFormat', e.target.value)}
+                    >
+                      <option value="12h">12 Hour (AM/PM)</option>
+                      <option value="24h">24 Hour</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <span className={styles.settingLabel}>Number Format</span>
+                      <span className={styles.settingDesc}>Decimal and thousand separators</span>
+                    </div>
+                    <select
+                      className={styles.settingSelect}
+                      value={settings.decimalNotation}
+                      onChange={(e) => handleSettingChange('decimalNotation', e.target.value)}
+                    >
+                      <option value="1,234,567.89">1,234,567.89</option>
+                      <option value="1.234.567,89">1.234.567,89</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Behavior Settings */}
+              <div className={`${styles.card} ${styles.fullWidth}`}>
+                <div className={styles.cardHeader}>
+                  <span className={styles.cardIcon}>⚙️</span>
+                  <h3 className={styles.cardTitle}>Behavior</h3>
+                </div>
+                <div className={styles.cardContent}>
+                  <div className={styles.toggleGrid}>
+                    <label className={styles.toggleItem}>
+                      <div className={styles.toggleInfo}>
+                        <span className={styles.toggleLabel}>Confirm on Exit</span>
+                        <span className={styles.toggleDesc}>Ask before leaving unsaved changes</span>
+                      </div>
+                      <div className={styles.toggle}>
+                        <input
+                          type="checkbox"
+                          checked={settings.confirmOnExit}
+                          onChange={(e) => handleSettingChange('confirmOnExit', e.target.checked)}
+                        />
+                        <span className={styles.toggleSlider}></span>
+                      </div>
+                    </label>
+
+                    <label className={styles.toggleItem}>
+                      <div className={styles.toggleInfo}>
+                        <span className={styles.toggleLabel}>Show Tooltips</span>
+                        <span className={styles.toggleDesc}>Display helpful hints on hover</span>
+                      </div>
+                      <div className={styles.toggle}>
+                        <input
+                          type="checkbox"
+                          checked={settings.showTooltips}
+                          onChange={(e) => handleSettingChange('showTooltips', e.target.checked)}
+                        />
+                        <span className={styles.toggleSlider}></span>
+                      </div>
+                    </label>
+
+                    <label className={styles.toggleItem}>
+                      <div className={styles.toggleInfo}>
+                        <span className={styles.toggleLabel}>Notifications</span>
+                        <span className={styles.toggleDesc}>Show system notifications</span>
+                      </div>
+                      <div className={styles.toggle}>
+                        <input
+                          type="checkbox"
+                          checked={settings.showNotifications}
+                          onChange={(e) => handleSettingChange('showNotifications', e.target.checked)}
+                        />
+                        <span className={styles.toggleSlider}></span>
+                      </div>
+                    </label>
+
+                    <label className={styles.toggleItem}>
+                      <div className={styles.toggleInfo}>
+                        <span className={styles.toggleLabel}>Sound Effects</span>
+                        <span className={styles.toggleDesc}>Play sounds for actions</span>
+                      </div>
+                      <div className={styles.toggle}>
+                        <input
+                          type="checkbox"
+                          checked={settings.soundEnabled}
+                          onChange={(e) => handleSettingChange('soundEnabled', e.target.checked)}
+                        />
+                        <span className={styles.toggleSlider}></span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Reset Settings Button */}
+            <div className={styles.actions}>
+              <button 
+                className={styles.btnDanger}
+                onClick={async () => {
+                  const confirmed = await confirm('Reset all settings to default? This cannot be undone.');
+                  if (confirmed) {
+                    resetSettings();
+                    updateStatus('Settings reset to default', 'success');
+                  }
+                }}
+              >
+                <span>🔄</span>
+                Reset to Defaults
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Account Tab */}
+        {activeTab === 'account' && (
+          <div className={styles.tabContent}>
+            {/* Info Banner */}
+            <div className={styles.infoBanner}>
+              <span className={styles.infoIcon}>ℹ️</span>
+              <span>Account information is managed by your administrator. Contact support for changes.</span>
+            </div>
+
+            <div className={styles.accountGrid}>
+              {/* Account Details */}
+              <div className={styles.accountCard}>
+                <div className={styles.accountCardHeader}>
+                  <span>📋</span>
+                  <h4>Account Details</h4>
+                </div>
+                <div className={styles.accountCardContent}>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>User ID</span>
+                    <span className={styles.detailValue}>{user?.userId}</span>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Username</span>
+                    <span className={styles.detailValue}>{user?.username}</span>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Role</span>
+                    <span className={`${styles.badge} ${user?.isAdmin ? styles.badgeAdmin : styles.badgeUser}`}>
+                      {user?.role}
+                    </span>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Client</span>
+                    <span className={styles.detailValue}>{user?.client}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Session Info */}
+              <div className={styles.accountCard}>
+                <div className={styles.accountCardHeader}>
+                  <span>🔐</span>
+                  <h4>Current Session</h4>
+                </div>
+                <div className={styles.accountCardContent}>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Login Time</span>
+                    <span className={styles.detailValue}>
+                      {user?.loginTime ? new Date(user.loginTime).toLocaleString() : '-'}
+                    </span>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Duration</span>
+                    <span className={styles.detailValue}>
+                      {user?.loginTime ? calculateDuration(user.loginTime) : '-'}
+                    </span>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Status</span>
+                    <span className={`${styles.badge} ${styles.badgeSuccess}`}>
+                      <span className={styles.statusDot}></span>
+                      Active
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Permissions */}
+              <div className={`${styles.accountCard} ${styles.fullWidth}`}>
+                <div className={styles.accountCardHeader}>
+                  <span>🔓</span>
+                  <h4>Permissions & Access</h4>
+                </div>
+                <div className={styles.accountCardContent}>
+                  <div className={styles.permissionsGrid}>
+                    <div className={styles.permissionItem}>
+                      <span className={styles.permissionIcon}>📦</span>
+                      <span className={styles.permissionLabel}>Materials (MM)</span>
+                      <span className={`${styles.permissionBadge} ${styles.granted}`}>Granted</span>
+                    </div>
+                    <div className={styles.permissionItem}>
+                      <span className={styles.permissionIcon}>💰</span>
+                      <span className={styles.permissionLabel}>Sales (SD)</span>
+                      <span className={`${styles.permissionBadge} ${styles.granted}`}>Granted</span>
+                    </div>
+                    <div className={styles.permissionItem}>
+                      <span className={styles.permissionIcon}>🗄️</span>
+                      <span className={styles.permissionLabel}>Data Browser</span>
+                      <span className={`${styles.permissionBadge} ${styles.granted}`}>Granted</span>
+                    </div>
+                    {user?.isAdmin && (
+                      <>
+                        <div className={styles.permissionItem}>
+                          <span className={styles.permissionIcon}>👥</span>
+                          <span className={styles.permissionLabel}>User Admin</span>
+                          <span className={`${styles.permissionBadge} ${styles.admin}`}>Admin</span>
+                        </div>
+                        <div className={styles.permissionItem}>
+                          <span className={styles.permissionIcon}>⚙️</span>
+                          <span className={styles.permissionLabel}>System Config</span>
+                          <span className={`${styles.permissionBadge} ${styles.admin}`}>Admin</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Change Password Modal */}
@@ -618,75 +790,73 @@ const UserProfileScreen = () => {
           setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
           setPasswordError('');
         }}
-        onConfirm={handleChangePassword}
-        title="🔑 Change Password"
-        width="400px"
+        title="Change Password"
+        width="420px"
         footer={
-          <>
-            <SapButton onClick={() => {
-              setShowPasswordModal(false);
-              setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-              setPasswordError('');
-            }}>
+          <div className={styles.modalFooter}>
+            <button 
+              className={styles.btnSecondary}
+              onClick={() => {
+                setShowPasswordModal(false);
+                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                setPasswordError('');
+              }}
+            >
               Cancel
-            </SapButton>
-            <SapButton onClick={handleChangePassword} type="primary">
-              Change Password
-            </SapButton>
-          </>
+            </button>
+            <button 
+              className={styles.btnPrimary}
+              onClick={handleChangePassword}
+            >
+              Update Password
+            </button>
+          </div>
         }
       >
-        <div className="sap-form">
+        <div className={styles.passwordForm}>
           {passwordError && (
-            <div className="sap-message-strip error" style={{ marginBottom: '16px' }}>
-              <span className="sap-message-strip-icon">❌</span>
-              <span>{passwordError}</span>
+            <div className={styles.errorMessage}>
+              <span>❌</span>
+              {passwordError}
             </div>
           )}
           
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px' }}>
-              Current Password *
-            </label>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Current Password</label>
             <input
               type="password"
-              className="sap-input"
+              className={styles.input}
               value={passwordData.currentPassword}
               onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-              style={{ width: '100%' }}
+              placeholder="Enter current password"
             />
           </div>
           
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px' }}>
-              New Password *
-            </label>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>New Password</label>
             <input
               type="password"
-              className="sap-input"
+              className={styles.input}
               value={passwordData.newPassword}
               onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
               placeholder="Minimum 6 characters"
-              style={{ width: '100%' }}
             />
           </div>
           
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px' }}>
-              Confirm New Password *
-            </label>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Confirm New Password</label>
             <input
               type="password"
-              className="sap-input"
+              className={styles.input}
               value={passwordData.confirmPassword}
               onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-              style={{ width: '100%' }}
+              placeholder="Confirm new password"
             />
           </div>
 
-          <div className="sap-message-strip info">
-            <span className="sap-message-strip-icon">ℹ️</span>
-            <span>Password must be at least 6 characters long.</span>
+          <div className={styles.passwordHint}>
+            <span>💡</span>
+            Password must be at least 6 characters long and different from your current password.
           </div>
         </div>
       </SapModal>
