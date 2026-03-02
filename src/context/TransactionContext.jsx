@@ -48,15 +48,15 @@ export const TransactionProvider = ({ children }) => {
   // Navigate to transaction
   const navigateToTransaction = useCallback(
     (tcode) => {
-      const newSession = tcode.startsWith("/n")|| tcode.startsWith("/N");
+      const newSession = tcode.startsWith("/n") || tcode.startsWith("/N");
       const cleanTcode = tcode.replace(/^\/n/i, "").toUpperCase();
 
-      const readOnlyTransactions = ["MM03", "VA03", "FB03", "WS03", "SE16","Home"];
+      const readOnlyTransactions = ["MM03", "VA03", "FB03", "WS03", "SE16", "Home"];
 
-      if(readOnlyTransactions.includes(cleanTcode)){
+      if (readOnlyTransactions.includes(cleanTcode)) {
         setHasUnsavedChanges(false);
       }
-      
+
       // If already in a transaction (not HOME), show warning
       else if (
         isTransactionActive &&
@@ -85,7 +85,14 @@ export const TransactionProvider = ({ children }) => {
       setCurrentTransaction(cleanTcode);
       setIsTransactionActive(cleanTcode !== "HOME");
       setHasUnsavedChanges(false);
-      setTransactionHistory((prev) => [...prev, cleanTcode]);
+
+      setTransactionHistory((prev) => {
+        if (newSession) {
+          return ["HOME", cleanTcode]; // reset stack
+        }
+        return [...prev, cleanTcode];
+      });
+
       setStatusMessage(`Transaction ${cleanTcode} started`);
       setStatusType("success");
 
@@ -113,7 +120,7 @@ export const TransactionProvider = ({ children }) => {
   );
 
   // Go back to previous screen or HOME
-  const goBack = useCallback((hasUnsavedChanges=false) => {
+  const goBack = useCallback((hasUnsavedChanges = false) => {
     // If screen has its own back logic → use it first
     if (customBackHandler) {
       const handled = customBackHandler();
@@ -257,6 +264,7 @@ export const TransactionProvider = ({ children }) => {
     isTransactionActive,
     hasUnsavedChanges,
     transactionHistory,
+    setTransactionHistory,
     showExitConfirm,
     statusMessage,
     statusType,

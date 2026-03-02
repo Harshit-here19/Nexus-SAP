@@ -779,23 +779,26 @@ export const saveTransactionHistory = (history, userId = null) => {
 
 // Add to transaction history
 export const addToHistory = (tcode, description = "", userId = null) => {
-  const history = getTransactionHistory(userId);
+  const history = getTransactionHistory(userId) || [];
 
-  // Remove if already exists (to move to top)
-  const filtered = history.filter((h) => h.tcode !== tcode);
+  const newTcode = tcode.trim().toUpperCase();
 
-  // Add to beginning
-  filtered.unshift({
-    tcode,
-    description,
-    accessedAt: new Date().toISOString(),
-  });
+  // Remove any existing entry with the same tcode
+  const filtered = history.filter(h => (h.tcode || "").trim().toUpperCase() !== newTcode);
 
-  // Keep only last 20 entries
-  const trimmed = filtered.slice(0, 20);
+  // Add new entry at the front
+  const updated = [
+    { tcode: newTcode, description, accessedAt: new Date().toISOString() },
+    ...filtered,
+  ];
 
+  // Keep only last 20
+  const trimmed = updated.slice(0, 5);
+
+  // Save updated history
   saveTransactionHistory(trimmed, userId);
-  return { success: true };
+
+  return trimmed; // return updated history for convenience
 };
 
 // Clear transaction history

@@ -1,6 +1,6 @@
 // src/components/Screens/Notes/NotesScreen.jsx
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import SapButton from "../../Common/SapButton";
 import SapInput from "../../Common/SapInput";
 import SapTabs from "../../Common/SapTabs";
@@ -43,7 +43,16 @@ import SapModal from "../../Common/SapModal";
 const NotesScreen = ({ mode = "create" }) => {
   const { settings } = useSettings();
 
-  const { updateStatus, markAsChanged, markAsSaved, goBack } = useTransaction();
+  const {
+    updateStatus,
+    markAsChanged,
+    markAsSaved,
+    goBack,
+    transactionHistory,
+    setTransactionHistory,
+    registerBackHandler,
+    clearBackHandler
+  } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
 
@@ -549,6 +558,50 @@ const NotesScreen = ({ mode = "create" }) => {
     // setTimeout(() => printWindow.print(), 250);
   };
 
+    // Register a custom back handler that closes the editor first
+    useEffect(() => {
+      if (isLoaded) {
+        registerBackHandler(() => {
+          // Close the editor instead of leaving the transaction
+          setIsLoaded(false);
+          setNoteId("");
+          setShowPreview(false);
+          markAsSaved();
+  
+          // Pop the NOTE_ entry from history
+          setTransactionHistory((prev) => {
+            const newHistory = [...prev];
+            if (
+              newHistory.length > 0 &&
+              newHistory[newHistory.length - 1]?.startsWith("NOTE_")
+            ) {
+              newHistory.pop();
+            }
+            return newHistory;
+          });
+  
+          updateStatus("Close the Opened Note", "info");
+          return true; // Signal that we handled the back — don't do default back
+        });
+      } else {
+        // When not loaded (on the search/ID entry screen), clear the custom handler
+        // so default back behavior (go to HOME) works normally
+        clearBackHandler();
+      }
+  
+      return () => {
+        clearBackHandler();
+      };
+    }, [
+      isLoaded,
+      registerBackHandler,
+      clearBackHandler,
+      setTransactionHistory,
+      markAsSaved,
+      updateStatus,
+      user?.username,
+    ]);
+
   // Register actions
   useEffect(() => {
     registerAction("SAVE", () => saveRef.current?.());
@@ -614,8 +667,6 @@ const NotesScreen = ({ mode = "create" }) => {
       ]
       : []),
   ];
-
-
 
   return (
     <div>

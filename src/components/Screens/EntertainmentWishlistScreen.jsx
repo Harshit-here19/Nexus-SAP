@@ -142,7 +142,7 @@ const initialFormState = (user) => ({
 const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const isMobile = window.innerWidth <= 768;
 
-  const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction } = useTransaction();
+  const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction,setTransactionHistory, registerBackHandler, clearBackHandler  } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
   const { confirm } = useConfirm();
@@ -360,6 +360,49 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     markAsSaved();
     updateStatus("Form cleared", "info");
   };
+
+  // Register a custom back handler that closes the editor first
+  useEffect(() => {
+    if (isLoaded) {
+      registerBackHandler(() => {
+        // Close the editor instead of leaving the transaction
+        setIsLoaded(false);
+        setItemId("");
+        markAsSaved();
+
+        // Pop the NOTE_ entry from history
+        setTransactionHistory((prev) => {
+          const newHistory = [...prev];
+          if (
+            newHistory.length > 0 &&
+            newHistory[newHistory.length - 1]?.startsWith("NOTE_")
+          ) {
+            newHistory.pop();
+          }
+          return newHistory;
+        });
+
+        updateStatus("Close the Opened Note", "info");
+        return true; // Signal that we handled the back — don't do default back
+      });
+    } else {
+      // When not loaded (on the search/ID entry screen), clear the custom handler
+      // so default back behavior (go to HOME) works normally
+      clearBackHandler();
+    }
+
+    return () => {
+      clearBackHandler();
+    };
+  }, [
+    isLoaded,
+    registerBackHandler,
+    clearBackHandler,
+    setTransactionHistory,
+    markAsSaved,
+    updateStatus,
+    user?.username,
+  ]);
 
   useEffect(() => {
     registerAction("SAVE", () => {

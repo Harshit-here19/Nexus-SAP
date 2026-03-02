@@ -96,26 +96,10 @@ export const FavoritesProvider = ({ children }) => {
   const addTransactionToHistory = useCallback(
     (tcode, description = "") => {
       if (!user?.userId) return;
-
-      // Get current history first
-      const fullHistory = getTransactionHistory(user.userId);
-
-      // Add new transaction at the end
-      const updatedHistory = [...fullHistory, { tcode, description }];
-
-      // Keep only the last 5 and reverse to have newest first
-      const latestHistory = updatedHistory.slice(-5).reverse();
-
-      // Clear and rewrite history
-      clearTransactionHistory(user.userId);
-      // Since addToHistory likely appends, reverse again to maintain newest first in state
-      latestHistory
-        .slice()
-        .reverse()
-        .forEach((entry) =>
-          addToHistory(entry.tcode, entry.description, user.userId),
-        );
-
+  
+      // Add transaction and get updated history
+      const latestHistory = addToHistory(tcode, description, user.userId);
+  
       // Update state
       setHistory(latestHistory);
     },
