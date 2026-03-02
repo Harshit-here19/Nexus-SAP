@@ -111,7 +111,7 @@ const TreeMenu = () => {
     };
 
     window.addEventListener("resize", handleResize);
-    console.log("TreeMenu mounted, screen width:", screenWidth);
+    // console.log("TreeMenu mounted, screen width:", screenWidth);
 
     return () => {
       window.removeEventListener("resize", handleResize);

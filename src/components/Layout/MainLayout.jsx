@@ -30,6 +30,7 @@ const MainLayout = ({ children }) => {
     onSwipedRight: () => setSidebarVisible(true), // swipe right → open
     delta: 50, // minimum swipe distance
     preventDefaultTouchmoveEvent: true,
+    swipeDuration: 250,
     // trackMouse: true, // allows testing on desktop
   });
 

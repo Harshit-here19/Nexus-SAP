@@ -30,32 +30,6 @@ export const STATUS_OPTIONS = [
   { value: 'pinned', label: '📌 Pinned', color: '#e91e63' }
 ];
 
-// Text formatting toolbar items
-export const FORMATTING_OPTIONS = [
-  { action: 'bold', icon: 'B', title: 'Bold (Ctrl+B)', style: { fontWeight: 'bold' } },
-  { action: 'italic', icon: 'I', title: 'Italic (Ctrl+I)', style: { fontStyle: 'italic' } },
-  { action: 'underline', icon: 'U', title: 'Underline (Ctrl+U)', style: { textDecoration: 'underline' } },
-  { action: 'strikethrough', icon: 'S', title: 'Strikethrough', style: { textDecoration: 'line-through' } },
-  { action: 'separator' },
-  { action: 'h1', icon: 'H1', title: 'Heading 1' },
-  { action: 'h2', icon: 'H2', title: 'Heading 2' },
-  { action: 'h3', icon: 'H3', title: 'Heading 3' },
-  { action: 'separator' },
-  { action: 'bullet', icon: '•', title: 'Bullet List' },
-  { action: 'number', icon: '1.', title: 'Numbered List' },
-  { action: 'checklist', icon: '☐', title: 'Checklist' },
-  { action: 'checkdone', icon: '☑', title: 'Checklist Done' },
-  { action: 'separator' },
-  { action: 'quote', icon: '"', title: 'Quote' },
-  { action: 'code', icon: '<>', title: 'Code Block' },
-  { action: 'hr', icon: '―', title: 'Horizontal Rule' },
-  { action: 'separator' },
-  { action: 'link', icon: '🔗', title: 'Insert Link' },
-  { action: 'image', icon: '🖼️', title: 'Insert Image' },
-  { action: 'table', icon: '▦', title: 'Insert Table' }
-];
-// src/components/Screens/Notes/NotesConstants.js
-
 export const VERTICAL_FORMATTING_OPTIONS = [
   { 
     action: 'bold', 
@@ -94,21 +68,21 @@ export const VERTICAL_FORMATTING_OPTIONS = [
     action: 'h1', 
     icon: 'H1', 
     title: 'Heading 1', 
-    label: 'H1',
+    label: 'Heading 1',
     shortcut: 'Ctrl+1'
   },
   { 
     action: 'h2', 
     icon: 'H2', 
     title: 'Heading 2', 
-    label: 'H2',
+    label: 'Heading 2',
     shortcut: 'Ctrl+2'
   },
   { 
     action: 'h3', 
     icon: 'H3', 
     title: 'Heading 3', 
-    label: 'H3',
+    label: 'Heading 3',
     shortcut: 'Ctrl+3'
   },
   { action: 'separator' },
@@ -160,6 +134,13 @@ export const VERTICAL_FORMATTING_OPTIONS = [
     icon: '</>', 
     title: 'Code Block', 
     label: 'Code',
+    shortcut: 'Ctrl+`'
+  },
+  { 
+    action: 'codeinline', 
+    icon: '{ }', 
+    title: 'Inline Code Block', 
+    label: 'CodeInline',
     shortcut: 'Ctrl+`'
   },
   { 

@@ -2,7 +2,7 @@
 
 export { default as NotesScreen } from './NotesScreen';
 export { default as NotesEditor } from './NotesEditor';
-export { default as NotesToolbar } from './NotesToolbar';
+export { default as NotesVerticalToolbar } from './NotesVerticalToolbar';
 export { default as NotesProperties } from './NotesProperties';
 export { default as NotesHistory } from './NotesHistory';
 export { default as NotesSearchModal } from './NotesSearchModal';

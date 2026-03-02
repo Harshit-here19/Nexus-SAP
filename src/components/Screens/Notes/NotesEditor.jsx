@@ -21,7 +21,8 @@ const NotesEditor = forwardRef(
       onFormat,
       loadDemoNote,
       mode,
-      codeTheme
+      codeTheme,
+      tableTheme
     },
     ref,
   ) => {
@@ -33,7 +34,7 @@ const NotesEditor = forwardRef(
     const summaryRef = useRef(null);
     const titleInputRef = useRef(null);
 
-  
+
     // Check if title and summary are valid
     const isTitleValid = formData.title && formData.title.trim().length >= 3;
     const isSummaryValid = formData.summary && formData.summary.trim().length >= 10;
@@ -52,6 +53,22 @@ const NotesEditor = forwardRef(
         setHasProceeded(true);
       }
     }, [mode, formData.content]);
+
+    // Adding the Keyboard shortcut to toggle preview
+    useEffect(() => {
+      const handleKeyDown = (event) => {
+        if (event.ctrlKey && event.code === "Space") {
+          event.preventDefault();
+          onShowPreviewChange(prev => !prev);
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }, []);
 
     // Handle proceed to content
     const handleProceed = () => {
@@ -117,12 +134,14 @@ const NotesEditor = forwardRef(
           <div className={styles['notes-hero-icon']}>
             {mode === 'create' ? '✨' : '📝'}
           </div>
-          <h2 className={styles['notes-hero-title']}>
-            {mode === 'create' ? 'Create a New Note' : 'Edit Note Details'}
-          </h2>
-          <p className={styles['notes-hero-subtitle']}>
-            Start by giving your note a title and brief summary
-          </p>
+          <div>
+            <h2 className={styles['notes-hero-title']}>
+              {mode === 'create' ? 'Create a New Note' : 'Edit Note Details'}
+            </h2>
+            <p className={styles['notes-hero-subtitle']}>
+              Start by giving your note a title and brief summary
+            </p>
+          </div>
         </div>
 
         {/* Form Card */}
@@ -301,7 +320,7 @@ const NotesEditor = forwardRef(
               <div className={styles["notes-editor-inner"]}>
                 {showPreview || isReadOnly ? (
                   <div className={styles["notes-preview-wrapper"]}>
-                    <MarkdownPreview codeTheme={codeTheme}>
+                    <MarkdownPreview codeTheme={codeTheme} tableTheme={tableTheme}>
                       {formData.content}
                     </MarkdownPreview>
                   </div>
@@ -312,8 +331,8 @@ const NotesEditor = forwardRef(
                       value={formData.content}
                       onChange={(e) => onContentChange(e.target.value)}
                       disabled={isReadOnly}
-                      placeholder={`Start writing your note...
-
+                      placeholder={
+                        `Start writing your note...
 📝 Formatting tips:
 ──────────────────
 • **bold** or *italic* or __underline__
@@ -330,7 +349,7 @@ const NotesEditor = forwardRef(
                     />
 
                     {/* Keyboard Shortcuts Hint */}
-                    <div className={styles["notes-shortcuts-hint"]}>
+                    {!isMobile && <div className={styles["notes-shortcuts-hint"]}>
                       <span className={styles["shortcut-item"]}>
                         <kbd>Ctrl</kbd> + <kbd>B</kbd> Bold
                       </span>
@@ -340,41 +359,14 @@ const NotesEditor = forwardRef(
                       <span className={styles["shortcut-item"]}>
                         <kbd>Ctrl</kbd> + <kbd>U</kbd> Underline
                       </span>
-                    </div>
+                    </div>}
                   </div>
                 )}
               </div>
 
               {/* Stats Footer */}
-              <div className={styles["notes-stats-footer"]}>
-                <div className={styles["notes-stats"]}>
-                  <span className={styles["notes-stats-item"]}>
-                    <span className={styles["stats-icon"]}>📝</span>
-                    <span className={styles["stats-value"]}>
-                      {formData.wordCount || 0}
-                    </span>
-                    <span className={styles["stats-label"]}>words</span>
-                  </span>
-                  <span className={styles["notes-stats-divider"]}>•</span>
-                  <span className={styles["notes-stats-item"]}>
-                    <span className={styles["stats-icon"]}>🔤</span>
-                    <span className={styles["stats-value"]}>
-                      {formData.charCount || 0}
-                    </span>
-                    <span className={styles["stats-label"]}>characters</span>
-                  </span>
-                  <span className={styles["notes-stats-divider"]}>•</span>
-                  <span className={styles["notes-stats-item"]}>
-                    <span className={styles["stats-icon"]}>📄</span>
-                    <span className={styles["stats-value"]}>
-                      {formData.content
-                        ? Math.ceil(formData.content.split("\n").length / 10)
-                        : 0}
-                    </span>
-                    <span className={styles["stats-label"]}>pages</span>
-                  </span>
-                </div>
-              </div>
+              {StatFooter(isMobile, formData)}
+
             </div>
 
             {/* Vertical Toolbar */}
@@ -421,3 +413,90 @@ const NotesEditor = forwardRef(
 NotesEditor.displayName = "NotesEditor";
 
 export default NotesEditor;
+
+const StatFooter = (mobile, formData) => {
+  if (!isMobile) {
+    return (<div className={styles["notes-stats-footer"]}>
+      <div className={styles["notes-stats"]}>
+        <span className={styles["notes-stats-item"]}>
+          <span className={styles["stats-icon"]}>📝</span>
+          <span className={styles["stats-value"]}>
+            {formData.wordCount || 0}
+          </span>
+          <span className={styles["stats-label"]}>words</span>
+        </span>
+        <span className={styles["notes-stats-divider"]}>•</span>
+        <span className={styles["notes-stats-item"]}>
+          <span className={styles["stats-icon"]}>🔤</span>
+          <span className={styles["stats-value"]}>
+            {formData.charCount || 0}
+          </span>
+          <span className={styles["stats-label"]}>characters</span>
+        </span>
+        <span className={styles["notes-stats-divider"]}>•</span>
+        <span className={styles["notes-stats-item"]}>
+          <span className={styles["stats-icon"]}>📄</span>
+          <span className={styles["stats-value"]}>
+            {formData.content
+              ? Math.ceil(formData.content.split("\n").length / 10)
+              : 0}
+          </span>
+          <span className={styles["stats-label"]}>pages</span>
+        </span>
+      </div>
+    </div>)
+  } else {
+    return (<div
+      className={styles["notes-stats-footer"]}
+      style={{
+        marginTop: '12px',
+        padding: '8px 4px',
+        borderTop: '1px solid var(--notes-border, #30363d)',
+      }}
+    >
+      <div
+        className={styles["notes-stats"]}
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',   // Essential for mobile screens
+          gap: '12px',        // Spacing between items
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          fontSize: '12px',   // Smaller font for mobile
+          color: 'var(--notes-text-secondary, #8b949e)',
+        }}
+      >
+        {/* Word Count Item */}
+        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span>📝</span>
+          <strong style={{ color: 'var(--notes-text, #c9d1d9)' }}>
+            {formData.wordCount || 0}
+          </strong>
+          <span>words</span>
+        </span>
+
+        <span style={{ opacity: 0.3 }}>•</span>
+
+        {/* Char Count Item */}
+        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span>🔤</span>
+          <strong style={{ color: 'var(--notes-text, #c9d1d9)' }}>
+            {formData.charCount || 0}
+          </strong>
+          <span>chars</span>
+        </span>
+
+        <span style={{ opacity: 0.3 }}>•</span>
+
+        {/* Pages Item */}
+        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span>📄</span>
+          <strong style={{ color: 'var(--notes-text, #c9d1d9)' }}>
+            {formData.content ? Math.ceil(formData.content.split("\n").length / 10) : 0}
+          </strong>
+          <span>pages</span>
+        </span>
+      </div>
+    </div>)
+  }
+}

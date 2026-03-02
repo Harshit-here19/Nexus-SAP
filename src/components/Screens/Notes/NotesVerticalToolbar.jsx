@@ -32,8 +32,8 @@ const NotesVerticalToolbar = ({
     return acc;
   }, []);
 
-  const handleMouseEnter = (action) => {
-    setActiveTooltip(action);
+  const handleMouseEnter = (label) => {
+    setActiveTooltip(label);
   };
 
   const handleMouseLeave = () => {
@@ -41,7 +41,7 @@ const NotesVerticalToolbar = ({
   };
 
   return (
-    <div 
+    <div
       className={`
         ${styles.toolbar} 
         ${styles[position]} 
@@ -58,8 +58,8 @@ const NotesVerticalToolbar = ({
           title={collapsed ? 'Expand toolbar' : 'Collapse toolbar'}
         >
           <span className={styles.collapseIcon}>
-            {collapsed 
-              ? (position === 'left' ? '»' : '«') 
+            {collapsed
+              ? (position === 'left' ? '»' : '«')
               : (position === 'left' ? '«' : '»')
             }
           </span>
@@ -69,33 +69,33 @@ const NotesVerticalToolbar = ({
       {/* Main Toolbar Content */}
       <div className={styles.toolbarContent}>
         {/* Preview Toggle */}
-        <div 
-            className={styles.buttonWrapper}
-            onMouseEnter={() => handleMouseEnter('preview')}
-            onMouseLeave={handleMouseLeave}
+        <div
+          className={styles.buttonWrapper}
+          onMouseEnter={() => handleMouseEnter('preview')}
+          onMouseLeave={handleMouseLeave}
+        >
+          <button
+            onClick={onTogglePreview}
+            className={`${styles.toolbarButton} ${styles.previewButton} ${showPreview ? styles.active : ''}`}
+            disabled={disabled}
+            aria-label={showPreview ? 'Edit mode' : 'Preview mode'}
           >
-            <button
-              onClick={onTogglePreview}
-              className={`${styles.toolbarButton} ${styles.previewButton} ${showPreview ? styles.active : ''}`}
-              disabled={disabled}
-              aria-label={showPreview ? 'Edit mode' : 'Preview mode'}
-            >
-              <span className={styles.buttonIcon}>
-                {showPreview ? '✏️' : '👁️'}
+            <span className={styles.buttonIcon}>
+              {showPreview ? '✏️' : '👁️'}
+            </span>
+            {!collapsed && (
+              <span className={styles.buttonLabel}>
+                {showPreview ? 'Edit' : 'Preview'}
               </span>
-              {!collapsed && (
-                <span className={styles.buttonLabel}>
-                  {showPreview ? 'Edit' : 'Preview'}
-                </span>
-              )}
-            </button>
-
-            {activeTooltip === 'preview' && collapsed && (
-              <div className={`${styles.tooltip} ${styles[position]}`}>
-                {showPreview ? 'Switch to Edit' : 'Switch to Preview'}
-              </div>
             )}
-          </div>
+          </button>
+
+          {activeTooltip === 'preview' && collapsed && (
+            <div className={`${styles.tooltip} ${styles[position]}`}>
+              Ctrl + Space
+            </div>
+          )}
+        </div>
 
         {/* Formatting Buttons */}
         <div className={styles.formattingSection}>
@@ -110,10 +110,10 @@ const NotesVerticalToolbar = ({
             }
 
             return (
-              <div 
-                key={opt.action} 
+              <div
+                key={opt.action}
                 className={styles.buttonWrapper}
-                onMouseEnter={() => handleMouseEnter(opt.action)}
+                onMouseEnter={() => handleMouseEnter(opt.label)}
                 onMouseLeave={handleMouseLeave}
               >
                 <button
@@ -180,7 +180,7 @@ const NotesVerticalToolbar = ({
       {!collapsed && (
         <div className={styles.shortcutHint}>
           <span className={styles.hintIcon}>⌨️</span>
-          <span className={styles.hintText}>Press ? for shortcuts</span>
+          <span className={styles.hintText}><kbd>Ctrl</kbd>+<kbd>Space</kbd> : toggle preview</span>
         </div>
       )}
     </div>
