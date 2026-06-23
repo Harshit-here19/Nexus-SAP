@@ -845,7 +845,7 @@ body {
   border-radius: 6px;
   margin-bottom: 12px;
   box-shadow: var(--sap-shadow-small);
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .sap-panel-header {

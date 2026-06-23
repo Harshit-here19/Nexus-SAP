@@ -39,7 +39,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
 
   const fileInputRef = useRef(null);
 
-  const {confirm} = useConfirm();
+  const { confirm } = useConfirm();
   const { user } = useAuth();
 
   const tables = [
@@ -48,6 +48,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
     { value: "materials", label: "Materials (MARA)" },
     { value: "expenses", label: "Expenses (KONV)" },
     { value: "notes", label: "Notes (NT)" },
+    { value: "collections", label: "List Collections (LC)" },
     { value: "customers", label: "Customers (KNA1)" },
     { value: "vendors", label: "Vendors (LFA1)" },
     { value: "plants", label: "Plants (T001W)" },
@@ -133,6 +134,18 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
       { key: 'isNsfw', label: 'NSFW', align: 'center' },
       { key: 'createdBy', label: 'Created By' }
     ],
+    collections: [
+      { key: "collectionNumber", label: "collection ID" },
+      { key: "title", label: "Title" },
+      {
+        key: "items",
+        label: "Items",
+        formatter: (value) =>
+          value?.map(x => x.name).join(", ")
+      },
+      { key: "createdAt", label: "Created At" },
+      { key: "updatedAt", label: "Updated At" },
+    ],
     plants: [
       { key: "plantCode", label: "Plant Code" },
       { key: "plantName", label: "Plant Name" },
@@ -161,6 +174,10 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
     materials: {
       duplicateField: "description",
       existingKey: "materialNumber"
+    },
+    collections: {
+      duplicateField: "title",
+      existingKey: "collectionNumber"
     },
   };
 

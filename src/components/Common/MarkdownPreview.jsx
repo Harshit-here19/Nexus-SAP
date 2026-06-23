@@ -154,7 +154,7 @@ export const parseMarkdown = (text, codeTheme, tableTheme) => {
         .replace(/^☑ (.+)$/gm, '<li class="checked">✅ $1</li>')
         .replace(/^☐ (.+)$/gm, '<li class="unchecked">⬜ $1</li>')
         .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width: 100%; border-radius: 4px;">')
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')      
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
 
     html = html.replace(/\n(?!(?:<\/li>|<\/ul>|<\/ol>|<li>))/g, '<br>');
 
@@ -206,7 +206,11 @@ export const parseCustomTable = (text, placeholders, theme) => {
         let headers = [];
 
         tableContent.replace(/@(head|data)\s+([\s\S]*?)\s*@\/\1/g, (match, type, content) => {
-            const values = content.trim().split(/\s+/);
+            // const values = content.trim().split(/\s+/);
+            const values = content
+                .split(/\s*\|\|\s*/)
+                .map(v => v.trim())
+                .filter(Boolean);
             if (type === 'head') headers = values;
             else if (type === 'data') rows.push(values);
         });

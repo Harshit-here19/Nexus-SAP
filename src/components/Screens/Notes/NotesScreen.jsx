@@ -65,12 +65,21 @@ const NotesScreen = ({ mode = "create" }) => {
   const editorRef = useRef(null);
   const printRef = useRef(null);
 
+  // Form data
+  const [formData, setFormData] = useState({
+    ...INITIAL_FORM_DATA,
+    createdBy: user?.username || "SAPUSER",
+  });
+
   // State
   const [noteId, setNoteId] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [summary, setSummary] = useState("");
-  const [tableTheme, setTableTheme] = useState("Nord Theme");
+  const [tableTheme, setTableTheme] = useState(formData.tableTheme);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeSearch, setActiveSearch] = useState("");
 
   // Modals
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -93,16 +102,11 @@ const NotesScreen = ({ mode = "create" }) => {
   const [tableRows, setTableRows] = useState(3);
   const [tableCols, setTableCols] = useState(3);
 
-  // Form data
-  const [formData, setFormData] = useState({
-    ...INITIAL_FORM_DATA,
-    createdBy: user?.username || "SAPUSER",
-  });
   const [errors, setErrors] = useState({});
 
   // Handle Table Theme Change
   const handleTableThemeChange = (theme) => {
-    setTableTheme(theme);
+    handleChange('tableTheme', theme)
   };
 
   // Handle form field change
@@ -122,6 +126,65 @@ const NotesScreen = ({ mode = "create" }) => {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
+  };
+
+  const handleAutoSearch = (value) => {
+  setActiveSearch(value);
+
+  if (!value.trim()) {
+    setSuggestions([]);
+    setShowSuggestions(false);
+    return;
+  }
+
+  const notes = getTableData("notes") || [];
+
+  const search = value.toLowerCase().trim();
+
+  // wildcard support
+  const regex = new RegExp(
+    search
+      .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+      .replace(/\*/g, ".*"),
+    "i"
+  );
+
+  const results = notes.filter((note) => {
+    const fields = [
+      note.noteNumber,
+      note.title,
+      note.summary,
+      note.content,
+      note.tags,
+    ];
+
+    return fields.some((field) => {
+      if (!field) return false;
+
+      const text = String(field);
+
+      return search.includes("*")
+        ? regex.test(text)
+        : text.toLowerCase().includes(search);
+    });
+  });
+
+  setSuggestions(results.slice(0, 10));
+  setShowSuggestions(results.length > 0);
+};
+
+  const selectSuggestion = (note) => {
+    setNoteId(note.noteNumber);
+    setFormData(note);
+    setIsLoaded(true);
+
+    setSuggestions([]);
+    setShowSuggestions(false);
+
+    updateStatus(
+      `Note ${note.noteNumber} loaded`,
+      "success"
+    );
   };
 
   // Insert text at cursor position
@@ -558,49 +621,49 @@ const NotesScreen = ({ mode = "create" }) => {
     // setTimeout(() => printWindow.print(), 250);
   };
 
-    // Register a custom back handler that closes the editor first
-    useEffect(() => {
-      if (isLoaded) {
-        registerBackHandler(() => {
-          // Close the editor instead of leaving the transaction
-          setIsLoaded(false);
-          setNoteId("");
-          setShowPreview(false);
-          markAsSaved();
-  
-          // Pop the NOTE_ entry from history
-          setTransactionHistory((prev) => {
-            const newHistory = [...prev];
-            if (
-              newHistory.length > 0 &&
-              newHistory[newHistory.length - 1]?.startsWith("NOTE_")
-            ) {
-              newHistory.pop();
-            }
-            return newHistory;
-          });
-  
-          updateStatus("Close the Opened Note", "info");
-          return true; // Signal that we handled the back — don't do default back
+  // Register a custom back handler that closes the editor first
+  useEffect(() => {
+    if (isLoaded) {
+      registerBackHandler(() => {
+        // Close the editor instead of leaving the transaction
+        setIsLoaded(false);
+        setNoteId("");
+        setShowPreview(false);
+        markAsSaved();
+
+        // Pop the NOTE_ entry from history
+        setTransactionHistory((prev) => {
+          const newHistory = [...prev];
+          if (
+            newHistory.length > 0 &&
+            newHistory[newHistory.length - 1]?.startsWith("NOTE_")
+          ) {
+            newHistory.pop();
+          }
+          return newHistory;
         });
-      } else {
-        // When not loaded (on the search/ID entry screen), clear the custom handler
-        // so default back behavior (go to HOME) works normally
-        clearBackHandler();
-      }
-  
-      return () => {
-        clearBackHandler();
-      };
-    }, [
-      isLoaded,
-      registerBackHandler,
-      clearBackHandler,
-      setTransactionHistory,
-      markAsSaved,
-      updateStatus,
-      user?.username,
-    ]);
+
+        updateStatus("Close the Opened Note", "info");
+        return true; // Signal that we handled the back — don't do default back
+      });
+    } else {
+      // When not loaded (on the search/ID entry screen), clear the custom handler
+      // so default back behavior (go to HOME) works normally
+      clearBackHandler();
+    }
+
+    return () => {
+      clearBackHandler();
+    };
+  }, [
+    isLoaded,
+    registerBackHandler,
+    clearBackHandler,
+    setTransactionHistory,
+    markAsSaved,
+    updateStatus,
+    user?.username,
+  ]);
 
   // Register actions
   useEffect(() => {
@@ -641,7 +704,7 @@ const NotesScreen = ({ mode = "create" }) => {
           summary={summary}
           onSummaryChange={handleSummaryChange}
           codeTheme={settings.codeTheme}
-          tableTheme={tableTheme}
+          tableTheme={formData.tableTheme}
         />
       ),
     },
@@ -719,18 +782,86 @@ const NotesScreen = ({ mode = "create" }) => {
                 className="sap-form-row"
                 style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
-                <SapInput
-                  label="Note ID"
-                  value={noteId}
-                  onChange={setNoteId}
-                  placeholder="e.g., NT000000001"
-                  icon="🔍"
-                  onIconClick={() => {
-                    // setSearchResults(getTableData("notes") || []);
-                    handleSearch();
-                    setShowSearchModal(true);
-                  }}
-                />
+                <div style={{ position: "relative", width: "300px" }}>
+
+                  <SapInput
+                    label="Note ID / Search"
+                    value={noteId}
+                    onChange={(value) => {
+                      setNoteId(value);
+                      handleAutoSearch(value);
+                    }}
+                    placeholder="NT100000001"
+                    icon="🔍"
+                    onIconClick={() => {
+                      handleSearch();
+                      setShowSearchModal(true);
+                    }}
+                  />
+
+
+                  {showSuggestions && suggestions.length > 0 && (
+
+                    <div
+                      style={{
+                        width: '18rem',
+                        position: 'absolute',
+                        top: '33px',
+                        left: '137px',
+                        background: 'white',
+                        border: "1px solid #ddd",
+                        borderRadius: "8px",
+                        zIndex: 1000,
+                        boxShadow: "0 5px 15px rgba(0,0,0,.2)",
+                        maxHeight: "250px",
+                        overflowY: "auto"
+                      }}
+                    >
+
+
+                      {suggestions.map(note => (
+
+                        <div
+                          key={note.id}
+                          onClick={() => selectSuggestion(note)}
+                          style={{
+                            padding: "10px",
+                            cursor: "pointer",
+                            borderBottom: "1px solid #eee"
+                          }}
+                        >
+
+
+                          <div style={{
+                            fontWeight: "bold",
+                            color: "#2563eb"
+                          }}>
+                            {note.noteNumber}
+                          </div>
+
+
+                          <div>
+                            {note.title || "Untitled"}
+                          </div>
+
+
+                          <div style={{
+                            fontSize: "12px",
+                            color: "#777"
+                          }}>
+                            {note.summary}
+                          </div>
+
+
+                        </div>
+
+                      ))}
+
+                    </div>
+
+                  )}
+
+                </div>
                 <SapButton onClick={loadNote} type="primary" icon="📂">
                   Load
                 </SapButton>
@@ -841,7 +972,7 @@ const NotesScreen = ({ mode = "create" }) => {
         onTableColsChange={setTableCols}
         onInsert={insertTable}
         onThemeChange={handleTableThemeChange}
-        selectedTheme={tableTheme}
+        selectedTheme={formData.tableTheme}
       />
 
       <SapModal

@@ -24,6 +24,8 @@ import EntertainmentWishlistScreen from "./components/Screens/EntertainmentWishl
 import { ActionProvider } from "./context/ActionContext";
 import { ConfirmProvider } from "./context/ConfirmContext";
 import { NotesScreen } from "./components/Screens/Notes";
+import { Todo } from "./components/Screens/ToDo/Todo";
+import { CollectionScreen } from "./components/Screens/Collections/CollectionScreen";
 
 // Wrapper component to connect transaction tracking with favorites
 const TransactionTracker = ({ children }) => {
@@ -144,6 +146,18 @@ const AppContent = () => {
 
       case "NT03":
         return <NotesScreen mode="display" />;
+
+      case "TD01":
+        return <Todo />;
+
+      case "LC01":
+        return <CollectionScreen mode="create" />;
+
+      case "LC02":
+        return <CollectionScreen mode="change" />;
+
+      case "LC03":
+        return <CollectionScreen mode="display" />;
 
       case "SM37":
         return (

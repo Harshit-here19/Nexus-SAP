@@ -55,6 +55,21 @@ const transactionDefinitions = {
     icon: "👁️",
     description: "Display all items in your Entertainment Wishlist",
   },
+  LC01: {
+    label: "Create Collection",
+    icon: "➕",
+    description: "Create Collection",
+  },
+  LC02: {
+    label: "Change Collection",
+    icon: "✏️",
+    description: "Change Collection",
+  },
+  LC03: {
+    label: "Display Collection",
+    icon: "👁️",
+    description: "Display Collection",
+  },
 
   VA01: { label: "Add Expense", icon: "➕", description: "Record New Expense" },
   VA02: {
@@ -72,6 +87,7 @@ const transactionDefinitions = {
     icon: "🔍",
     description: "General Table Display",
   },
+
   FB01: { label: "Post Document", icon: "📄", description: "Post Document" },
   FB03: {
     label: "Display Document",
@@ -119,7 +135,7 @@ const TreeMenu = () => {
   }, []);
 
   const isAdmin = checkIsAdmin();
-  const {confirm} = useConfirm();
+  const { confirm } = useConfirm();
 
   const treeData = [
     {
@@ -232,6 +248,31 @@ const TreeMenu = () => {
                 },
               ],
             },
+            {
+              id: "lc",
+              label: "List Collection",
+              icon: "📦",
+              children: [
+                {
+                  id: "lc01",
+                  label: "LC01 - Create",
+                  icon: "➕",
+                  tcode: "LC01",
+                },
+                {
+                  id: "lc02",
+                  label: "LC02 - Change",
+                  icon: "✏️",
+                  tcode: "LC02",
+                },
+                {
+                  id: "lc03",
+                  label: "LC03 - Display",
+                  icon: "👁️",
+                  tcode: "LC03",
+                },
+              ],
+            },
           ],
         },
         {
@@ -287,21 +328,21 @@ const TreeMenu = () => {
         // Admin section - only show for admin users
         ...(isAdmin
           ? [
-              {
-                id: "admin",
-                label: "Administration",
-                icon: "🔐",
-                children: [
-                  {
-                    id: "zadmin",
-                    label: "ZADMIN - User Admin",
-                    icon: "👥",
-                    tcode: "ZADMIN",
-                    adminOnly: true,
-                  },
-                ],
-              },
-            ]
+            {
+              id: "admin",
+              label: "Administration",
+              icon: "🔐",
+              children: [
+                {
+                  id: "zadmin",
+                  label: "ZADMIN - User Admin",
+                  icon: "👥",
+                  tcode: "ZADMIN",
+                  adminOnly: true,
+                },
+              ],
+            },
+          ]
           : []),
       ],
     },

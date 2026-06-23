@@ -1,0 +1,52 @@
+.collection-load-box {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+}
+
+.collection-info {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 6px;
+
+  background: var(--sap-bg-secondary);
+
+  border: 1px solid
+    var(--sap-border-color);
+
+  font-size: 13px;
+}
+
+.collection-card {
+  background: white;
+  border: 1px solid #ddd;
+
+  border-radius: 8px;
+
+  padding: 16px;
+}
+
+.collection-items {
+  margin-top: 16px;
+}
+
+.collection-item {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 10px;
+
+  border-bottom: 1px solid #eee;
+}
+
+.collection-item:last-child {
+  border-bottom: none;
+}
+
+#collectionDiv input {
+  width: 50px;
+  height: 20px;
+}

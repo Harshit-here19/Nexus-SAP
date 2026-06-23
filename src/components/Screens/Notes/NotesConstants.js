@@ -31,143 +31,143 @@ export const STATUS_OPTIONS = [
 ];
 
 export const VERTICAL_FORMATTING_OPTIONS = [
-  { 
-    action: 'bold', 
-    icon: 'B', 
-    title: 'Bold', 
+  {
+    action: 'bold',
+    icon: 'B',
+    title: 'Bold',
     label: 'Bold',
     shortcut: 'Ctrl+B',
-    style: { fontWeight: 'bold' } 
+    style: { fontWeight: 'bold' }
   },
-  { 
-    action: 'italic', 
-    icon: 'I', 
-    title: 'Italic', 
+  {
+    action: 'italic',
+    icon: 'I',
+    title: 'Italic',
     label: 'Italic',
     shortcut: 'Ctrl+I',
-    style: { fontStyle: 'italic' } 
+    style: { fontStyle: 'italic' }
   },
-  { 
-    action: 'underline', 
-    icon: 'U', 
-    title: 'Underline', 
+  {
+    action: 'underline',
+    icon: 'U',
+    title: 'Underline',
     label: 'Underline',
     shortcut: 'Ctrl+U',
-    style: { textDecoration: 'underline' } 
+    style: { textDecoration: 'underline' }
   },
-  { 
-    action: 'strikethrough', 
-    icon: 'S', 
-    title: 'Strikethrough', 
+  {
+    action: 'strikethrough',
+    icon: 'S',
+    title: 'Strikethrough',
     label: 'Strike',
     shortcut: 'Ctrl+Shift+S',
-    style: { textDecoration: 'line-through' } 
+    style: { textDecoration: 'line-through' }
   },
   { action: 'separator' },
-  { 
-    action: 'h1', 
-    icon: 'H1', 
-    title: 'Heading 1', 
+  {
+    action: 'h1',
+    icon: 'H1',
+    title: 'Heading 1',
     label: 'Heading 1',
     shortcut: 'Ctrl+1'
   },
-  { 
-    action: 'h2', 
-    icon: 'H2', 
-    title: 'Heading 2', 
+  {
+    action: 'h2',
+    icon: 'H2',
+    title: 'Heading 2',
     label: 'Heading 2',
     shortcut: 'Ctrl+2'
   },
-  { 
-    action: 'h3', 
-    icon: 'H3', 
-    title: 'Heading 3', 
+  {
+    action: 'h3',
+    icon: 'H3',
+    title: 'Heading 3',
     label: 'Heading 3',
     shortcut: 'Ctrl+3'
   },
   { action: 'separator' },
-  { 
-    action: 'bullet', 
-    icon: '•', 
-    title: 'Bullet List', 
+  {
+    action: 'bullet',
+    icon: '•',
+    title: 'Bullet List',
     label: 'Bullets',
     shortcut: 'Ctrl+Shift+8'
   },
-  { 
-    action: 'number', 
-    icon: '1.', 
-    title: 'Numbered List', 
+  {
+    action: 'number',
+    icon: '1.',
+    title: 'Numbered List',
     label: 'Numbers',
     shortcut: 'Ctrl+Shift+7'
   },
-  { 
-    action: 'checklist', 
-    icon: '☐', 
-    title: 'Checklist', 
+  {
+    action: 'checklist',
+    icon: '☐',
+    title: 'Checklist',
     label: 'Tasks',
     shortcut: 'Ctrl+Shift+9'
   },
-  { 
-    action: 'checkdone', 
-    icon: '☑', 
-    title: 'Checklist Done', 
+  {
+    action: 'checkdone',
+    icon: '☑',
+    title: 'Checklist Done',
     label: 'Tasks',
     shortcut: 'Ctrl+Shift+9'
   },
-  { 
-    action: 'arrow', 
-    icon: '➤', 
-    title: 'Arrow', 
+  {
+    action: 'arrow',
+    icon: '➤',
+    title: 'Arrow',
     label: 'Tasks',
     shortcut: 'Ctrl+Shift+9'
   },
   { action: 'separator' },
-  { 
-    action: 'quote', 
-    icon: '❝', 
-    title: 'Quote', 
+  {
+    action: 'quote',
+    icon: '❝',
+    title: 'Quote',
     label: 'Quote',
     shortcut: 'Ctrl+Shift+.'
   },
-  { 
-    action: 'code', 
-    icon: '</>', 
-    title: 'Code Block', 
+  {
+    action: 'code',
+    icon: '</>',
+    title: 'Code Block',
     label: 'Code',
     shortcut: 'Ctrl+`'
   },
-  { 
-    action: 'codeinline', 
-    icon: '{ }', 
-    title: 'Inline Code Block', 
+  {
+    action: 'codeinline',
+    icon: '{ }',
+    title: 'Inline Code Block',
     label: 'CodeInline',
     shortcut: 'Ctrl+`'
   },
-  { 
-    action: 'link', 
-    icon: '🔗', 
-    title: 'Insert Link', 
+  {
+    action: 'link',
+    icon: '🔗',
+    title: 'Insert Link',
     label: 'Link',
     shortcut: 'Ctrl+K'
   },
-  { 
-    action: 'image', 
-    icon: '🖼️', 
-    title: 'Insert Image', 
+  {
+    action: 'image',
+    icon: '🖼️',
+    title: 'Insert Image',
     label: 'Image',
     shortcut: 'Ctrl+Shift+I'
   },
   { action: 'separator' },
-  { 
-    action: 'table', 
-    icon: '▦', 
-    title: 'Insert Table', 
+  {
+    action: 'table',
+    icon: '▦',
+    title: 'Insert Table',
     label: 'Table'
   },
-  { 
-    action: 'hr', 
-    icon: '—', 
-    title: 'Horizontal Line', 
+  {
+    action: 'hr',
+    icon: '—',
+    title: 'Horizontal Line',
     label: 'Divider'
   },
 ];
@@ -370,5 +370,6 @@ export const INITIAL_FORM_DATA = {
   linkedNotes: [],
   wordCount: 0,
   charCount: 0,
-  createdBy: ''
+  createdBy: '',
+  tableTheme: "Nord Theme",
 };

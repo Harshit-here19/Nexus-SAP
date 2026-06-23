@@ -71,23 +71,23 @@ const NotesTableModal = ({
   };
 
   const handleInsert = () => {
-    let tableStr = '@table\n';
+    let tableStr = '@table\n\n';
 
-    tableStr += '@head';
-    headers.forEach((h) => {
-      tableStr += ` ${h || 'Header'}`;
-    });
-    tableStr += ' @/head\n';
+    tableStr += '@head\n';
+    tableStr += headers
+      .map(h => h || 'Header')
+      .join(' || ');
+    tableStr += '\n@/head\n\n';
 
     cells.forEach((row) => {
-      tableStr += '@data';
-      row.forEach((c) => {
-        tableStr += ` ${c || ''}`;
-      });
-      tableStr += ' @/data\n';
+      tableStr += '@data\n';
+      tableStr += row
+        .map(c => c || '')
+        .join(' || ');
+      tableStr += '\n@/data\n';
     });
 
-    tableStr += '@/table\n';
+    tableStr += '\n@/table\n';
 
     onInsert(tableStr);
     onClose();
@@ -399,7 +399,7 @@ const NotesTableModal = ({
                   {['Nord Theme', 'Material', 'CyberPunk', 'ElevatedCard'].map((theme) => (
                     <button
                       key={theme}
-                      className={`${styles.themeBtn} ${selectedTheme === theme ? styles.active : ''}` }
+                      className={`${styles.themeBtn} ${selectedTheme === theme ? styles.active : ''}`}
                       onClick={() => onThemeChange(theme)}
                     >
                       {theme}
