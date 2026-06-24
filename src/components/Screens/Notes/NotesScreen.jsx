@@ -129,49 +129,49 @@ const NotesScreen = ({ mode = "create" }) => {
   };
 
   const handleAutoSearch = (value) => {
-  setActiveSearch(value);
+    setActiveSearch(value);
 
-  if (!value.trim()) {
-    setSuggestions([]);
-    setShowSuggestions(false);
-    return;
-  }
+    if (!value.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
 
-  const notes = getTableData("notes") || [];
+    const notes = getTableData("notes") || [];
 
-  const search = value.toLowerCase().trim();
+    const search = value.toLowerCase().trim();
 
-  // wildcard support
-  const regex = new RegExp(
-    search
-      .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
-      .replace(/\*/g, ".*"),
-    "i"
-  );
+    // wildcard support
+    const regex = new RegExp(
+      search
+        .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+        .replace(/\*/g, ".*"),
+      "i"
+    );
 
-  const results = notes.filter((note) => {
-    const fields = [
-      note.noteNumber,
-      note.title,
-      note.summary,
-      note.content,
-      note.tags,
-    ];
+    const results = notes.filter((note) => {
+      const fields = [
+        note.noteNumber,
+        note.title,
+        note.summary,
+        note.content,
+        note.tags,
+      ];
 
-    return fields.some((field) => {
-      if (!field) return false;
+      return fields.some((field) => {
+        if (!field) return false;
 
-      const text = String(field);
+        const text = String(field);
 
-      return search.includes("*")
-        ? regex.test(text)
-        : text.toLowerCase().includes(search);
+        return search.includes("*")
+          ? regex.test(text)
+          : text.toLowerCase().includes(search);
+      });
     });
-  });
 
-  setSuggestions(results.slice(0, 10));
-  setShowSuggestions(results.length > 0);
-};
+    setSuggestions(results.slice(0, 10));
+    setShowSuggestions(results.length > 0);
+  };
 
   const selectSuggestion = (note) => {
     setNoteId(note.noteNumber);
@@ -525,7 +525,14 @@ const NotesScreen = ({ mode = "create" }) => {
 
   // Print Function 
   printRef.current = () => {
-    const notes = getTableData("notes") || [];
+    let notes = [];
+
+    // If a collection is opened, print only that
+    if (isLoaded && formData.noteNumber) {
+      notes = [formData];
+    } else {
+      notes = getTableData("notes") || [];
+    }
 
     if (!notes.length) {
       alert("No notes to print!");
@@ -590,6 +597,42 @@ const NotesScreen = ({ mode = "create" }) => {
             img { max-width: 100%; border-radius: 4px; }
             a { color: #1a73e8; text-decoration: none; }
             @media print { body { padding: 0; } .detail-section { break-inside: avoid; } }
+
+            .save-container {
+              position: fixed;
+              bottom: 20px;
+              right: 20px;
+              z-index: 9999;
+            }
+
+            #saveHtmlBtn {
+
+              background:#111827;
+              color:white;
+
+              border:3px solid #000;
+              border-radius:10px;
+
+              padding:12px 20px;
+
+              font-family:'JetBrains Mono',monospace;
+              font-weight:bold;
+
+              cursor:pointer;
+
+              box-shadow:
+                4px 4px 0 #555;
+
+              transition:.2s;
+            }
+
+            #saveHtmlBtn:hover {
+
+              transform:translate(-2px,-2px);
+
+              box-shadow:
+                6px 6px 0 #000;
+            }
           </style>
         </head>
         <body>
@@ -614,9 +657,53 @@ const NotesScreen = ({ mode = "create" }) => {
       </html>
     `;
 
-    const printWindow = window.open("", "_blank", "width=900,height=700");
-    printWindow.document.write(html);
+    const previewHtml = html.replace(
+      "</body>",
+      `
+      <div class="save-container">
+        <button id="saveHtmlBtn">
+          💾 Save HTML Report
+        </button>
+      </div>
+
+      <script>
+        document
+          .getElementById("saveHtmlBtn")
+          .onclick = function(){
+
+            const blob = new Blob(
+              [document.documentElement.outerHTML],
+              {
+                type:"text/html;charset=utf-8"
+              }
+            );
+
+            const url = URL.createObjectURL(blob);
+
+            const a=document.createElement("a");
+            a.href=url;
+            a.download="${notes[0]?.title || "Notes"}_Report.html";
+
+            document.body.appendChild(a);
+            a.click();
+
+            document.body.removeChild(a);
+
+            URL.revokeObjectURL(url);
+          }
+      </script>
+
+      </body>`
+    );
+
+
+    const printWindow =
+      window.open("", "_blank", "width=900,height=700");
+
+    printWindow.document.write(previewHtml);
+
     printWindow.document.close();
+
     printWindow.focus();
     // setTimeout(() => printWindow.print(), 250);
   };

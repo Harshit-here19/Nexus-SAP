@@ -469,16 +469,72 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
 
   // Print function
   printRef.current = () => {
-    const mediaItems = getTableData("entertainment_wishlist") || []; // Adjust key as needed
+    let mediaItems = [];
+
+    // If a collection is opened, print only that
+    if (isLoaded && formData.itemNumber) {
+      mediaItems = [formData];
+    } else {
+      mediaItems = getTableData("entertainment_wishlist") || [];
+    }
+
+    if (!mediaItems.length) {
+      confirm("No Wishlist Item to print!","warning");
+      return;
+    }
+
     const html = generateMediaReport(mediaItems);
 
     if (!html) return;
 
-    const printWindow = window.open("", "_blank", "width=1000,height=800");
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
+    const previewHtml = html.replace(
+      "</body>",
+      `
+      <div class="save-container">
+        <button id="saveHtmlBtn">
+          💾 Save HTML Report
+        </button>
+      </div>
 
+      <script>
+        document
+          .getElementById("saveHtmlBtn")
+          .onclick = function(){
+
+            const blob = new Blob(
+              [document.documentElement.outerHTML],
+              {
+                type:"text/html;charset=utf-8"
+              }
+            );
+
+            const url = URL.createObjectURL(blob);
+
+            const a=document.createElement("a");
+            a.href=url;
+            a.download="${mediaItems[0]?.title || "Media_Items"}_Report.html";
+
+            document.body.appendChild(a);
+            a.click();
+
+            document.body.removeChild(a);
+
+            URL.revokeObjectURL(url);
+          }
+      </script>
+
+      </body>`
+    );
+
+
+    const printWindow =
+      window.open("", "_blank", "width=900,height=700");
+
+    printWindow.document.write(previewHtml);
+
+    printWindow.document.close();
+
+    printWindow.focus();
     // setTimeout(() => {
     //   printWindow.print();
     // }, 500);
@@ -2382,6 +2438,42 @@ const generateMediaReport = (mediaItems) => {
             text-align: center;
             color: #666666;
             font-size: 11px;
+          }
+            
+          .save-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+          }
+
+          #saveHtmlBtn {
+
+            background:#111827;
+            color:white;
+
+            border:3px solid #000;
+            border-radius:10px;
+
+            padding:12px 20px;
+
+            font-family:'JetBrains Mono',monospace;
+            font-weight:bold;
+
+            cursor:pointer;
+
+            box-shadow:
+              4px 4px 0 #555;
+
+            transition:.2s;
+          }
+
+          #saveHtmlBtn:hover {
+
+            transform:translate(-2px,-2px);
+
+            box-shadow:
+              6px 6px 0 #000;
           }
         </style>
       </head>

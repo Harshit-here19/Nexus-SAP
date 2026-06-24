@@ -7,7 +7,9 @@ const CollectionEditor = ({
   isReadOnly,
 }) => {
   const [itemText, setItemText] = useState("");
-  const {confirm } = useConfirm();
+  const [deleteCandidate, setDeleteCandidate] = useState(null);
+
+  const { confirm } = useConfirm();
 
   const addItem = () => {
     if (!itemText.trim()) return;
@@ -40,10 +42,13 @@ const CollectionEditor = ({
         boxSizing: "border-box",
         border: "2px solid #111827",
         boxShadow: "3px 3px 0px #111827",
+        fontFamily: 'jetBrains mono',
+        fontWeight: 700,
+
       }}
     >
       {/* Title */}
-      <div style={{ marginBottom: "24px" }}>
+      < div style={{ marginBottom: "24px" }}>
         <label
           style={{
             display: "block",
@@ -56,71 +61,94 @@ const CollectionEditor = ({
           Collection Title
         </label>
 
-        <input
-          value={formData.title}
-          disabled={isReadOnly}
-          onChange={(e) =>
-            onChange("title", e.target.value)
-          }
-          style={{
-            width: "70%",
-            minWidth: "300px",
-            height: "44px",
-            padding: "0 14px",
-            border: "2px solid #111827",
-            boxShadow: "3px 3px 0px #111827",
-            borderRadius: "10px",
-            fontSize: "15px",
-          }}
-        />
-      </div>
+        <div className="collection-title-wrapper">
 
-      {/* Add Item */}
-      {!isReadOnly && (
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            marginBottom: "24px",
-          }}
-        >
+          <div className="star-field">
+            {[...Array(40)].map((_, i) => (
+              <span
+                key={i}
+                className="star"
+                style={{
+                  left: `${Math.random() * 95}%`,
+                  top: `${Math.random() * 80}%`,
+                  animationDelay: `${i * 0.7}s`
+                }}
+              >
+                ✦
+              </span>
+            ))}
+          </div>
+
           <input
-            value={itemText}
+            value={formData.title}
+            disabled={isReadOnly}
             onChange={(e) =>
-              setItemText(e.target.value)
+              onChange("title", e.target.value)
             }
-            placeholder="Add new item..."
             style={{
-              width: "60%",
+              width: "100%",
               minWidth: "300px",
               height: "44px",
-              padding: "0 14px",
+              padding: "23px 14px",
               border: "2px solid #111827",
               boxShadow: "3px 3px 0px #111827",
-              borderRadius: "8px",
-              fontSize: "13px",
+              borderRadius: "10px",
+              fontSize: "40px",
+              fontFamily: "VT323,'jetBrains mono'",
+              fontWeight: "bolder",
             }}
           />
+        </div >
+      </div >
 
-          <button
-            onClick={addItem}
+      {/* Add Item */}
+      {
+        !isReadOnly && (
+          <div
             style={{
-              padding: "0 31px",
-              height: "42px",
-              borderRadius: "8px",
-              background: "#2563eb",
-              border: "2px solid #111827",
-              boxShadow: "3px 3px 0px #111827",
-              color: "#fff",
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "0.2s",
+              display: "flex",
+              gap: "10px",
+              marginBottom: "24px",
             }}
           >
-            Add
-          </button>
-        </div>
-      )}
+            <input
+              value={itemText}
+              onChange={(e) =>
+                setItemText(e.target.value)
+              }
+              placeholder="Add new item..."
+              style={{
+                width: "60%",
+                minWidth: "300px",
+                height: "44px",
+                padding: "0 14px",
+                border: "2px solid #111827",
+                boxShadow: "3px 3px 0px #111827",
+                borderRadius: "8px",
+                fontSize: "13px",
+              }}
+            />
+
+            <button
+              onClick={addItem}
+              style={{
+                padding: "0 31px",
+                height: "42px",
+                borderRadius: "8px",
+                background: "#2563eb",
+                border: "2px solid #111827",
+                boxShadow: "3px 3px 0px #111827",
+                color: "#fff",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "0.2s",
+              }}
+            >
+              Add
+            </button>
+          </div>
+        )
+      }
 
       {/* Items */}
       <div
@@ -147,36 +175,37 @@ const CollectionEditor = ({
           formData.items.map((item) => (
             <div
               key={item.id}
-              style={{
-                breakInside: "avoid",
-                WebkitColumnBreakInside: "avoid",
+              className={`
+                    collection-card
+                    ${!isReadOnly ? "editable" : ""}
+                    ${deleteCandidate === item.id ? "delete-selected" : ""}
+                  `}
+              onClick={async () => {
+                if (isReadOnly) return;
 
-                marginBottom: "16px",
+                if (deleteCandidate !== item.id) {
+                  setDeleteCandidate(item.id);
+                  return;
+                }
 
-                minHeight: "90px",
+                const confirmed = await confirm(
+                  "Delete this item?",
+                  "danger"
+                );
 
-                padding: "16px",
+                if (confirmed) {
+                  removeItem(item.id);
+                }
 
-                background: "#fafafa",
-
-                border: "2px solid #1f2937",
-
-                borderRadius: "12px",
-
-                boxShadow: "4px 4px 0px #1f2937",
-
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                transition: "all 0.3s ease-in-out",
+                setDeleteCandidate(null);
               }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = "-4px -4px 0 #1f2937" }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = "4px 4px 0 #1f2937" }}
             >
               <span
                 style={{
-                  fontSize: "14px",
-                  color: "#111827",
+                  fontFamily: "VT323",
+                  fontSize: "20px",
+                  color: "#222",
+                  textShadow: "0 1px 3px rgba(0,0,0,.5)",
                   lineHeight: "1.6",
                   wordBreak: "break-word",
                   whiteSpace: "pre-wrap",
@@ -185,42 +214,11 @@ const CollectionEditor = ({
                 {item.name}
               </span>
 
-              {!isReadOnly && (
-                <button
-                  onClick={async () => {
-                    const confirmed = await confirm(
-                      "Are you sure you want to delete this note?",
-                      "danger",
-                    );
-                    if (confirmed) removeItem(item.id)
-                  }
-                  }
-                  style={{
-                    alignSelf: "flex-end",
-                    marginTop: "12px",
-
-                    background: "#ef4444",
-                    border: "2px solid #111827",
-                    boxShadow: "3px 3px 0px #111827",
-                    color: "#fff",
-
-                    padding: "6px 12px",
-
-                    borderRadius: "6px",
-
-                    fontSize: "13px",
-
-                    cursor: "pointer",
-                  }}
-                >
-                  Delete
-                </button>
-              )}
             </div>
           ))
         )}
       </div>
-    </div>
+    </div >
   );
 };
 

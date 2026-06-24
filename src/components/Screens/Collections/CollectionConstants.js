@@ -6,4 +6,5 @@ export const INITIAL_COLLECTION = {
   items: [],
   createdAt: "",
   updatedAt: "",
+  pinned: false,
 };

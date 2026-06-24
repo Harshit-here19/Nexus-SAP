@@ -38,7 +38,7 @@ const DashboardScreen = () => {
 
   // Quick action handler
   const handleQuickAction = (tcode) => {
-    navigateToTransaction(tcode);
+    navigateToTransaction(tcode, true);
   };
 
   // Format currency

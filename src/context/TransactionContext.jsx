@@ -47,7 +47,7 @@ export const TransactionProvider = ({ children }) => {
 
   // Navigate to transaction
   const navigateToTransaction = useCallback(
-    (tcode) => {
+    (tcode, bypassLock = false) => {
       const newSession = tcode.startsWith("/n") || tcode.startsWith("/N");
       const cleanTcode = tcode.replace(/^\/n/i, "").toUpperCase();
 
@@ -59,6 +59,7 @@ export const TransactionProvider = ({ children }) => {
 
       // If already in a transaction (not HOME), show warning
       else if (
+        !bypassLock &&
         isTransactionActive &&
         currentTransaction !== "HOME" &&
         cleanTcode !== currentTransaction &&
@@ -119,6 +120,10 @@ export const TransactionProvider = ({ children }) => {
     ],
   );
 
+  const resetTransactionHistory = useCallback(() => {
+  setTransactionHistory(["HOME"]);
+}, []);
+
   // Go back to previous screen or HOME
   const goBack = useCallback((hasUnsavedChanges = false) => {
     // If screen has its own back logic → use it first
@@ -166,6 +171,7 @@ export const TransactionProvider = ({ children }) => {
     setCurrentTransaction("HOME");
     setIsTransactionActive(false);
     setHasUnsavedChanges(false);
+    resetTransactionHistory();
     setStatusMessage("Transaction ended");
     setStatusType("info");
 
@@ -173,7 +179,7 @@ export const TransactionProvider = ({ children }) => {
       setStatusMessage("Ready");
       setStatusType("info");
     }, 2000);
-  }, [hasUnsavedChanges]);
+  }, [hasUnsavedChanges,resetTransactionHistory]);
 
   // Cancel current operation
   const cancelOperation = useCallback(() => {
@@ -265,6 +271,7 @@ export const TransactionProvider = ({ children }) => {
     hasUnsavedChanges,
     transactionHistory,
     setTransactionHistory,
+    resetTransactionHistory,
     showExitConfirm,
     statusMessage,
     statusType,
