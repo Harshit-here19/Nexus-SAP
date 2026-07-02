@@ -14,6 +14,8 @@ import {
 import ExportSpreadsheetModal from "../Common/ExportSpreadsheetModal";
 import { exportExpenseSpreadsheet } from "../../utils/exportExcel";
 
+const isMobile = window.innerWidth <= 786;
+
 const DashboardScreen = () => {
   const { navigateToTransaction, updateStatus } = useTransaction();
   const { user, checkIsAdmin } = useAuth();
@@ -175,9 +177,10 @@ const DashboardScreen = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
         }}
       >
-        <div>
+        <div style={{marginBottom: isMobile ? '10px' : '0px'}}>
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
             💰 Expense Dashboard
           </h2>
@@ -189,7 +192,7 @@ const DashboardScreen = () => {
             })}
           </p>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
           <SapButton
             onClick={() => handleQuickAction("VA01")}
             type="primary"
@@ -365,7 +368,10 @@ const DashboardScreen = () => {
             </div>
           </div>
 
-          <div className="dashboard-card-value">
+          <div
+            className="dashboard-card-value"
+            style={{ textTransform: "capitalize" }}
+          >
             {stats?.topCategory?.name || "—"}
           </div>
 

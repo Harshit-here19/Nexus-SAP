@@ -1,10 +1,10 @@
 // src/components/Auth/UserProfileDropdown.jsx
-import React, { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useTransaction } from '../../context/TransactionContext';
-import { useSettings } from '../../context/SettingsContext';
-import { useConfirm } from '../../context/ConfirmContext';
-import './UserProfileDropdown.css';
+import React, { useState, useRef, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useTransaction } from "../../context/TransactionContext";
+import { useSettings } from "../../context/SettingsContext";
+import { useConfirm } from "../../context/ConfirmContext";
+import "./UserProfileDropdown.css";
 
 const UserProfileDropdown = () => {
   const { user, logout } = useAuth();
@@ -13,7 +13,7 @@ const UserProfileDropdown = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  const {confirm} = useConfirm();
+  const { confirm } = useConfirm();
 
   const isMobile = window.innerWidth <= 786;
 
@@ -25,37 +25,49 @@ const UserProfileDropdown = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = async () => {
-    const confirmed = await confirm('Are you sure you want to log out?', 'danger');
+    const confirmed = await confirm(
+      "Are you sure you want to log out?",
+      "danger",
+    );
     if (confirmed) {
       logout();
     }
-
   };
 
   const handleNavigateToProfile = async () => {
     setShowDropdown(false);
     if (isTransactionActive) {
-      await confirm('Please exit current transaction before navigating', 'danger');
+      await confirm(
+        "Please exit current transaction before navigating",
+        "danger",
+      );
       return;
     }
-    navigateToTransaction('SU01');
+    navigateToTransaction("SU01");
   };
 
   const handleThemeToggle = () => {
-    const newTheme = settings.theme === 'light' ? 'dark' : 'light';
-    updateSetting('theme', newTheme);
+    const newTheme = settings.theme === "light" ? "dark" : "light";
+    updateSetting("theme", newTheme);
   };
 
   const getInitials = () => {
     if (user) {
-      return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
+      return `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase();
     }
-    return 'U';
+    return "U";
+  };
+
+  const formatName = (name = "") => {
+    if (name.length > 10) {
+      return name.slice(0, 8) + "..";
+    }
+    return name;
   };
 
   return (
@@ -64,47 +76,37 @@ const UserProfileDropdown = () => {
         onClick={() => setShowDropdown(!showDropdown)}
         className="sap-user-button"
       >
-        <div className="sap-user-avatar">
-          {getInitials()}
-        </div>
+        <div className="sap-user-avatar">{getInitials()}</div>
 
-        {!isMobile &&
+        {!isMobile && (
           <>
-            <span className="sap-user-name">
-              {user?.username}
+            <span className="sap-user-name" title={user?.firstName}>
+              {formatName(user?.firstName)}
             </span>
             <span className="sap-user-caret">▾</span>
           </>
-        }
+        )}
       </button>
 
       {showDropdown && (
         <div className="sap-user-dropdown">
-
           {/* Blue Accent Bar */}
           <div className="sap-user-accent-bar" />
 
           {/* Header */}
           <div className="sap-user-header">
-            <div className="sap-user-avatar-large">
-              {getInitials()}
-            </div>
+            <div className="sap-user-avatar-large">{getInitials()}</div>
 
             <div className="sap-user-info">
-              <div className="sap-user-fullname">
-                {user?.fullName}
-              </div>
-              <div className="sap-user-email">
-                {user?.email}
-              </div>
+              <div className="sap-user-fullname">{user?.fullName}</div>
+              <div className="sap-user-email">{user?.email}</div>
 
               <div className="sap-user-meta">
-                <span className={`sap-badge ${user?.isAdmin ? 'admin' : ''}`}>
-                  {user?.isAdmin ? '🔐 ' : ''}{user?.role}
+                <span className={`sap-badge ${user?.isAdmin ? "admin" : ""}`}>
+                  {user?.isAdmin ? "🔐 " : ""}
+                  {user?.role}
                 </span>
-                <span className="sap-badge">
-                  {user?.department}
-                </span>
+                <span className="sap-badge">{user?.department}</span>
               </div>
             </div>
           </div>
@@ -117,11 +119,11 @@ const UserProfileDropdown = () => {
             <button
               onClick={handleThemeToggle}
               className="theme-switch"
-              aria-label={`Switch to ${settings.theme === 'dark' ? 'Light' : 'Dark'} mode`}
+              aria-label={`Switch to ${settings.theme === "dark" ? "Light" : "Dark"} mode`}
             >
               <span className="theme-switch-track">
                 <span className="theme-switch-thumb">
-                  {settings.theme === 'dark' ? '🌙' : '☀️'}
+                  {settings.theme === "dark" ? "🌙" : "☀️"}
                 </span>
               </span>
             </button>
@@ -131,7 +133,7 @@ const UserProfileDropdown = () => {
           <div className="sap-user-menu-items">
             <div
               onClick={handleNavigateToProfile}
-              className={`sap-user-item ${isTransactionActive ? 'disabled' : ''}`}
+              className={`sap-user-item ${isTransactionActive ? "disabled" : ""}`}
             >
               <span className="sap-item-icon">👤</span>
               My Profile
@@ -140,9 +142,9 @@ const UserProfileDropdown = () => {
             <div
               onClick={() => {
                 setShowDropdown(false);
-                if (!isTransactionActive) navigateToTransaction('SU01');
+                if (!isTransactionActive) navigateToTransaction("SU01");
               }}
-              className={`sap-user-item ${isTransactionActive ? 'disabled' : ''}`}
+              className={`sap-user-item ${isTransactionActive ? "disabled" : ""}`}
             >
               <span className="sap-item-icon">⚙️</span>
               Settings
@@ -150,23 +152,19 @@ const UserProfileDropdown = () => {
 
             <div className="sap-user-divider" />
 
-            <div
-              onClick={handleLogout}
-              className="sap-user-item logout"
-            >
+            <div onClick={handleLogout} className="sap-user-item logout">
               <span className="sap-item-icon">🚪</span>
               Log Out
             </div>
           </div>
 
           <div className="sap-user-footer">
-            Client {user?.client} • Session {new Date(user?.loginTime).toLocaleTimeString()}
+            Client {user?.client} • Session{" "}
+            {new Date(user?.loginTime).toLocaleTimeString()}
           </div>
-
         </div>
       )}
     </div>
-
   );
 };
 

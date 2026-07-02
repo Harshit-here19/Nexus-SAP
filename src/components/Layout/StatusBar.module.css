@@ -44,6 +44,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  width: fit-content;
 
   padding: 4px 10px;
   white-space: nowrap;
@@ -84,10 +85,10 @@
 }
 
 /* Right section hidden during animation */
-.sapStatusRight.hidden {
+/* .sapStatusRight.hidden {
   opacity: 0;
   display : none;
-}
+} */
 
 /* Icon prefix support (optional) */
 .sapStatusMessage::before {
