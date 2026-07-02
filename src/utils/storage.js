@@ -60,7 +60,7 @@ export const saveAllData = (data, userId = null) => {
 export const getTableData = (tableName, userId = null) => {
   const allData = getAllData(userId);
   // return allData[tableName] || [];
-  
+
   const data = allData[tableName] || [];
 
   if (data.length === 0) return data;
@@ -153,7 +153,7 @@ export const generateNextNumber = (
   if (tableData.length === 0) {
     return `${prefix}100000001`;
   }
-  
+
   const numbers = tableData
     .map((r) => {
       const value = r[field] || "";
@@ -784,7 +784,9 @@ export const addToHistory = (tcode, description = "", userId = null) => {
   const newTcode = tcode.trim().toUpperCase();
 
   // Remove any existing entry with the same tcode
-  const filtered = history.filter(h => (h.tcode || "").trim().toUpperCase() !== newTcode);
+  const filtered = history.filter(
+    (h) => (h.tcode || "").trim().toUpperCase() !== newTcode,
+  );
 
   // Add new entry at the front
   const updated = [
@@ -899,6 +901,45 @@ export const getExpenseStats = (userId = null) => {
     0,
   );
 
+  // -----------------------------
+  // 💳 TOP CATEGORY (NEW)
+  // -----------------------------
+  const categoryMap = {};
+
+  thisMonthExpenses.forEach((e) => {
+    const cat = e.category || "Unknown";
+    categoryMap[cat] = (categoryMap[cat] || 0) + parseFloat(e.amount || 0);
+  });
+
+  let topCategory = { name: null, amount: 0 };
+
+  Object.entries(categoryMap).forEach(([name, amount]) => {
+    if (amount > topCategory.amount) {
+      topCategory = { name, amount };
+    }
+  });
+
+  // -----------------------------
+  // 🧾 AVERAGE DAILY SPEND (NEW)
+  // -----------------------------
+  let averageDailySpend = 0;
+
+  if (expenses.length > 0) {
+    const sorted = [...expenses].sort(
+      (a, b) => new Date(a.date) - new Date(b.date),
+    );
+
+    const firstDate = new Date(sorted[0].date);
+    const lastDate = new Date(sorted[sorted.length - 1].date);
+
+    const diffDays = Math.max(
+      1,
+      Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)),
+    );
+
+    averageDailySpend = totalAllTime / diffDays;
+  }
+
   // Category breakdown
   const categories = getExpenseCategories();
   const categoryBreakdown = categories
@@ -990,5 +1031,7 @@ export const getExpenseStats = (userId = null) => {
     paymentBreakdown,
     recentExpenses,
     averageExpense: expenses.length > 0 ? totalAllTime / expenses.length : 0,
+    topCategory,
+    averageDailySpend,
   };
 };

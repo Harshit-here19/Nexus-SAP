@@ -58,7 +58,7 @@ const capitalizeFirst = (str) => {
 
 const ExpenseTrackerScreen = ({ mode = "create" }) => {
 
-  const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction, setTransactionHistory, registerBackHandler, clearBackHandler  } = useTransaction();
+  const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction, setTransactionHistory, registerBackHandler, clearBackHandler } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
   const { confirm } = useConfirm();
@@ -233,7 +233,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     if (expense) {
       setFormData(expense);
       setIsLoaded(true);
-      updateStatus(`Expense ${expenseId} loaded successfully`, "success"); 
+      updateStatus(`Expense ${expenseId} loaded successfully`, "success");
     } else {
       updateStatus(`Expense ${expenseId} not found`, "error");
     }
@@ -280,295 +280,406 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     markAsSaved();
   };
 
+  // Register a custom back handler that closes the editor first
+  useEffect(() => {
+    if (isLoaded) {
+      registerBackHandler(() => {
+        // Close the editor instead of leaving the transaction
+        setIsLoaded(false);
+        setExpenseId("");
+        markAsSaved();
+
+        // Pop the NOTE_ entry from history
+        setTransactionHistory((prev) => {
+          const newHistory = [...prev];
+          if (
+            newHistory.length > 0 &&
+            newHistory[newHistory.length - 1]?.startsWith("NOTE_")
+          ) {
+            newHistory.pop();
+          }
+          return newHistory;
+        });
+
+        updateStatus("Close the Opened Note", "info");
+        return true; // Signal that we handled the back — don't do default back
+      });
+    } else {
+      // When not loaded (on the search/ID entry screen), clear the custom handler
+      // so default back behavior (go to HOME) works normally
+      clearBackHandler();
+    }
+
+    return () => {
+      clearBackHandler();
+    };
+  }, [
+    isLoaded,
+    registerBackHandler,
+    clearBackHandler,
+    setTransactionHistory,
+    markAsSaved,
+    user?.username,
+  ]);
+
+  useEffect(() => {
+    registerAction("SAVE", () => {
+      saveRef.current?.();
+    });
+    registerAction("CLEAR", () => {
+      clearRef.current?.();
+    });
+    registerAction("DELETE", () => {
+      deleteRef.current?.();
+    });
+    registerAction("PRINT", () => {
+      printRef.current?.();
+    });
+
+    return () => {
+      clearAction("SAVE");
+      clearAction("CLEAR");
+      clearAction("DELETE");
+      clearAction("PRINT");
+    };
+  }, [registerAction, clearAction]);
+
+  // Print Expenses
+  printRef.current = () => {
+    const expenses = getTableData("expenses") || [];
+
+    if (!expenses.length) {
+      alert("No expenses to print!");
+      return;
+    }
+
+    const html = generateExpenseReport(expenses);
+
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    // setTimeout(() => {
+    //   printWindow.print();
+    // }, 250);
+
+  };
+
+  const isReadOnly = mode === "display";
+  const needsLoad = (mode === "change" || mode === "display") && !isLoaded;
+
+  // Get category info
+  const getCategoryInfo = (categoryValue) => {
+    return (
+      categories.find((c) => c.value === categoryValue) || {
+        label: categoryValue,
+        color: "#9e9e9e",
+      }
+    );
+  };
+
+  // Generate month options for filter
+  const getMonthOptions = () => {
+    const options = [{ value: "all", label: "All Months" }];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      options.push({
+        value: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+        label: date.toLocaleString("default", {
+          month: "long",
+          year: "numeric",
+        }),
+      });
+    }
+    return options;
+  };
+
   // =========================================================
   //                🔹🔹🔹 TAB HANDLERS 🔹🔹🔹
   // =========================================================
 
   // Details Tab
-  const DetailsTab = () => {
-    return (
-      <div className="sap-form">
-        <div
-          style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "20px" }}
-        >
-          {/* Left Column */}
-          <div>
-            <h4
-              style={{
-                marginBottom: "14px",
-                color: "var(--sap-brand)",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                fontSize: "13px",
-              }}
-            >
-              <span>📝</span> Expense Details
-            </h4>
-
-            <SapInput
-              label="Expense ID"
-              value={formData.expenseNumber}
-              readOnly={true}
-              placeholder="Auto-generated"
-            />
-
-            <SapInput
-              label="Date"
-              value={formData.date}
-              onChange={(val) => handleChange("date", val)}
-              type="date"
-              required={true}
-              disabled={isReadOnly}
-              error={errors.date}
-            />
-
-            <SapSelect
-              label="Category"
-              value={formData.category}
-              onChange={(val) => handleChange("category", val)}
-              options={categories.map((c) => ({
-                value: c.value,
-                label: c.label,
-              }))}
-              required={true}
-              disabled={isReadOnly}
-              placeholder="Select category..."
-            />
-
-            <SapInput
-              label="Description"
-              value={formData.description}
-              onChange={(val) => handleChange("description", val)}
-              required={true}
-              disabled={isReadOnly}
-              error={errors.description}
-              placeholder="What was this expense for?"
-            />
-
-            <SapInput
-              label="Vendor/Merchant"
-              value={formData.vendor}
-              onChange={(val) => handleChange("vendor", val)}
-              disabled={isReadOnly}
-              placeholder="Where did you spend?"
-            />
-          </div>
-
-          {/* Right Column */}
-          <div>
-            <h4
-              style={{
-                marginBottom: "14px",
-                color: "var(--sap-brand)",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                fontSize: "13px",
-              }}
-            >
-              <span>💰</span> Payment Information
-            </h4>
-
-            <div className="sap-form-group">
-              <label className="sap-form-label required" style={{ width: "130px" }}>Amount</label>
-              <div
-                className="sap-form-field"
-                style={{ display: "flex", gap: "8px" }}
-              >
-                <select
-                  className="sap-select"
-                  value={formData.currency}
-                  onChange={(e) => handleChange("currency", e.target.value)}
-                  disabled={isReadOnly}
-                  style={{ width: "80px" }}
-                >
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                  <option value="INR">INR</option>
-                  <option value="JPY">JPY</option>
-                </select>
-                <SapInput
-                  type="number"
-                  className={`amountInput ${errors.amount ? "error" : ""}`}
-                  value={formData.amount}
-                  onChange={(val) => handleChange("amount", val)}
-                  disabled={isReadOnly}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0"
-                  style={{ flex: 1 }}
-                />
-              </div>
-              {errors.amount && (
-                <div
-                  style={{
-                    color: "var(--sap-negative)",
-                    fontSize: "11px",
-                    marginTop: "4px",
-                    marginLeft: "162px",
-                  }}
-                >
-                  {errors.amount}
-                </div>
-              )}
-            </div>
-
-            <SapSelect
-              label="Payment Method"
-              value={formData.paymentMethod}
-              onChange={(val) => handleChange("paymentMethod", val)}
-              options={paymentMethods.map((p) => ({
-                value: p.value,
-                label: p.label,
-              }))}
-              required={true}
-              disabled={isReadOnly}
-              placeholder="How did you pay?"
-            />
-
-            <SapInput
-              label="Receipt Number"
-              value={formData.receiptNumber}
-              onChange={(val) => handleChange("receiptNumber", val)}
-              disabled={isReadOnly}
-              placeholder="Optional receipt/invoice number"
-            />
-
-            <SapSelect
-              label="Status"
-              value={formData.status}
-              onChange={(val) => handleChange("status", val)}
-              options={[
-                { value: "recorded", label: "📝 Recorded" },
-                { value: "pending", label: "⏳ Pending Review" },
-                { value: "approved", label: "✅ Approved" },
-                { value: "rejected", label: "❌ Rejected" },
-                { value: "reimbursed", label: "💰 Reimbursed" },
-              ]}
-              disabled={isReadOnly}
-            />
-          </div>
-        </div>
-
-        {/* Category Preview */}
-        {formData.category && (
-          <div
+  const detailsTab = (
+    <div className="sap-form">
+      <div
+        style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "20px" }}
+      >
+        {/* Left Column */}
+        <div>
+          <h4
             style={{
-              marginTop: "20px",
-              padding: "12px 16px",
-              background: `${getCategoryInfo(formData.category).color}15`,
-              borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
-              borderRadius: "4px",
+              marginBottom: "14px",
+              color: "var(--sap-brand)",
               display: "flex",
               alignItems: "center",
-              gap: "12px",
+              gap: "8px",
+              fontSize: "13px",
             }}
           >
-            <span style={{ fontSize: "24px" }}>
-              {getCategoryInfo(formData.category).label.split(" ")[0]}
-            </span>
-            <div>
-              <div style={{ fontWeight: "600", fontSize: "13px" }}>
-                {getCategoryInfo(formData.category).label}
-              </div>
-              {formData.amount && (
-                <div
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: "700",
-                    color: getCategoryInfo(formData.category).color,
-                  }}
-                >
-                  {formData.currency}{" "}
-                  {parseFloat(formData.amount || 0).toFixed(2)}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  };
+            <span>📝</span> Expense Details
+          </h4>
 
-  // Notes Tab
-  const NotesTab = () => {
-    return (
-      <div className="sap-form">
-        <div className="sap-form-group" style={{ alignItems: "flex-start" }}>
-          <label className="sap-form-label">Notes</label>
-          <div className="sap-form-field" style={{ width: isMobile ? "100%" : "70%" }}>
-            <textarea
-              className="sap-textarea"
-              value={formData.notes || ""}
-              onChange={(e) => handleChange("notes", e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Add any additional notes about this expense..."
-              rows={5}
-              style={{ width: "100%", maxWidth: "500px" }}
-            />
-          </div>
-        </div>
+          <SapInput
+            label="Expense ID"
+            value={formData.expenseNumber}
+            readOnly={true}
+            placeholder="Auto-generated"
+          />
 
-        <SapInput
-          label="Tags"
-          value={formData.tags}
-          onChange={(val) => handleChange("tags", val)}
-          disabled={isReadOnly}
-          placeholder="Comma-separated tags (e.g., business, trip, client)"
-        />
+          <SapInput
+            label="Date"
+            value={formData.date}
+            onChange={(val) => handleChange("date", val)}
+            type="date"
+            required={true}
+            disabled={isReadOnly}
+            error={errors.date}
+          />
 
-        <div style={{ marginTop: "16px" }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              padding: "12px",
-              background: "var(--sap-content-bg)",
-              borderRadius: "6px",
-              cursor: isReadOnly ? "default" : "pointer",
-              width: "fit-content",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={formData.isRecurring}
-              onChange={(e) => handleChange("isRecurring", e.target.checked)}
-              disabled={isReadOnly}
-              style={{
-                width: "18px",
-                height: "18px",
-                accentColor: "var(--sap-brand)",
-              }}
-            />
-            <span style={{ fontSize: "13px" }}>This is a recurring expense</span>
-          </label>
-        </div>
-
-        {formData.isRecurring && (
           <SapSelect
-            label="Frequency"
-            value={formData.recurringFrequency}
-            onChange={(val) => handleChange("recurringFrequency", val)}
+            label="Category"
+            value={formData.category}
+            onChange={(val) => handleChange("category", val)}
+            options={categories.map((c) => ({
+              value: c.value,
+              label: c.label,
+            }))}
+            required={true}
+            disabled={isReadOnly}
+            placeholder="Select category..."
+          />
+
+          <SapInput
+            label="Description"
+            value={formData.description}
+            onChange={(val) => handleChange("description", val)}
+            required={true}
+            disabled={isReadOnly}
+            error={errors.description}
+            placeholder="What was this expense for?"
+          />
+
+          <SapInput
+            label="Vendor/Merchant"
+            value={formData.vendor}
+            onChange={(val) => handleChange("vendor", val)}
+            disabled={isReadOnly}
+            placeholder="Where did you spend?"
+          />
+        </div>
+
+        {/* Right Column */}
+        <div>
+          <h4
+            style={{
+              marginBottom: "14px",
+              color: "var(--sap-brand)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "13px",
+            }}
+          >
+            <span>💰</span> Payment Information
+          </h4>
+
+          <div className="sap-form-group">
+            <label className="sap-form-label required" style={{ width: "130px" }}>Amount</label>
+            <div
+              className="sap-form-field"
+              style={{ display: "flex", gap: "8px" }}
+            >
+              <select
+                className="sap-select"
+                value={formData.currency}
+                onChange={(e) => handleChange("currency", e.target.value)}
+                disabled={isReadOnly}
+                style={{ width: "80px" }}
+              >
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+                <option value="INR">INR</option>
+                <option value="JPY">JPY</option>
+              </select>
+              <SapInput
+                type="number"
+                className={`amountInput ${errors.amount ? "error" : ""}`}
+                value={formData.amount}
+                onChange={(val) => handleChange("amount", val)}
+                disabled={isReadOnly}
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                style={{ flex: 1 }}
+              />
+            </div>
+            {errors.amount && (
+              <div
+                style={{
+                  color: "var(--sap-negative)",
+                  fontSize: "11px",
+                  marginTop: "4px",
+                  marginLeft: "162px",
+                }}
+              >
+                {errors.amount}
+              </div>
+            )}
+          </div>
+
+          <SapSelect
+            label="Payment Method"
+            value={formData.paymentMethod}
+            onChange={(val) => handleChange("paymentMethod", val)}
+            options={paymentMethods.map((p) => ({
+              value: p.value,
+              label: p.label,
+            }))}
+            required={true}
+            disabled={isReadOnly}
+            placeholder="How did you pay?"
+          />
+
+          <SapInput
+            label="Receipt Number"
+            value={formData.receiptNumber}
+            onChange={(val) => handleChange("receiptNumber", val)}
+            disabled={isReadOnly}
+            placeholder="Optional receipt/invoice number"
+          />
+
+          <SapSelect
+            label="Status"
+            value={formData.status}
+            onChange={(val) => handleChange("status", val)}
             options={[
-              { value: "daily", label: "Daily" },
-              { value: "weekly", label: "Weekly" },
-              { value: "monthly", label: "Monthly" },
-              { value: "quarterly", label: "Quarterly" },
-              { value: "yearly", label: "Yearly" },
+              { value: "recorded", label: "📝 Recorded" },
+              { value: "pending", label: "⏳ Pending Review" },
+              { value: "approved", label: "✅ Approved" },
+              { value: "rejected", label: "❌ Rejected" },
+              { value: "reimbursed", label: "💰 Reimbursed" },
             ]}
             disabled={isReadOnly}
           />
-        )}
+        </div>
       </div>
-    )
-  };
+
+      {/* Category Preview */}
+      {formData.category && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "12px 16px",
+            background: `${getCategoryInfo(formData.category).color}15`,
+            borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
+            borderRadius: "4px",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+          }}
+        >
+          <span style={{ fontSize: "24px" }}>
+            {getCategoryInfo(formData.category).label.split(" ")[0]}
+          </span>
+          <div>
+            <div style={{ fontWeight: "600", fontSize: "13px" }}>
+              {getCategoryInfo(formData.category).label}
+            </div>
+            {formData.amount && (
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "700",
+                  color: getCategoryInfo(formData.category).color,
+                }}
+              >
+                {formData.currency}{" "}
+                {parseFloat(formData.amount || 0).toFixed(2)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+  // Notes Tab
+  const notesTab = (
+    <div className="sap-form">
+      <div className="sap-form-group" style={{ alignItems: "flex-start" }}>
+        <label className="sap-form-label">Notes</label>
+        <div className="sap-form-field" style={{ width: isMobile ? "100%" : "70%" }}>
+          <textarea
+            className="sap-textarea"
+            value={formData.notes || ""}
+            onChange={(e) => handleChange("notes", e.target.value)}
+            disabled={isReadOnly}
+            placeholder="Add any additional notes about this expense..."
+            rows={5}
+            style={{ width: "100%", maxWidth: "500px" }}
+          />
+        </div>
+      </div>
+
+      <SapInput
+        label="Tags"
+        value={formData.tags}
+        onChange={(val) => handleChange("tags", val)}
+        disabled={isReadOnly}
+        placeholder="Comma-separated tags (e.g., business, trip, client)"
+      />
+
+      <div style={{ marginTop: "16px" }}>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            padding: "12px",
+            background: "var(--sap-content-bg)",
+            borderRadius: "6px",
+            cursor: isReadOnly ? "default" : "pointer",
+            width: "fit-content",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={formData.isRecurring}
+            onChange={(e) => handleChange("isRecurring", e.target.checked)}
+            disabled={isReadOnly}
+            style={{
+              width: "18px",
+              height: "18px",
+              accentColor: "var(--sap-brand)",
+            }}
+          />
+          <span style={{ fontSize: "13px" }}>This is a recurring expense</span>
+        </label>
+      </div>
+
+      {formData.isRecurring && (
+        <SapSelect
+          label="Frequency"
+          value={formData.recurringFrequency}
+          onChange={(val) => handleChange("recurringFrequency", val)}
+          options={[
+            { value: "daily", label: "Daily" },
+            { value: "weekly", label: "Weekly" },
+            { value: "monthly", label: "Monthly" },
+            { value: "quarterly", label: "Quarterly" },
+            { value: "yearly", label: "Yearly" },
+          ]}
+          disabled={isReadOnly}
+        />
+      )}
+    </div>
+  )
 
   // History Tab (only for existing expenses)
-  const HistoryTab = () => {
-    return (<div>
+  const historyTab = (
+    <div>
       <div className="sap-message-strip info" style={{ marginBottom: "16px" }}>
         <span className="sap-message-strip-icon">ℹ️</span>
         <span>Administrative information about this expense record.</span>
@@ -683,130 +794,13 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
         </div>
       </div>
     </div>
-    )
-  };
-
-  // Register a custom back handler that closes the editor first
-      useEffect(() => {
-        if (isLoaded) {
-          registerBackHandler(() => {
-            // Close the editor instead of leaving the transaction
-            setIsLoaded(false);
-            setExpenseId("");
-            markAsSaved();
-    
-            // Pop the NOTE_ entry from history
-            setTransactionHistory((prev) => {
-              const newHistory = [...prev];
-              if (
-                newHistory.length > 0 &&
-                newHistory[newHistory.length - 1]?.startsWith("NOTE_")
-              ) {
-                newHistory.pop();
-              }
-              return newHistory;
-            });
-    
-            updateStatus("Close the Opened Note", "info");
-            return true; // Signal that we handled the back — don't do default back
-          });
-        } else {
-          // When not loaded (on the search/ID entry screen), clear the custom handler
-          // so default back behavior (go to HOME) works normally
-          clearBackHandler();
-        }
-    
-        return () => {
-          clearBackHandler();
-        };
-      }, [
-        isLoaded,
-        registerBackHandler,
-        clearBackHandler,
-        setTransactionHistory,
-        markAsSaved,
-        updateStatus,
-        user?.username,
-      ]);
-
-  useEffect(() => {
-    registerAction("SAVE", () => {
-      saveRef.current?.();
-    });
-    registerAction("CLEAR", () => {
-      clearRef.current?.();
-    });
-    registerAction("DELETE", () => {
-      deleteRef.current?.();
-    });
-    registerAction("PRINT", () => {
-      printRef.current?.();
-    });
-
-    return () => {
-      clearAction("SAVE");
-      clearAction("CLEAR");
-      clearAction("DELETE");
-      clearAction("PRINT");
-    };
-  }, []);
-
-  // Print Expenses
-  printRef.current = () => {
-    const expenses = getTableData("expenses") || [];
-
-    if (!expenses.length) {
-      alert("No expenses to print!");
-      return;
-    }
-
-    const html = generateExpenseReport(expenses);
-
-    const printWindow = window.open("", "_blank", "width=900,height=700");
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
-    // setTimeout(() => {
-    //   printWindow.print();
-    // }, 250);
-
-  };
-
-  const isReadOnly = mode === "display";
-  const needsLoad = (mode === "change" || mode === "display") && !isLoaded;
-
-  // Get category info
-  const getCategoryInfo = (categoryValue) => {
-    return (
-      categories.find((c) => c.value === categoryValue) || {
-        label: categoryValue,
-        color: "#9e9e9e",
-      }
-    );
-  };
-
-  // Generate month options for filter
-  const getMonthOptions = () => {
-    const options = [{ value: "all", label: "All Months" }];
-    const now = new Date();
-    for (let i = 0; i < 12; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      options.push({
-        value: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
-        label: date.toLocaleString("default", {
-          month: "long",
-          year: "numeric",
-        }),
-      });
-    }
-    return options;
-  };
+  )
 
   const tabs = [
-    { label: "Details", icon: "📝", content: <DetailsTab /> },
-    { label: "Notes & Tags", icon: "🏷️", content: <NotesTab /> },
+    { label: "Details", icon: "📝", content: detailsTab },
+    { label: "Notes & Tags", icon: "🏷️", content: notesTab },
     ...(formData.id
-      ? [{ label: "History", icon: "📋", content: <HistoryTab /> }]
+      ? [{ label: "History", icon: "📋", content: historyTab }]
       : []),
   ];
 
