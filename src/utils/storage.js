@@ -839,7 +839,7 @@ export const getExpenseCategories = () => [
   { value: "investment", label: "📈 Investment", color: "#2196f3" },
   { value: "other", label: "📦 Other", color: "#9e9e9e" },
   { value: "alcohol", label: "🍺 Alcohol & Beverages", color: "#9c27b0" },
-  { value: "cigarette-pan", label: "🚬 Cigarette & 🌿 Pan", color: "#795548" },
+  { value: "cigarette", label: "🚬 Cigarette 🌿", color: "#795548" },
 ];
 
 // Get payment methods
