@@ -45,20 +45,28 @@ const getInitialFormState = (user) => ({
 // Helper functions
 const formatCurrency = (amount) => {
   const num = parseFloat(amount) || 0;
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
   }).format(num);
 };
 
 const capitalizeFirst = (str) => {
-  if (!str) return '';
+  if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
 
 const ExpenseTrackerScreen = ({ mode = "create" }) => {
-
-  const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction, setTransactionHistory, registerBackHandler, clearBackHandler } = useTransaction();
+  const {
+    updateStatus,
+    markAsChanged,
+    markAsSaved,
+    goBack,
+    currentTransaction,
+    setTransactionHistory,
+    registerBackHandler,
+    clearBackHandler,
+  } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
   const { confirm } = useConfirm();
@@ -100,18 +108,37 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   const validateForm = () => {
     const newErrors = {};
 
+    // Date
     if (!formData.date) {
       newErrors.date = "Date is required";
+    } else if (isNaN(new Date(formData.date).getTime())) {
+      newErrors.date = "Please enter a valid date";
     }
+
     if (!formData.category) {
       newErrors.category = "Category is required";
     }
+
+    // Description
     if (!formData.description?.trim()) {
       newErrors.description = "Description is required";
+    } else if (formData.description.trim().length < 3) {
+      newErrors.description = "Description must be at least 3 characters long";
+    } else if (formData.description.trim().length > 250) {
+      newErrors.description = "Description cannot exceed 250 characters";
     }
-    if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      newErrors.amount = "Valid amount is required";
+
+    // Amount
+    if (!formData.amount?.toString().trim()) {
+      newErrors.amount = "Amount is required";
+    } else if (isNaN(Number(formData.amount))) {
+      newErrors.amount = "Amount must be a valid number";
+    } else if (Number(formData.amount) <= 0) {
+      newErrors.amount = "Amount must be greater than 0";
+    } else if (Number(formData.amount) > 999999999) {
+      newErrors.amount = "Amount is too large";
     }
+
     if (!formData.paymentMethod) {
       newErrors.paymentMethod = "Payment method is required";
     }
@@ -362,7 +389,6 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     // setTimeout(() => {
     //   printWindow.print();
     // }, 250);
-
   };
 
   const isReadOnly = mode === "display";
@@ -395,6 +421,31 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     return options;
   };
 
+  const evaluateAmount = (value) => {
+    if (!value || typeof value !== "string") return value;
+
+    if (!value.startsWith("=")) return value;
+
+    const expression = value.slice(1).trim();
+
+    // Only allow digits, operators, decimal points, spaces and parentheses
+    if (!/^[0-9+\-*/().\s]+$/.test(expression)) {
+      return value;
+    }
+
+    try {
+      const result = Function(`"use strict"; return (${expression})`)();
+
+      if (typeof result === "number" && Number.isFinite(result)) {
+        return result.toFixed(2);
+      }
+    } catch (e) {
+      // Invalid expression
+    }
+
+    return value;
+  };
+
   // =========================================================
   //                🔹🔹🔹 TAB HANDLERS 🔹🔹🔹
   // =========================================================
@@ -403,7 +454,11 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   const detailsTab = (
     <div className="sap-form">
       <div
-        style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "20px" }}
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+          gap: "20px",
+        }}
       >
         {/* Left Column */}
         <div>
@@ -485,34 +540,36 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
           </h4>
 
           <div className="sap-form-group">
-            <label className="sap-form-label required" style={{ width: "130px" }}>Amount</label>
             <div
-              className="sap-form-field"
-              style={{ display: "flex", gap: "8px" }}
+              style={{ display: "flex", gap: "8px", alignItems: "flex-end" }}
             >
-              <select
-                className="sap-select"
+              <SapSelect
+                label="Amount"
                 value={formData.currency}
-                onChange={(e) => handleChange("currency", e.target.value)}
+                onChange={(val) => handleChange("currency", val)}
+                options={[
+                  { value: "USD", label: "USD" },
+                  { value: "EUR", label: "EUR" },
+                  { value: "GBP", label: "GBP" },
+                  { value: "INR", label: "INR" },
+                  { value: "JPY", label: "JPY" },
+                ]}
+                required
                 disabled={isReadOnly}
-                style={{ width: "80px" }}
-              >
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-                <option value="INR">INR</option>
-                <option value="JPY">JPY</option>
-              </select>
+                placeholder="Currency"
+              />
+
               <SapInput
-                type="number"
-                className={`amountInput ${errors.amount ? "error" : ""}`}
+                type="text"
                 value={formData.amount}
                 onChange={(val) => handleChange("amount", val)}
-                disabled={isReadOnly}
-                placeholder="0.00"
-                step="0.01"
-                min="0"
-                style={{ flex: 1 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleChange("amount", evaluateAmount(formData.amount));
+                  }
+                }}
+                /* 2. Tell the input itself to fill 100% width of this new wrapper */
+                style={{ width: "100%" }}
               />
             </div>
             {errors.amount && (
@@ -603,14 +660,17 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
         </div>
       )}
     </div>
-  )
+  );
 
   // Notes Tab
   const notesTab = (
     <div className="sap-form">
       <div className="sap-form-group" style={{ alignItems: "flex-start" }}>
         <label className="sap-form-label">Notes</label>
-        <div className="sap-form-field" style={{ width: isMobile ? "100%" : "70%" }}>
+        <div
+          className="sap-form-field"
+          style={{ width: isMobile ? "100%" : "70%" }}
+        >
           <textarea
             className="sap-textarea"
             value={formData.notes || ""}
@@ -675,7 +735,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
         />
       )}
     </div>
-  )
+  );
 
   // History Tab (only for existing expenses)
   const historyTab = (
@@ -777,16 +837,17 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
           </div>
           <div>
             <span
-              className={`sap-badge ${formData.status === "approved"
-                ? "success"
-                : formData.status === "rejected"
-                  ? "error"
-                  : formData.status === "reimbursed"
-                    ? "success"
-                    : formData.status === "pending"
-                      ? "warning"
-                      : "info"
-                }`}
+              className={`sap-badge ${
+                formData.status === "approved"
+                  ? "success"
+                  : formData.status === "rejected"
+                    ? "error"
+                    : formData.status === "reimbursed"
+                      ? "success"
+                      : formData.status === "pending"
+                        ? "warning"
+                        : "info"
+              }`}
             >
               {formData.status || "recorded"}
             </span>
@@ -794,7 +855,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
         </div>
       </div>
     </div>
-  )
+  );
 
   const tabs = [
     { label: "Details", icon: "📝", content: detailsTab },
@@ -1008,10 +1069,11 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                 </tr>
               ) : (
                 searchResults.map((expense, index) => (
-                  <tr key={index}
+                  <tr
+                    key={index}
                     onDoubleClick={(e) => {
                       e.stopPropagation();
-                      handleSelectExpense(expense)
+                      handleSelectExpense(expense);
                     }}
                     style={{ cursor: "pointer" }}
                   >
@@ -1041,7 +1103,13 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
 
                     {currentTransaction === "VA02" && (
                       <td>
-                        <span style={{ marginLeft: "8px", width: "4rem", display: "inline-block" }}>
+                        <span
+                          style={{
+                            marginLeft: "8px",
+                            width: "4rem",
+                            display: "inline-block",
+                          }}
+                        >
                           <SapButton
                             onClick={() => DeleteInSearchModal(expense.id)}
                             type="danger"
@@ -1077,7 +1145,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               {searchResults.length} expense(s) found
             </span>
             <span style={{ fontWeight: "600" }}>
-              Total: ₹ {" "}
+              Total: ₹{" "}
               {searchResults
                 .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0)
                 .toFixed(2)}
@@ -1096,7 +1164,10 @@ export default ExpenseTrackerScreen;
 
 const generateExpenseReport = (expenses) => {
   // Calculate totals
-  const totalAmount = expenses.reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
+  const totalAmount = expenses.reduce(
+    (sum, exp) => sum + (parseFloat(exp.amount) || 0),
+    0,
+  );
   const categoryTotals = expenses.reduce((acc, exp) => {
     const cat = exp.category || "Uncategorized";
     acc[cat] = (acc[cat] || 0) + (parseFloat(exp.amount) || 0);
@@ -1115,7 +1186,7 @@ const generateExpenseReport = (expenses) => {
         <td class="col-amount">${formatCurrency(expense.amount)}</td>
         <td class="col-status">${expense.status || "—"}</td>
       </tr>
-    `
+    `,
     )
     .join("");
 
@@ -1132,7 +1203,7 @@ const generateExpenseReport = (expenses) => {
         <span class="category-amount">${formatCurrency(amount)}</span>
         <span class="category-percent">${((amount / totalAmount) * 100).toFixed(1)}%</span>
       </div>
-    `
+    `,
     )
     .join("");
 
@@ -1143,17 +1214,21 @@ const generateExpenseReport = (expenses) => {
       <div class="detail-section">
         <div class="detail-header">
           <span class="detail-num">${expense.expenseNumber || `EXP-${index + 1}`}</span>
-          <span class="detail-status status-${(expense.status || 'pending').toLowerCase()}">${expense.status || "Pending"}</span>
+          <span class="detail-status status-${(expense.status || "pending").toLowerCase()}">${expense.status || "Pending"}</span>
         </div>
         <div class="detail-row">
           <div class="detail-field">
             <span class="field-label">Date</span>
-            <span class="field-value">${expense.date ? new Date(expense.date).toLocaleDateString('en-US', {
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      }) : "—"}</span>
+            <span class="field-value">${
+              expense.date
+                ? new Date(expense.date).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "—"
+            }</span>
           </div>
           <div class="detail-field">
             <span class="field-label">Category</span>
@@ -1164,35 +1239,55 @@ const generateExpenseReport = (expenses) => {
             <span class="field-value amount">${formatCurrency(expense.amount)}</span>
           </div>
         </div>
-        ${expense.description ? `
+        ${
+          expense.description
+            ? `
           <div class="detail-description">
             <span class="field-label">Description</span>
             <p>${expense.description}</p>
           </div>
-        ` : ''}
-        ${expense.vendor ? `
+        `
+            : ""
+        }
+        ${
+          expense.vendor
+            ? `
           <div class="detail-extra">
             <span><strong>Vendor:</strong> ${expense.vendor}</span>
           </div>
-        ` : ''}
-        ${expense.paymentMethod ? `
+        `
+            : ""
+        }
+        ${
+          expense.paymentMethod
+            ? `
           <div class="detail-extra">
             <span><strong>Payment Method:</strong> ${expense.paymentMethod}</span>
           </div>
-        ` : ''}
-        ${expense.receipt ? `
+        `
+            : ""
+        }
+        ${
+          expense.receipt
+            ? `
           <div class="detail-extra">
             <span><strong>Receipt:</strong> ✓ Attached</span>
           </div>
-        ` : ''}
-        ${expense.notes ? `
+        `
+            : ""
+        }
+        ${
+          expense.notes
+            ? `
           <div class="detail-notes">
             <span class="field-label">Notes</span>
             <p>${expense.notes}</p>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
-    `
+    `,
     )
     .join("");
 
@@ -1562,15 +1657,21 @@ const generateExpenseReport = (expenses) => {
           </div>
           <div class="info">
             <div><strong>Report ID:</strong> RPT-${Date.now().toString().slice(-8)}</div>
-            <div><strong>Generated:</strong> ${new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })}</div>
-            <div><strong>Time:</strong> ${new Date().toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })}</div>
+            <div><strong>Generated:</strong> ${new Date().toLocaleDateString(
+              "en-US",
+              {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              },
+            )}</div>
+            <div><strong>Time:</strong> ${new Date().toLocaleTimeString(
+              "en-US",
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+              },
+            )}</div>
           </div>
         </div>
 
@@ -1650,4 +1751,4 @@ const generateExpenseReport = (expenses) => {
   `;
 
   return html;
-}
+};

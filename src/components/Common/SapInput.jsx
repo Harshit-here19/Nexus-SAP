@@ -18,7 +18,8 @@ const SapInput = ({
   className = "",
   min,
   max,
-  step = "any"
+  step = "any",
+  ...rest
 }) => {
   const isMobile = window.innerWidth <= 768;
 
@@ -60,10 +61,7 @@ const SapInput = ({
       )}
 
       <div className={styles.formField}>
-        <div
-          className={styles.inputIconWrapper}
-          style={{ width }}
-        >
+        <div className={styles.inputIconWrapper} style={{ width }}>
           <input
             type={type}
             className={`${className ? className : styles.input} ${
@@ -79,6 +77,7 @@ const SapInput = ({
             max={type === "number" ? max : undefined}
             step={type === "number" ? step : undefined}
             style={{ width: "100%" }}
+            {...rest}
           />
 
           {icon && (
@@ -100,6 +99,7 @@ export default SapInput;
 export const SimpleInput = ({
   value,
   onChange,
+  onKeyDown,
   placeholder = "",
   type = "text",
   className = "",
@@ -110,9 +110,8 @@ export const SimpleInput = ({
   width = "100%",
   min,
   max,
-  step = "any"
+  step = "any",
 }) => {
-
   const handleChange = (e) => {
     if (!onChange) return;
 
@@ -142,6 +141,7 @@ export const SimpleInput = ({
       } ${readOnly ? styles.inputReadOnly : ""}`}
       value={value ?? ""}
       onChange={handleChange}
+      onKeyDown={onKeyDown}
       disabled={disabled}
       readOnly={readOnly}
       placeholder={placeholder}

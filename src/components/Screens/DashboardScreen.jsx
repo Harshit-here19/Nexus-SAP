@@ -1,7 +1,8 @@
 // src/components/Screens/DashboardScreen.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
+import { useAction } from "../../context/ActionContext";
 import { useFavorites } from "../../context/FavoritesContext";
 import SapButton from "../Common/SapButton";
 import {
@@ -14,12 +15,19 @@ import {
 import ExportSpreadsheetModal from "../Common/ExportSpreadsheetModal";
 import { exportExpenseSpreadsheet } from "../../utils/exportExcel";
 
+import { generateDashboardReport } from "./GenerateDashboardReport";
+
 const isMobile = window.innerWidth <= 786;
 
 const DashboardScreen = () => {
   const { navigateToTransaction, updateStatus } = useTransaction();
   const { user, checkIsAdmin } = useAuth();
   const { history, favorites } = useFavorites();
+  const { registerAction, clearAction } = useAction();
+
+
+  const printRef = useRef(null);
+
 
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,6 +71,49 @@ const DashboardScreen = () => {
       updateStatus("Error loading dashboard data", "error");
     }
     setLoading(false);
+  };
+
+  useEffect(() => {
+    registerAction("PRINT", () => {
+      printRef.current?.();
+    });
+
+    return () => {
+      clearAction("PRINT");
+    };
+  }, [registerAction, clearAction]);
+
+  // Print Dashboard Report
+  printRef.current = () => {
+    try {
+      const stats = getExpenseStats();
+
+      if (!stats) {
+        alert("No dashboard data available!");
+        return;
+      }
+
+      const user = {
+        name: "System User", // replace with useAuth() user if needed
+      };
+
+      const html = generateDashboardReport(stats, user, "color"); // or "mono"
+
+      const printWindow = window.open("", "_blank", "width=900,height=700");
+
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+
+      // Optional auto-print (recommended for production)
+      // setTimeout(() => {
+      //   printWindow.print();
+      // }, 300);
+    } catch (error) {
+      console.error("Print dashboard error:", error);
+      alert("Failed to generate dashboard report");
+    }
+    
   };
 
   // Quick action handler
@@ -180,7 +231,7 @@ const DashboardScreen = () => {
           flexWrap: "wrap",
         }}
       >
-        <div style={{marginBottom: isMobile ? '10px' : '0px'}}>
+        <div style={{ marginBottom: isMobile ? '10px' : '0px' }}>
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
             💰 Expense Dashboard
           </h2>

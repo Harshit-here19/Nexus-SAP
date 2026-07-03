@@ -202,6 +202,7 @@ const DataBrowserScreen = () => {
     if (selectedTable === 'expenses') {
       data = data.map((item, index) => {
         // console.log(`Item ${index}:`, item.amount, typeof item.amount);
+        const categoryObj = CATEGORY_MAP_EXPENSES[item.category]
         return {
           ...item,
           originalCategory: item.category, // preserve key
@@ -236,7 +237,6 @@ const DataBrowserScreen = () => {
         }
       });
     }
-
 
     setTableData(data);
     setColumns(cols);

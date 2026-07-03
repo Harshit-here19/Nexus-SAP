@@ -87,7 +87,6 @@ const CollectionEditor = ({
             }
             style={{
               width: "100%",
-              minWidth: "300px",
               height: "44px",
               padding: "23px 14px",
               border: "2px solid #111827",
@@ -118,8 +117,7 @@ const CollectionEditor = ({
               }
               placeholder="Add new item..."
               style={{
-                width: "60%",
-                minWidth: "300px",
+                width: "70%",
                 height: "44px",
                 padding: "0 14px",
                 border: "2px solid #111827",

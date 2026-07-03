@@ -9,7 +9,8 @@ const SapSelect = ({
   required = false,
   disabled = false,
   placeholder = "Select...",
-  error = ""
+  error = "",
+  ...rest
 }) => {
 
   return (
@@ -32,6 +33,7 @@ const SapSelect = ({
           value={value || ""}
           onChange={(e) => onChange && onChange(e.target.value)}
           disabled={disabled}
+          {...rest}
         >
           <option value="">{placeholder}</option>
           {options.map((option, index) => (
