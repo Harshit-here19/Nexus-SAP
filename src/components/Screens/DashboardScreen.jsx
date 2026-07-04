@@ -4,6 +4,7 @@ import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
 import { useAction } from "../../context/ActionContext";
 import { useFavorites } from "../../context/FavoritesContext";
+import { useSettings } from "../../context/SettingsContext";
 import SapButton from "../Common/SapButton";
 import {
   getTableData,
@@ -11,6 +12,8 @@ import {
   getExpenseCategories,
   getExpenseStats,
 } from "../../utils/storage";
+
+import useTranslation from "../../hooks/useTranslation";
 
 import ExportSpreadsheetModal from "../Common/ExportSpreadsheetModal";
 import { exportExpenseSpreadsheet } from "../../utils/exportExcel";
@@ -24,7 +27,11 @@ const DashboardScreen = () => {
   const { user, checkIsAdmin } = useAuth();
   const { history, favorites } = useFavorites();
   const { registerAction, clearAction } = useAction();
+  const { t } = useTranslation();
 
+  const { settings } = useSettings();
+
+  const lang = settings.language || "en";
 
   const printRef = useRef(null);
 
@@ -113,7 +120,7 @@ const DashboardScreen = () => {
       console.error("Print dashboard error:", error);
       alert("Failed to generate dashboard report");
     }
-    
+
   };
 
   // Quick action handler
@@ -233,10 +240,10 @@ const DashboardScreen = () => {
       >
         <div style={{ marginBottom: isMobile ? '10px' : '0px' }}>
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
-            💰 Expense Dashboard
+            💰 {t("dashboard.title")}
           </h2>
           <p style={{ margin: "4px 0 0", opacity: 0.9, fontSize: "12px" }}>
-            Track and manage your expenses •{" "}
+            {t("dashboard.subtitle")} •{" "}
             {new Date().toLocaleDateString("en-US", {
               month: "long",
               year: "numeric",
@@ -249,10 +256,10 @@ const DashboardScreen = () => {
             type="primary"
             icon="➕"
           >
-            Add Expense
+            {t("dashboard.addExpense")}
           </SapButton>
           <SapButton onClick={loadDashboardData} icon="🔄" type="search">
-            Refresh
+            {t("dashboard.refresh")}
           </SapButton>
           <SapButton
             icon="📊"
@@ -260,7 +267,7 @@ const DashboardScreen = () => {
             type="success"
             style={{ backgroundColor: "green" }}
           >
-            Export Spreadsheet
+            {t("dashboard.exportSpreadsheet")}
           </SapButton>
         </div>
       </div>
@@ -288,14 +295,14 @@ const DashboardScreen = () => {
             className={`dashboard-card-change ${stats?.monthChange >= 0 ? "negative" : "positive"}`}
           >
             <span>{stats?.monthChange >= 0 ? "↗" : "↘"}</span>
-            {Math.abs(stats?.monthChange || 0)}% vs last month
+            {Math.abs(stats?.monthChange || 0)}% vs {t("dashboard.lastMonth")}
           </div>
         </div>
 
         {/* Last Month */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">Last Month</span>
+            <span className="dashboard-card-title">{t("dashboard.lastMonth")}</span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -310,14 +317,14 @@ const DashboardScreen = () => {
             {formatCurrency(stats?.totalLastMonth || 0)}
           </div>
           <div className="dashboard-card-change">
-            <span>📊</span> Comparison baseline
+            <span>📊</span>  {t("dashboard.comparisonBaseline")}
           </div>
         </div>
 
         {/* This Year */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">This Year</span>
+            <span className="dashboard-card-title">{t("dashboard.thisYear")}</span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -332,14 +339,14 @@ const DashboardScreen = () => {
             {formatCurrency(stats?.totalThisYear || 0, true)}
           </div>
           <div className="dashboard-card-change">
-            <span>🗓️</span> Year to date
+            <span>🗓️</span> {t("dashboard.yearToDate")}
           </div>
         </div>
 
         {/* Average */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">Average Expense</span>
+            <span className="dashboard-card-title">{t("dashboard.averageExpense")}</span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -354,7 +361,7 @@ const DashboardScreen = () => {
             {formatCurrency(stats?.averageExpense || 0)}
           </div>
           <div className="dashboard-card-change">
-            <span>📝</span> Per transaction
+            <span>📝</span> {t("dashboard.perTransaction")}
           </div>
         </div>
 
@@ -365,7 +372,7 @@ const DashboardScreen = () => {
           style={{ cursor: "pointer" }}
         >
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">Total Entries</span>
+            <span className="dashboard-card-title">{t("dashboard.totalEntries")}</span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -378,14 +385,14 @@ const DashboardScreen = () => {
           </div>
           <div className="dashboard-card-value">{stats?.expenseCount || 0}</div>
           <div className="dashboard-card-change">
-            <span>📋</span> {stats?.thisMonthCount || 0} this month
+            <span>📋</span> {stats?.thisMonthCount || 0} {t("dashboard.thisMonth")}
           </div>
         </div>
 
         {/* All Time */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">All Time Total</span>
+            <span className="dashboard-card-title">{t("dashboard.allTime")}</span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -400,14 +407,14 @@ const DashboardScreen = () => {
             {formatCurrency(stats?.totalAllTime || 0, true)}
           </div>
           <div className="dashboard-card-change">
-            <span>∞</span> Lifetime spending
+            <span>∞</span> {t("dashboard.lifetimeSpending")}
           </div>
         </div>
 
         {/* Top Category Spend */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">Top Category</span>
+            <span className="dashboard-card-title">{t("dashboard.topCategory")}</span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -428,14 +435,14 @@ const DashboardScreen = () => {
 
           <div className="dashboard-card-change">
             <span>💰</span> {formatCurrency(stats?.topCategory?.amount || 0)}{" "}
-            spent
+            {t("dashboard.spent")}
           </div>
         </div>
 
         {/* Average Daily Spend */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">Avg Daily Spend</span>
+            <span className="dashboard-card-title">{t("dashboard.avgDailySpend")}</span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -452,7 +459,7 @@ const DashboardScreen = () => {
           </div>
 
           <div className="dashboard-card-change">
-            <span>📅</span> Per day average
+            <span>📅</span> {t("dashboard.perDayAverage")}
           </div>
         </div>
       </div>
@@ -469,7 +476,7 @@ const DashboardScreen = () => {
         {/* Expenses by Category */}
         <div className="chart-container">
           <div className="chart-title">
-            <span>📊</span> Expenses by Category (This Month)
+            <span>📊</span> {t("dashboard.expensesByCategory")} ({t("dashboard.thisMonth")})
           </div>
           {stats?.categoryBreakdown?.length > 0 ? (
             <div className="pie-chart-container">
@@ -501,7 +508,7 @@ const DashboardScreen = () => {
                       color: "var(--sap-text-secondary)",
                     }}
                   >
-                    Total
+                    {t("dashboard.total")}
                   </div>
                   <div style={{ fontSize: "12px", fontWeight: "700" }}>
                     {formatCurrency(stats.totalThisMonth, true)}
@@ -516,7 +523,7 @@ const DashboardScreen = () => {
                       style={{ background: item.color }}
                     />
                     <span className="pie-chart-legend-label">
-                      {item.label.split(" ").slice(1).join(" ")}
+                      {item.label[lang].split(" ").slice(1).join(" ")}
                     </span>
                     <span className="pie-chart-legend-value">
                       {formatCurrency(item.total)} ({item.percentage}%)
@@ -534,13 +541,13 @@ const DashboardScreen = () => {
               }}
             >
               <div style={{ fontSize: "32px", marginBottom: "8px" }}>📭</div>
-              <div>No expenses this month</div>
+              <div>{t("dashboard.noExpensesThisMonth")}</div>
               <SapButton
                 onClick={() => handleQuickAction("VA01")}
                 type="primary"
                 style={{ marginTop: "12px" }}
               >
-                Record First Expense
+                {t("dashboard.recordFirstExpense")}
               </SapButton>
             </div>
           )}
@@ -549,7 +556,7 @@ const DashboardScreen = () => {
         {/* Monthly Trend */}
         <div className="chart-container">
           <div className="chart-title">
-            <span>📈</span> Monthly Trend (Last 6 Months)
+            <span>📈</span> {t("dashboard.monthlyTrend")} ({t("dashboard.lastSixMonths")})
           </div>
           {stats?.monthlyTrend?.length > 0 ? (
             <div className="bar-chart">
@@ -586,7 +593,7 @@ const DashboardScreen = () => {
               }}
             >
               <div style={{ fontSize: "32px", marginBottom: "8px" }}>📊</div>
-              <div>No trend data available</div>
+              <div>{t("dashboard.noTrendData")}</div>
             </div>
           )}
         </div>
@@ -603,17 +610,17 @@ const DashboardScreen = () => {
         {/* Recent Expenses */}
         <div className="chart-container">
           <div className="chart-title">
-            <span>🧾</span> Recent Expenses
+            <span>🧾</span> {t("dashboard.recentExpenses")}
           </div>
           {stats?.recentExpenses?.length > 0 ? (
             <div style={{ overflowX: "auto" }}>
               <table className="sap-table" style={{ fontSize: "11px" }}>
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th style={{ textAlign: "right" }}>Amount</th>
+                    <th>{t("dashboard.date")}</th>
+                    <th>{t("dashboard.category")}</th>
+                    <th>{t("dashboard.description")}</th>
+                    <th style={{ textAlign: "right" }}>{t("dashboard.amount")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -636,7 +643,7 @@ const DashboardScreen = () => {
                               fontSize: "10px",
                             }}
                           >
-                            {category?.label?.split(" ")[0]} {expense.category}
+                            {category?.label[lang]?.split(" ")[0]} {expense.category}
                           </span>
                         </td>
                         <td
@@ -674,7 +681,7 @@ const DashboardScreen = () => {
               }}
             >
               <div style={{ fontSize: "32px", marginBottom: "8px" }}>📭</div>
-              <div>No expenses recorded yet</div>
+              <div>{t("dashboard.noExpensesRecorded")}</div>
             </div>
           )}
           {stats?.recentExpenses?.length > 0 && (
@@ -684,7 +691,7 @@ const DashboardScreen = () => {
                 icon="👁️"
                 type="glass"
               >
-                View All Expenses
+                {t("dashboard.viewAllExpenses")}
               </SapButton>
             </div>
           )}
@@ -693,7 +700,7 @@ const DashboardScreen = () => {
         {/* Quick Actions & Payment Methods */}
         <div className="chart-container">
           <div className="chart-title">
-            <span>⚡</span> Quick Actions
+            <span>⚡</span> {t("dashboard.quickActions")}
           </div>
           <div
             style={{
@@ -709,7 +716,7 @@ const DashboardScreen = () => {
               icon="➕"
               style={{ justifyContent: "flex-start" }}
             >
-              Add Expense
+              {t("dashboard.addExpense")}
             </SapButton>
             <SapButton
               onClick={() => handleQuickAction("VA02")}
@@ -717,7 +724,7 @@ const DashboardScreen = () => {
               icon="✏️"
               style={{ justifyContent: "flex-start" }}
             >
-              Edit Expense
+              {t("dashboard.editExpense")}
             </SapButton>
             <SapButton
               onClick={() => handleQuickAction("VA03")}
@@ -725,7 +732,7 @@ const DashboardScreen = () => {
               icon="👁️"
               style={{ justifyContent: "flex-start" }}
             >
-              View Expenses
+              {t("dashboard.viewExpenses")}
             </SapButton>
             <SapButton
               onClick={() => handleQuickAction("SE16")}
@@ -733,7 +740,7 @@ const DashboardScreen = () => {
               icon="🔍"
               style={{ justifyContent: "flex-start" }}
             >
-              Data Browser
+              {t("dashboard.dataBrowser")}
             </SapButton>
           </div>
 
@@ -741,7 +748,7 @@ const DashboardScreen = () => {
           {stats?.paymentBreakdown?.length > 0 && (
             <>
               <div className="chart-title" style={{ marginTop: "16px" }}>
-                <span>💳</span> Payment Methods (This Month)
+                <span>💳</span> {t("dashboard.paymentMethods")} ({t("dashboard.thisMonth")})
               </div>
               <div
                 style={{ display: "flex", flexDirection: "column", gap: "8px" }}
@@ -759,7 +766,7 @@ const DashboardScreen = () => {
                       fontSize: "12px",
                     }}
                   >
-                    <span>{method.label}</span>
+                    <span>{method.label[lang]}</span>
                     <div
                       style={{
                         display: "flex",
@@ -773,7 +780,7 @@ const DashboardScreen = () => {
                           fontSize: "11px",
                         }}
                       >
-                        {method.count} txn
+                        {method.count} {t("dashboard.transactions")}
                       </span>
                       <span style={{ fontWeight: "600" }}>
                         {formatCurrency(method.total)}
@@ -787,7 +794,7 @@ const DashboardScreen = () => {
 
           {/* Category Quick Stats */}
           <div className="chart-title" style={{ marginTop: "16px" }}>
-            <span>🏷️</span> Top Categories
+            <span>🏷️</span> {t("dashboard.topCategories")}
           </div>
           {stats?.categoryBreakdown?.length > 0 ? (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -813,7 +820,7 @@ const DashboardScreen = () => {
                       background: cat.color,
                     }}
                   />
-                  {cat.label.split(" ").slice(1).join(" ")}:{" "}
+                  {cat.label[lang].split(" ").slice(1).join(" ")}:{" "}
                   {formatCurrency(cat.total, true)}
                 </span>
               ))}
@@ -827,7 +834,7 @@ const DashboardScreen = () => {
                 fontSize: "12px",
               }}
             >
-              No category data
+              {t("dashboard.noCategoryData")}
             </div>
           )}
         </div>
@@ -837,17 +844,17 @@ const DashboardScreen = () => {
       {checkIsAdmin() && (
         <div className="chart-container" style={{ marginTop: "12px" }}>
           <div className="chart-title">
-            <span>🔐</span> Admin Quick Access
+            <span>🔐</span> {t("dashboard.adminQuickAccess")}
           </div>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <SapButton onClick={() => handleQuickAction("ZADMIN")} icon="👥">
-              User Management
+              {t("dashboard.userManagement")}
             </SapButton>
             <SapButton onClick={() => handleQuickAction("SE16")} icon="🗄️">
-              Data Browser
+              {t("dashboard.dataBrowser")}
             </SapButton>
             <SapButton onClick={() => handleQuickAction("SU01")} icon="⚙️">
-              Settings
+              {t("dashboard.settings")}
             </SapButton>
           </div>
         </div>

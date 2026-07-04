@@ -824,32 +824,180 @@ export const initializeData = () => {
 
 // Get expense categories
 export const getExpenseCategories = () => [
-  { value: "food", label: "🍔 Food & Dining", color: "#e91e63" },
-  { value: "travel", label: "✈️ Travel & Transport", color: "#9c27b0" },
-  { value: "shopping", label: "🛍️ Shopping", color: "#3f51b5" },
-  { value: "bills", label: "📄 Bills & Utilities", color: "#00bcd4" },
-  { value: "entertainment", label: "🎬 Entertainment", color: "#ff9800" },
-  { value: "healthcare", label: "🏥 Healthcare", color: "#4caf50" },
-  { value: "education", label: "📚 Education", color: "#795548" },
-  { value: "groceries", label: "🛒 Groceries", color: "#607d8b" },
-  { value: "rent", label: "🏠 Rent & Housing", color: "#f44336" },
-  { value: "insurance", label: "🛡️ Insurance", color: "#673ab7" },
-  { value: "personal", label: "💄 Personal Care", color: "#e91e63" },
-  { value: "gifts", label: "🎁 Gifts & Donations", color: "#ff5722" },
-  { value: "investment", label: "📈 Investment", color: "#2196f3" },
-  { value: "other", label: "📦 Other", color: "#9e9e9e" },
-  { value: "alcohol", label: "🍺 Alcohol & Beverages", color: "#9c27b0" },
-  { value: "cigarette", label: "🚬 Cigarette 🌿", color: "#694d43" },
+  {
+    value: "food",
+    label: {
+      en: "🍔 Food & Dining",
+      hi: "🍔 भोजन एवं रेस्तरां",
+    },
+    color: "#e91e63",
+  },
+  {
+    value: "travel",
+    label: {
+      en: "✈️ Travel & Transport",
+      hi: "✈️ यात्रा एवं परिवहन",
+    },
+    color: "#9c27b0",
+  },
+  {
+    value: "shopping",
+    label: {
+      en: "🛍️ Shopping",
+      hi: "🛍️ खरीदारी",
+    },
+    color: "#3f51b5",
+  },
+  {
+    value: "bills",
+    label: {
+      en: "📄 Bills & Utilities",
+      hi: "📄 बिल और उपयोगिताएँ",
+    },
+    color: "#00bcd4",
+  },
+  {
+    value: "entertainment",
+    label: {
+      en: "🎬 Entertainment",
+      hi: "🎬 मनोरंजन",
+    },
+    color: "#ff9800",
+  },
+  {
+    value: "healthcare",
+    label: {
+      en: "🏥 Healthcare",
+      hi: "🏥 स्वास्थ्य सेवा",
+    },
+    color: "#4caf50",
+  },
+  {
+    value: "education",
+    label: {
+      en: "📚 Education",
+      hi: "📚 शिक्षा",
+    },
+    color: "#795548",
+  },
+  {
+    value: "groceries",
+    label: {
+      en: "🛒 Groceries",
+      hi: "🛒 किराना",
+    },
+    color: "#607d8b",
+  },
+  {
+    value: "rent",
+    label: {
+      en: "🏠 Rent & Housing",
+      hi: "🏠 किराया और आवास",
+    },
+    color: "#f44336",
+  },
+  {
+    value: "insurance",
+    label: {
+      en: "🛡️ Insurance",
+      hi: "🛡️ बीमा",
+    },
+    color: "#673ab7",
+  },
+  {
+    value: "personal",
+    label: {
+      en: "💄 Personal Care",
+      hi: "💄 व्यक्तिगत देखभाल",
+    },
+    color: "#e91e63",
+  },
+  {
+    value: "gifts",
+    label: {
+      en: "🎁 Gifts & Donations",
+      hi: "🎁 उपहार और दान",
+    },
+    color: "#ff5722",
+  },
+  {
+    value: "investment",
+    label: {
+      en: "📈 Investment",
+      hi: "📈 निवेश",
+    },
+    color: "#2196f3",
+  },
+  {
+    value: "other",
+    label: {
+      en: "📦 Other",
+      hi: "📦 अन्य",
+    },
+    color: "#9e9e9e",
+  },
+  {
+    value: "alcohol",
+    label: {
+      en: "🍺 Alcohol & Beverages",
+      hi: "🍺 शराब और पेय पदार्थ",
+    },
+    color: "#9c27b0",
+  },
+  {
+    value: "cigarette",
+    label: {
+      en: "🚬 Cigarette 🌿",
+      hi: "🚬 सिगरेट 🌿",
+    },
+    color: "#694d43",
+  },
 ];
 
 // Get payment methods
 export const getPaymentMethods = () => [
-  { value: "cash", label: "💵 Cash" },
-  { value: "credit_card", label: "💳 Credit Card" },
-  { value: "debit_card", label: "💳 Debit Card" },
-  { value: "upi", label: "📱 UPI" },
-  { value: "bank_transfer", label: "🏦 Bank Transfer" },
-  { value: "cheque", label: "📝 Cheque" },
+  {
+    value: "cash",
+    label: {
+      en: "💵 Cash",
+      hi: "💵 नकद",
+    },
+  },
+  {
+    value: "credit_card",
+    label: {
+      en: "💳 Credit Card",
+      hi: "💳 क्रेडिट कार्ड",
+    },
+  },
+  {
+    value: "debit_card",
+    label: {
+      en: "💳 Debit Card",
+      hi: "💳 डेबिट कार्ड",
+    },
+  },
+  {
+    value: "upi",
+    label: {
+      en: "📱 UPI",
+      hi: "📱 यूपीआई",
+    },
+  },
+  {
+    value: "bank_transfer",
+    label: {
+      en: "🏦 Bank Transfer",
+      hi: "🏦 बैंक ट्रांसफर",
+    },
+  },
+  {
+    value: "cheque",
+    label: {
+      en: "📝 Cheque",
+      hi: "📝 चेक",
+    },
+  },
 ];
 
 // Get expense statistics

@@ -19,6 +19,7 @@ const defaultSettings = {
   codeTheme: 'Dracula', // MacOS, Githubdark, Glass, Cyberpunk, TokyoNight
   dateFormat: 'MM/DD/YYYY',
   timeFormat: '24h',
+  language: 'en',
   decimalNotation: '1,234,567.89',
   fontSize: 'medium', // 'small', 'medium', 'large'
   sidebarCollapsed: false,
@@ -71,7 +72,7 @@ export const SettingsProvider = ({ children }) => {
   // Save settings to localStorage
   const saveSettings = useCallback((newSettings) => {
     if (!user?.userId) return false;
-    
+
     try {
       const key = `${SETTINGS_KEY}_${user.userId}`;
       const merged = { ...settings, ...newSettings };
@@ -92,7 +93,7 @@ export const SettingsProvider = ({ children }) => {
   // Reset to defaults
   const resetSettings = useCallback(() => {
     if (!user?.userId) return false;
-    
+
     try {
       const key = `${SETTINGS_KEY}_${user.userId}`;
       localStorage.removeItem(key);
@@ -106,7 +107,7 @@ export const SettingsProvider = ({ children }) => {
   // Apply theme to document
   const applyTheme = (theme) => {
     document.documentElement.setAttribute('data-theme', theme);
-    
+
     if (theme === 'dark') {
       document.body.style.setProperty('--sap-content-bg', '#1a1a2e');
       document.body.style.setProperty('--sap-base', '#16213e');

@@ -9,6 +9,7 @@ import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
 import { useAction } from "../../context/ActionContext";
 import { useConfirm } from "../../context/ConfirmContext";
+import { useSettings } from "../../context/SettingsContext"
 import {
   getTableData,
   addRecord,
@@ -18,6 +19,8 @@ import {
   getExpenseCategories,
   getPaymentMethods,
 } from "../../utils/storage";
+
+import useTranslation from '../../hooks/useTranslation'
 
 // =========================================================
 //                📌📌📌 CONSTANTS 📌📌📌
@@ -70,6 +73,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
   const { confirm } = useConfirm();
+  const { t } = useTranslation();
 
   const saveRef = useRef(null);
   const clearRef = useRef(null);
@@ -83,6 +87,10 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterMonth, setFilterMonth] = useState("all");
+
+  const { settings } = useSettings();
+
+  const lang = settings.language || "en";
 
   // Form data
   const [formData, setFormData] = useState(getInitialFormState(user));
@@ -398,7 +406,10 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   const getCategoryInfo = (categoryValue) => {
     return (
       categories.find((c) => c.value === categoryValue) || {
-        label: categoryValue,
+        label: {
+          en: categoryValue,
+          hi: categoryValue,
+        },
         color: "#9e9e9e",
       }
     );
@@ -472,18 +483,18 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               fontSize: "13px",
             }}
           >
-            <span>📝</span> Expense Details
+            <span>📝</span> {t("expenseForm.expenseDetails")}
           </h4>
 
           <SapInput
-            label="Expense ID"
+            label={t("expenseForm.expenseId")}
             value={formData.expenseNumber}
             readOnly={true}
             placeholder="Auto-generated"
           />
 
           <SapInput
-            label="Date"
+            label={t("expenseForm.date")}
             value={formData.date}
             onChange={(val) => handleChange("date", val)}
             type="date"
@@ -493,34 +504,34 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
           />
 
           <SapSelect
-            label="Category"
+            label={t("expenseForm.category")}
             value={formData.category}
             onChange={(val) => handleChange("category", val)}
             options={categories.map((c) => ({
               value: c.value,
-              label: c.label,
+              label: c.label[lang],
             }))}
             required={true}
             disabled={isReadOnly}
-            placeholder="Select category..."
+            placeholder={t("expenseForm.selectCategory")}
           />
 
           <SapInput
-            label="Description"
+            label={t("expenseForm.description")}
             value={formData.description}
             onChange={(val) => handleChange("description", val)}
             required={true}
             disabled={isReadOnly}
             error={errors.description}
-            placeholder="What was this expense for?"
+            placeholder={t("expenseForm.expenseDescriptionPlaceholder")}
           />
 
           <SapInput
-            label="Vendor/Merchant"
-            value={formData.vendor}
+            // label="Vendor/Merchant"
+            label={t("expenseForm.vendor")}
             onChange={(val) => handleChange("vendor", val)}
             disabled={isReadOnly}
-            placeholder="Where did you spend?"
+            placeholder={t("expenseForm.vendorPlaceholder")}
           />
         </div>
 
@@ -536,7 +547,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               fontSize: "13px",
             }}
           >
-            <span>💰</span> Payment Information
+            <span>💰</span> {t("expenseForm.paymentInformation")}
           </h4>
 
           <div className="sap-form-group">
@@ -544,19 +555,17 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               style={{ display: "flex", gap: "8px", alignItems: "flex-end" }}
             >
               <SapSelect
-                label="Amount"
+                label={t("expenseForm.amount")}
                 value={formData.currency}
                 onChange={(val) => handleChange("currency", val)}
                 options={[
-                  { value: "USD", label: "USD" },
-                  { value: "EUR", label: "EUR" },
-                  { value: "GBP", label: "GBP" },
                   { value: "INR", label: "INR" },
+                  { value: "USD", label: "USD" },
                   { value: "JPY", label: "JPY" },
                 ]}
                 required
                 disabled={isReadOnly}
-                placeholder="Currency"
+                placeholder={t("expenseForm.currency")}
               />
 
               <SapInput
@@ -587,36 +596,36 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
           </div>
 
           <SapSelect
-            label="Payment Method"
+            label={t("expenseForm.paymentMethod")}
             value={formData.paymentMethod}
             onChange={(val) => handleChange("paymentMethod", val)}
             options={paymentMethods.map((p) => ({
               value: p.value,
-              label: p.label,
+              label: p.label[lang],
             }))}
             required={true}
             disabled={isReadOnly}
-            placeholder="How did you pay?"
+            placeholder={t("expenseForm.paymentMethodPlaceholder")}
           />
 
           <SapInput
-            label="Receipt Number"
+            label={t("expenseForm.receiptNumber")}
             value={formData.receiptNumber}
             onChange={(val) => handleChange("receiptNumber", val)}
             disabled={isReadOnly}
-            placeholder="Optional receipt/invoice number"
+            placeholder={t("expenseForm.receiptPlaceholder")}
           />
 
           <SapSelect
-            label="Status"
+            label={t("expenseForm.status")}
             value={formData.status}
             onChange={(val) => handleChange("status", val)}
             options={[
-              { value: "recorded", label: "📝 Recorded" },
-              { value: "pending", label: "⏳ Pending Review" },
-              { value: "approved", label: "✅ Approved" },
-              { value: "rejected", label: "❌ Rejected" },
-              { value: "reimbursed", label: "💰 Reimbursed" },
+              { value: "recorded", label: t("expenseForm.recorded") },
+              { value: "pending", label: t("expenseForm.pending") },
+              { value: "approved", label: t("expenseForm.approved") },
+              { value: "rejected", label: t("expenseForm.rejected") },
+              { value: "reimbursed", label: t("expenseForm.reimbursed") },
             ]}
             disabled={isReadOnly}
           />
@@ -638,11 +647,11 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
           }}
         >
           <span style={{ fontSize: "24px" }}>
-            {getCategoryInfo(formData.category).label.split(" ")[0]}
+            {getCategoryInfo(formData.category).label[lang].split(" ")[0]}
           </span>
           <div>
             <div style={{ fontWeight: "600", fontSize: "13px" }}>
-              {getCategoryInfo(formData.category).label}
+              {getCategoryInfo(formData.category).label[lang]}
             </div>
             {formData.amount && (
               <div
@@ -666,7 +675,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   const notesTab = (
     <div className="sap-form">
       <div className="sap-form-group" style={{ alignItems: "flex-start" }}>
-        <label className="sap-form-label">Notes</label>
+        <label className="sap-form-label">{t("expenseForm.notes")}</label>
         <div
           className="sap-form-field"
           style={{ width: isMobile ? "100%" : "70%" }}
@@ -676,7 +685,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
             value={formData.notes || ""}
             onChange={(e) => handleChange("notes", e.target.value)}
             disabled={isReadOnly}
-            placeholder="Add any additional notes about this expense..."
+            placeholder={t("expenseForm.notesPlaceholder")}
             rows={5}
             style={{ width: "100%", maxWidth: "500px" }}
           />
@@ -684,11 +693,11 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
       </div>
 
       <SapInput
-        label="Tags"
+        label={t("expenseForm.tags")}
         value={formData.tags}
         onChange={(val) => handleChange("tags", val)}
         disabled={isReadOnly}
-        placeholder="Comma-separated tags (e.g., business, trip, client)"
+        placeholder={t("expenseForm.tagsPlaceholder")}
       />
 
       <div style={{ marginTop: "16px" }}>
@@ -715,21 +724,23 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               accentColor: "var(--sap-brand)",
             }}
           />
-          <span style={{ fontSize: "13px" }}>This is a recurring expense</span>
+          <span style={{ fontSize: "13px" }}>
+            {t("expenseForm.recurringExpense")}
+          </span>
         </label>
       </div>
 
       {formData.isRecurring && (
         <SapSelect
-          label="Frequency"
+          label={t("expenseForm.frequency")}
           value={formData.recurringFrequency}
           onChange={(val) => handleChange("recurringFrequency", val)}
           options={[
-            { value: "daily", label: "Daily" },
-            { value: "weekly", label: "Weekly" },
-            { value: "monthly", label: "Monthly" },
-            { value: "quarterly", label: "Quarterly" },
-            { value: "yearly", label: "Yearly" },
+            { value: "daily", label: t("expenseForm.daily") },
+            { value: "weekly", label: t("expenseForm.weekly") },
+            { value: "monthly", label: t("expenseForm.monthly") },
+            { value: "quarterly", label: t("expenseForm.quarterly") },
+            { value: "yearly", label: t("expenseForm.yearly") },
           ]}
           disabled={isReadOnly}
         />
@@ -742,7 +753,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     <div>
       <div className="sap-message-strip info" style={{ marginBottom: "16px" }}>
         <span className="sap-message-strip-icon">ℹ️</span>
-        <span>Administrative information about this expense record.</span>
+        <span>{t("expenseForm.adminInfo")}</span>
       </div>
 
       <div
@@ -766,7 +777,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               marginBottom: "4px",
             }}
           >
-            Created By
+            {t("expenseForm.createdBy")}
           </div>
           <div style={{ fontWeight: "600", fontSize: "13px" }}>
             {formData.createdBy || "-"}
@@ -787,7 +798,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               marginBottom: "4px",
             }}
           >
-            Created On
+            {t("expenseForm.createdOn")}
           </div>
           <div style={{ fontWeight: "600", fontSize: "13px" }}>
             {formData.createdAt
@@ -810,7 +821,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               marginBottom: "4px",
             }}
           >
-            Last Updated
+            {t("expenseForm.lastUpdated")}
           </div>
           <div style={{ fontWeight: "600", fontSize: "13px" }}>
             {formData.updatedAt
@@ -833,23 +844,24 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               marginBottom: "4px",
             }}
           >
-            Status
+            {t("expenseForm.status")}
           </div>
           <div>
             <span
-              className={`sap-badge ${
-                formData.status === "approved"
-                  ? "success"
-                  : formData.status === "rejected"
-                    ? "error"
-                    : formData.status === "reimbursed"
-                      ? "success"
-                      : formData.status === "pending"
-                        ? "warning"
-                        : "info"
-              }`}
+              className={`sap-badge ${formData.status === "approved"
+                ? "success"
+                : formData.status === "rejected"
+                  ? "error"
+                  : formData.status === "reimbursed"
+                    ? "success"
+                    : formData.status === "pending"
+                      ? "warning"
+                      : "info"
+                }`}
             >
-              {formData.status || "recorded"}
+              {
+                t(`expenseForm.${formData.status || "recorded"}`)
+              }
             </span>
           </div>
         </div>
@@ -858,23 +870,23 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   );
 
   const tabs = [
-    { label: "Details", icon: "📝", content: detailsTab },
-    { label: "Notes & Tags", icon: "🏷️", content: notesTab },
+    { label: t("expenseForm.detailsTab"), icon: "📝", content: detailsTab },
+    { label: t("expenseForm.notesTab"), icon: "🏷️", content: notesTab },
     ...(formData.id
-      ? [{ label: "History", icon: "📋", content: historyTab }]
+      ? [{ label: t("expenseForm.historyTab"), icon: "📋", content: historyTab }]
       : []),
   ];
 
   const getModeTitle = () => {
     switch (mode) {
       case "create":
-        return "Record Expense";
+        return t("expenseForm.recordExpense");
       case "change":
-        return "Edit Expense";
+        return t("expenseForm.editExpense");
       case "display":
-        return "View Expense";
+        return t("expenseForm.viewExpense");
       default:
-        return "Expense";
+        return t("expenseForm.expense");
     }
   };
 
@@ -1018,7 +1030,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
             <option value="all">All Categories</option>
             {categories.map((c) => (
               <option key={c.value} value={c.value}>
-                {c.label}
+                {c.label[lang]}
               </option>
             ))}
           </select>
@@ -1093,7 +1105,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                           fontSize: "11px",
                         }}
                       >
-                        {getCategoryInfo(expense.category).label}
+                        {getCategoryInfo(expense.category).label[lang]}
                       </span>
                     </td>
                     <td>{expense.description}</td>
@@ -1219,16 +1231,15 @@ const generateExpenseReport = (expenses) => {
         <div class="detail-row">
           <div class="detail-field">
             <span class="field-label">Date</span>
-            <span class="field-value">${
-              expense.date
-                ? new Date(expense.date).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })
-                : "—"
-            }</span>
+            <span class="field-value">${expense.date
+          ? new Date(expense.date).toLocaleDateString("en-US", {
+            weekday: "short",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+          : "—"
+        }</span>
           </div>
           <div class="detail-field">
             <span class="field-label">Category</span>
@@ -1239,52 +1250,47 @@ const generateExpenseReport = (expenses) => {
             <span class="field-value amount">${formatCurrency(expense.amount)}</span>
           </div>
         </div>
-        ${
-          expense.description
-            ? `
+        ${expense.description
+          ? `
           <div class="detail-description">
             <span class="field-label">Description</span>
             <p>${expense.description}</p>
           </div>
         `
-            : ""
+          : ""
         }
-        ${
-          expense.vendor
-            ? `
+        ${expense.vendor
+          ? `
           <div class="detail-extra">
             <span><strong>Vendor:</strong> ${expense.vendor}</span>
           </div>
         `
-            : ""
+          : ""
         }
-        ${
-          expense.paymentMethod
-            ? `
+        ${expense.paymentMethod
+          ? `
           <div class="detail-extra">
             <span><strong>Payment Method:</strong> ${expense.paymentMethod}</span>
           </div>
         `
-            : ""
+          : ""
         }
-        ${
-          expense.receipt
-            ? `
+        ${expense.receipt
+          ? `
           <div class="detail-extra">
             <span><strong>Receipt:</strong> ✓ Attached</span>
           </div>
         `
-            : ""
+          : ""
         }
-        ${
-          expense.notes
-            ? `
+        ${expense.notes
+          ? `
           <div class="detail-notes">
             <span class="field-label">Notes</span>
             <p>${expense.notes}</p>
           </div>
         `
-            : ""
+          : ""
         }
       </div>
     `,
@@ -1658,20 +1664,20 @@ const generateExpenseReport = (expenses) => {
           <div class="info">
             <div><strong>Report ID:</strong> RPT-${Date.now().toString().slice(-8)}</div>
             <div><strong>Generated:</strong> ${new Date().toLocaleDateString(
-              "en-US",
-              {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              },
-            )}</div>
+    "en-US",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    },
+  )}</div>
             <div><strong>Time:</strong> ${new Date().toLocaleTimeString(
-              "en-US",
-              {
-                hour: "2-digit",
-                minute: "2-digit",
-              },
-            )}</div>
+    "en-US",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  )}</div>
           </div>
         </div>
 

@@ -9,10 +9,10 @@ import { useTransaction } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { useConfirm } from '../../context/ConfirmContext';
-import { 
-  getUsers, 
-  updateUserProfile, 
-  changePassword 
+import {
+  getUsers,
+  updateUserProfile,
+  changePassword
 } from '../../utils/storage';
 
 const UserProfileScreen = () => {
@@ -20,7 +20,7 @@ const UserProfileScreen = () => {
   const { user } = useAuth();
   const { settings, updateSetting, saveSettings, resetSettings } = useSettings();
   const { confirm } = useConfirm();
-  
+
   const [activeTab, setActiveTab] = useState('profile');
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -32,7 +32,7 @@ const UserProfileScreen = () => {
     city: '',
     country: ''
   });
-  
+
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -75,7 +75,7 @@ const UserProfileScreen = () => {
   const handleSaveProfile = () => {
     setSaveAnimation(true);
     const result = updateUserProfile(user.userId, profileData);
-    
+
     setTimeout(() => {
       setSaveAnimation(false);
       if (result.success) {
@@ -120,8 +120,8 @@ const UserProfileScreen = () => {
     }
 
     const result = changePassword(
-      user.userId, 
-      passwordData.currentPassword, 
+      user.userId,
+      passwordData.currentPassword,
       passwordData.newPassword
     );
 
@@ -145,10 +145,10 @@ const UserProfileScreen = () => {
     const start = new Date(startTime);
     const now = new Date();
     const diff = now - start;
-    
+
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     }
@@ -186,10 +186,10 @@ const UserProfileScreen = () => {
                 <span>📷</span>
               </button>
             </div>
-            
+
             <div className={styles.userInfo}>
               <h1 className={styles.userName}>
-                {profileData.firstName && profileData.lastName 
+                {profileData.firstName && profileData.lastName
                   ? `${profileData.firstName} ${profileData.lastName}`
                   : user?.fullName || user?.username}
               </h1>
@@ -275,7 +275,7 @@ const UserProfileScreen = () => {
                       <span className={styles.lockIcon}>🔒</span>
                     </div>
                   </div>
-                  
+
                   <div className={styles.formRow}>
                     <div className={styles.formGroup}>
                       <label className={styles.label}>First Name</label>
@@ -298,7 +298,7 @@ const UserProfileScreen = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Email Address</label>
                     <input
@@ -309,7 +309,7 @@ const UserProfileScreen = () => {
                       placeholder="name@company.com"
                     />
                   </div>
-                  
+
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Phone Number</label>
                     <input
@@ -337,7 +337,7 @@ const UserProfileScreen = () => {
                       <span className={styles.lockIcon}>🔒</span>
                     </div>
                   </div>
-                  
+
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Department</label>
                     <select
@@ -355,7 +355,7 @@ const UserProfileScreen = () => {
                       <option value="Logistics">Logistics</option>
                     </select>
                   </div>
-                  
+
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Address</label>
                     <input
@@ -366,7 +366,7 @@ const UserProfileScreen = () => {
                       placeholder="Street address"
                     />
                   </div>
-                  
+
                   <div className={styles.formRow}>
                     <div className={styles.formGroup}>
                       <label className={styles.label}>City</label>
@@ -402,7 +402,7 @@ const UserProfileScreen = () => {
 
             {/* Action Buttons */}
             <div className={styles.actions}>
-              <button 
+              <button
                 className={`${styles.btnPrimary} ${saveAnimation ? styles.saving : ''}`}
                 onClick={handleSaveProfile}
                 disabled={!hasChanges}
@@ -419,7 +419,7 @@ const UserProfileScreen = () => {
                   </>
                 )}
               </button>
-              <button 
+              <button
                 className={styles.btnSecondary}
                 onClick={handleResetProfile}
                 disabled={!hasChanges}
@@ -427,7 +427,7 @@ const UserProfileScreen = () => {
                 <span>↩️</span>
                 Discard Changes
               </button>
-              <button 
+              <button
                 className={styles.btnOutline}
                 onClick={() => setShowPasswordModal(true)}
               >
@@ -576,6 +576,21 @@ const UserProfileScreen = () => {
                       <option value="1.234.567,89">1.234.567,89</option>
                     </select>
                   </div>
+
+                  <div className={styles.settingItem}>
+                    <div className={styles.settingInfo}>
+                      <span className={styles.settingLabel}>Language</span>
+                      <span className={styles.settingDesc}>Choose your preferred display language</span>
+                    </div>
+                    <select
+                      className={styles.settingSelect}
+                      value={settings.language}
+                      onChange={(e) => handleSettingChange('language', e.target.value)}
+                    >
+                      <option value="en">English</option>
+                      <option value="hi">Hindi</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -653,7 +668,7 @@ const UserProfileScreen = () => {
 
             {/* Reset Settings Button */}
             <div className={styles.actions}>
-              <button 
+              <button
                 className={styles.btnDanger}
                 onClick={async () => {
                   const confirmed = await confirm('Reset all settings to default? This cannot be undone.');
@@ -794,7 +809,7 @@ const UserProfileScreen = () => {
         width="420px"
         footer={
           <div className={styles.modalFooter}>
-            <button 
+            <button
               className={styles.btnSecondary}
               onClick={() => {
                 setShowPasswordModal(false);
@@ -804,7 +819,7 @@ const UserProfileScreen = () => {
             >
               Cancel
             </button>
-            <button 
+            <button
               className={styles.btnPrimary}
               onClick={handleChangePassword}
             >
@@ -820,7 +835,7 @@ const UserProfileScreen = () => {
               {passwordError}
             </div>
           )}
-          
+
           <div className={styles.formGroup}>
             <label className={styles.label}>Current Password</label>
             <input
@@ -831,7 +846,7 @@ const UserProfileScreen = () => {
               placeholder="Enter current password"
             />
           </div>
-          
+
           <div className={styles.formGroup}>
             <label className={styles.label}>New Password</label>
             <input
@@ -842,7 +857,7 @@ const UserProfileScreen = () => {
               placeholder="Minimum 6 characters"
             />
           </div>
-          
+
           <div className={styles.formGroup}>
             <label className={styles.label}>Confirm New Password</label>
             <input
