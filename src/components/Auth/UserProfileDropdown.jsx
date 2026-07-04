@@ -56,6 +56,11 @@ const UserProfileDropdown = () => {
     updateSetting("theme", newTheme);
   };
 
+  const handleLanguageToggle = () => {
+    const newLang = settings.language === "en" ? "hi" : "en";
+    updateSetting("language", newLang);
+  };
+
   const getInitials = () => {
     if (user) {
       return `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase();
@@ -112,10 +117,9 @@ const UserProfileDropdown = () => {
           </div>
 
           {/* Quick Settings */}
-          <div className="sap-user-quick-settings">
+          {/* <div className="sap-user-quick-settings">
             <span>Quick Settings</span>
 
-            {/* DO NOT TOUCH TOGGLE STYLE */}
             <button
               onClick={handleThemeToggle}
               className="theme-switch"
@@ -127,6 +131,50 @@ const UserProfileDropdown = () => {
                 </span>
               </span>
             </button>
+          </div> */}
+
+          <div
+            className="sap-user-quick-settings"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+            }}
+          >
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: "500",
+                color: "var(--sap-content-label-color, #666)"
+              }}
+            >
+              Quick Settings:
+            </span>
+
+            <select
+              value={settings.language || "en"}
+              onChange={(e) => updateSetting("language", e.target.value)}
+              aria-label="Select language"
+              style={{
+                padding: "4px 24px 4px 8px", // Extra right padding for custom/default arrow spacing
+                borderRadius: "6px",         // Modern subtle curve instead of pill shape
+                height:"35px",
+                border: "1px solid rgba(0, 0, 0, 0.15)",
+                background: "var(--sap-content-bg, #fff)",
+                fontSize: "12px",
+                fontWeight: "500",
+                color: "var(--sap-content-text-color, #333)",
+                cursor: "pointer",
+                outline: "none",
+                transition: "border-color 0.2s, box-shadow 0.2s",
+              }}
+              onFocus={(e) => e.target.style.borderColor = "var(--sap-content-focus-color, #0a6ed1)"}
+              onBlur={(e) => e.target.style.borderColor = "rgba(0, 0, 0, 0.15)"}
+            >
+              <option value="en">🇺🇸 English</option>
+              <option value="hi">🇮🇳 हिन्दी</option>
+            </select>
           </div>
 
           {/* Menu */}

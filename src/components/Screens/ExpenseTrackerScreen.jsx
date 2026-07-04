@@ -529,6 +529,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
           <SapInput
             // label="Vendor/Merchant"
             label={t("expenseForm.vendor")}
+            value={formData.vendor}
             onChange={(val) => handleChange("vendor", val)}
             disabled={isReadOnly}
             placeholder={t("expenseForm.vendorPlaceholder")}
