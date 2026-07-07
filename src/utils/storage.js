@@ -830,7 +830,7 @@ export const getExpenseCategories = () => [
       en: "🍔 Food & Dining",
       hi: "🍔 भोजन एवं रेस्तरां",
     },
-    color: "#e91e63",
+    color: "#E57373", // Soft Coral Red
   },
   {
     value: "travel",
@@ -838,7 +838,7 @@ export const getExpenseCategories = () => [
       en: "✈️ Travel & Transport",
       hi: "✈️ यात्रा एवं परिवहन",
     },
-    color: "#9c27b0",
+    color: "#4DB6AC", // Muted Teal
   },
   {
     value: "shopping",
@@ -846,7 +846,7 @@ export const getExpenseCategories = () => [
       en: "🛍️ Shopping",
       hi: "🛍️ खरीदारी",
     },
-    color: "#3f51b5",
+    color: "#7986CB", // Slate Blue
   },
   {
     value: "bills",
@@ -854,7 +854,7 @@ export const getExpenseCategories = () => [
       en: "📄 Bills & Utilities",
       hi: "📄 बिल और उपयोगिताएँ",
     },
-    color: "#00bcd4",
+    color: "#4DD0E1", // Soft Cyan
   },
   {
     value: "entertainment",
@@ -862,7 +862,7 @@ export const getExpenseCategories = () => [
       en: "🎬 Entertainment",
       hi: "🎬 मनोरंजन",
     },
-    color: "#ff9800",
+    color: "#FFB74D", // Pastel Orange
   },
   {
     value: "healthcare",
@@ -870,7 +870,7 @@ export const getExpenseCategories = () => [
       en: "🏥 Healthcare",
       hi: "🏥 स्वास्थ्य सेवा",
     },
-    color: "#4caf50",
+    color: "#81C784", // Light Sage Green
   },
   {
     value: "education",
@@ -878,7 +878,7 @@ export const getExpenseCategories = () => [
       en: "📚 Education",
       hi: "📚 शिक्षा",
     },
-    color: "#795548",
+    color: "#A1887F", // Vintage Light Brown
   },
   {
     value: "groceries",
@@ -886,7 +886,7 @@ export const getExpenseCategories = () => [
       en: "🛒 Groceries",
       hi: "🛒 किराना",
     },
-    color: "#607d8b",
+    color: "#DCE775", // Muted Lime Green
   },
   {
     value: "rent",
@@ -894,7 +894,7 @@ export const getExpenseCategories = () => [
       en: "🏠 Rent & Housing",
       hi: "🏠 किराया और आवास",
     },
-    color: "#f44336",
+    color: "#EF5350", // Soft Brick Red
   },
   {
     value: "insurance",
@@ -902,7 +902,7 @@ export const getExpenseCategories = () => [
       en: "🛡️ Insurance",
       hi: "🛡️ बीमा",
     },
-    color: "#673ab7",
+    color: "#9575CD", // Soft Muted Purple
   },
   {
     value: "personal",
@@ -910,7 +910,7 @@ export const getExpenseCategories = () => [
       en: "💄 Personal Care",
       hi: "💄 व्यक्तिगत देखभाल",
     },
-    color: "#e91e63",
+    color: "#F06292", // Dusty Rose Pink
   },
   {
     value: "gifts",
@@ -918,7 +918,7 @@ export const getExpenseCategories = () => [
       en: "🎁 Gifts & Donations",
       hi: "🎁 उपहार और दान",
     },
-    color: "#ff5722",
+    color: "#FF8A65", // Deep Peach / Salmon
   },
   {
     value: "investment",
@@ -926,7 +926,7 @@ export const getExpenseCategories = () => [
       en: "📈 Investment",
       hi: "📈 निवेश",
     },
-    color: "#2196f3",
+    color: "#64B5F6", // Soft Sky Blue
   },
   {
     value: "other",
@@ -934,7 +934,7 @@ export const getExpenseCategories = () => [
       en: "📦 Other",
       hi: "📦 अन्य",
     },
-    color: "#9e9e9e",
+    color: "#B0BEC5", // Cool Slate Grey
   },
   {
     value: "alcohol",
@@ -942,7 +942,7 @@ export const getExpenseCategories = () => [
       en: "🍺 Alcohol & Beverages",
       hi: "🍺 शराब और पेय पदार्थ",
     },
-    color: "#9c27b0",
+    color: "#AED581", // Soft Olive Green
   },
   {
     value: "cigarette",
@@ -950,7 +950,7 @@ export const getExpenseCategories = () => [
       en: "🚬 Cigarette 🌿",
       hi: "🚬 सिगरेट 🌿",
     },
-    color: "#694d43",
+    color: "#8D6E63", // Muted Earthy Brown
   },
 ];
 
@@ -1050,6 +1050,27 @@ export const getExpenseStats = (userId = null) => {
   );
 
   // -----------------------------
+  // 🚨 BUDGET FORECAST / RUN-RATE (NEW)
+  // -----------------------------
+  let projectedMonthEnd = 0;
+
+  if (totalThisMonth > 0) {
+    const currentDay = now.getDate(); // e.g., 7 if it's the 7th of the month
+
+    // Dynamically get total days in the current month (handles leap years too!)
+    const totalDaysInMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+    ).getDate();
+
+    // Calculate the projected total
+    projectedMonthEnd = Math.round(
+      (totalThisMonth / currentDay) * totalDaysInMonth,
+    );
+  }
+
+  // -----------------------------
   // 💳 TOP CATEGORY (NEW)
   // -----------------------------
   const categoryMap = {};
@@ -1073,19 +1094,15 @@ export const getExpenseStats = (userId = null) => {
   let averageDailySpend = 0;
 
   if (expenses.length > 0) {
-    const sorted = [...expenses].sort(
-      (a, b) => new Date(a.date) - new Date(b.date),
+    // Extract just the 'YYYY-MM-DD' part of the date to grouping unique days
+    const uniqueDays = new Set(
+      expenses
+        .filter((e) => e.date)
+        .map((e) => new Date(e.date).toISOString().split("T")[0]),
     );
 
-    const firstDate = new Date(sorted[0].date);
-    const lastDate = new Date(sorted[sorted.length - 1].date);
-
-    const diffDays = Math.max(
-      1,
-      Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)),
-    );
-
-    averageDailySpend = totalAllTime / diffDays;
+    const totalUniqueDays = Math.max(1, uniqueDays.size);
+    averageDailySpend = totalAllTime / totalUniqueDays;
   }
 
   // Category breakdown
@@ -1181,5 +1198,6 @@ export const getExpenseStats = (userId = null) => {
     averageExpense: expenses.length > 0 ? totalAllTime / expenses.length : 0,
     topCategory,
     averageDailySpend,
+    projectedMonthEnd,
   };
 };

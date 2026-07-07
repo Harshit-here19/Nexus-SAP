@@ -1,0 +1,167 @@
+.container {
+  background: white;
+  border-radius: 6px;
+
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(248, 250, 252, 0.88)
+  );
+
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+
+  margin: 10px 0px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.filterSelect {
+  appearance: none;
+  cursor: pointer;
+
+  padding: 6px 32px 6px 12px;
+
+  border-radius: 10px;
+
+  border: 1px solid rgba(99, 102, 241, 0.25);
+
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(248, 250, 252, 0.8)
+  );
+
+  color: #374151;
+
+  font-size: 13px;
+
+  outline: none;
+
+  backdrop-filter: blur(8px);
+
+  transition: 0.2s;
+}
+
+.filterSelect:hover {
+  border-color: #6366f1;
+}
+
+.filterSelect:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.chart {
+  width: 100%;
+
+  overflow: visible;
+}
+
+.grid {
+  stroke: rgba(100, 116, 139, 0.15);
+
+  stroke-dasharray: 5 5;
+}
+
+.axis {
+  stroke: rgba(100, 116, 139, 0.35);
+
+  stroke-width: 1.5;
+}
+
+.axisText {
+  fill: #64748b;
+
+  font-size: 9px;
+}
+
+.value {
+  fill: #111827;
+
+  font-size: 9px;
+
+  font-weight: 700;
+}
+
+.line {
+  stroke-dasharray: var(--line-length);
+  stroke-dashoffset: var(--line-length);
+}
+
+.lineAnimate {
+  stroke-dasharray: var(--line-length);
+  stroke-dashoffset: var(--line-length);
+  animation: drawLine 1.5s ease forwards;
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.area {
+  opacity: 0;
+}
+
+.areaAnimate {
+  opacity: 0;
+  animation: fadeArea 0.8s ease forwards 0.7s;
+}
+
+.dot {
+  fill: white;
+
+  stroke: #6366f1;
+
+  stroke-width: 3;
+
+  animation: pop 0.3s ease forwards;
+}
+
+.empty {
+  padding: 40px;
+
+  text-align: center;
+
+  color: #64748b;
+
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes fadeArea {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  from {
+    r: 0;
+  }
+
+  to {
+    r: 6;
+  }
+}

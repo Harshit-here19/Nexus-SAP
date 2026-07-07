@@ -24,7 +24,7 @@ export const exportExpenseSpreadsheet = (expenses, options) => {
   const to = new Date(toDate);
 
   // normalize time to avoid edge issues
-  from.setHours(0, 0, 0, 0);
+  from.setHours(0, 0, 0, 1);
   to.setHours(23, 59, 59, 999);
 
   const filtered = expenses.filter((exp) => {
@@ -106,7 +106,8 @@ function createWorkbook(rows, fields, fromDate, toDate, format) {
 
   XLSX.utils.book_append_sheet(workbook, worksheet, "Expenses");
 
-  const filename = `Expense_Report_${new Date(fromDate).toISOString().split("T")[0]}_to_${new Date(toDate).toISOString().split("T")[0]}`;
+  // const filename = `Expense_Report_${new Date(fromDate).toISOString().split("T")[0]}_to_${new Date(toDate).toISOString().split("T")[0]}`;
+  const filename = `Expense_Report_${fromDate}_to_${toDate}`;
 
   if (format === "csv") {
     XLSX.writeFile(workbook, filename + ".csv");

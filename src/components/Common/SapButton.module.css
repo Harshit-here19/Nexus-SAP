@@ -369,3 +369,53 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     0 6px 16px rgba(0, 0, 0, 0.15);
 }
+
+/* Active Glass Button */
+.sapButton.glass-active {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.28),
+    rgba(139, 92, 246, 0.32)
+  );
+
+  color: #000;
+
+  border: 1px solid rgba(139, 92, 246, 0.35);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+  cursor: pointer;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 0 1px rgba(99, 102, 241, 0.15),
+    0 8px 24px rgba(99, 102, 241, 0.35),
+    0 4px 12px rgba(0, 0, 0, 0.12);
+
+  transition: all 0.25s ease;
+}
+
+.sapButton.glass-active:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.35),
+    rgba(139, 92, 246, 0.42)
+  );
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 18px rgba(99, 102, 241, 0.45),
+    0 10px 28px rgba(99, 102, 241, 0.4);
+}
+
+.sapButton.glass-active:active {
+  transform: translateY(0);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(99, 102, 241, 0.3);
+}

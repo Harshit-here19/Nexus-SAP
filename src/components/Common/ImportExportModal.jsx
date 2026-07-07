@@ -33,9 +33,9 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
 
   useEffect(() => {
     if (tab) {
-      setActiveTab(tab)
+      setActiveTab(tab);
     }
-  }, [tab])
+  }, [tab]);
 
   const fileInputRef = useRef(null);
 
@@ -68,71 +68,71 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
       { key: "currency", label: "Currency" },
     ],
     notes: [
-      { key: 'noteNumber', label: 'Note ID' },
-      { key: 'category', label: 'Category' },
-      { key: 'title', label: 'Title' },
-      { key: 'content', label: 'Content' },
-      { key: 'summary', label: 'Summary' },
-      { key: 'status', label: 'Status' },
-      { key: 'priority', label: 'Priority' },
-      { key: 'tags', label: 'Tags' },
-      { key: 'color', label: 'Color' },
-      { key: 'isPinned', label: 'Pinned' },
-      { key: 'isFavorite', label: 'Favorite' },
-      { key: 'isLocked', label: 'Locked' },
-      { key: 'password', label: 'Password' },
-      { key: 'reminder', label: 'Reminder' },
-      { key: 'dueDate', label: 'Due Date' },
-      { key: 'attachments', label: 'Attachments' },
-      { key: 'linkedNotes', label: 'Linked Notes' },
-      { key: 'wordCount', label: 'Words' },
-      { key: 'charCount', label: 'Chars' },
-      { key: 'createdBy', label: 'Created By' }
+      { key: "noteNumber", label: "Note ID" },
+      { key: "category", label: "Category" },
+      { key: "title", label: "Title" },
+      { key: "content", label: "Content" },
+      { key: "summary", label: "Summary" },
+      { key: "status", label: "Status" },
+      { key: "priority", label: "Priority" },
+      { key: "tags", label: "Tags" },
+      { key: "color", label: "Color" },
+      { key: "isPinned", label: "Pinned" },
+      { key: "isFavorite", label: "Favorite" },
+      { key: "isLocked", label: "Locked" },
+      { key: "password", label: "Password" },
+      { key: "reminder", label: "Reminder" },
+      { key: "dueDate", label: "Due Date" },
+      { key: "attachments", label: "Attachments" },
+      { key: "linkedNotes", label: "Linked Notes" },
+      { key: "wordCount", label: "Words" },
+      { key: "charCount", label: "Chars" },
+      { key: "createdBy", label: "Created By" },
     ],
     expenses: [
-      { key: 'expenseNumber', label: 'Expense ID' },
-      { key: 'date', label: 'Date' },
-      { key: 'category', label: 'Category' },
-      { key: 'description', label: 'Description' },
-      { key: 'amount', label: 'Amount' },
-      { key: 'currency', label: 'Curr' },
-      { key: 'paymentMethod', label: 'Payment Method' },
-      { key: 'vendor', label: 'Vendor' },
-      { key: 'receiptNumber', label: 'Receipt No' },
-      { key: 'notes', label: 'Notes' },
-      { key: 'tags', label: 'Tags' },
-      { key: 'isRecurring', label: 'Recurring' },
-      { key: 'recurringFrequency', label: 'Frequency' },
-      { key: 'status', label: 'Status' },
-      { key: 'createdBy', label: 'Created By' }
+      { key: "expenseNumber", label: "Expense ID" },
+      { key: "date", label: "Date" },
+      { key: "category", label: "Category" },
+      { key: "description", label: "Description" },
+      { key: "amount", label: "Amount" },
+      { key: "currency", label: "Curr" },
+      { key: "paymentMethod", label: "Payment Method" },
+      { key: "vendor", label: "Vendor" },
+      { key: "receiptNumber", label: "Receipt No" },
+      { key: "notes", label: "Notes" },
+      { key: "tags", label: "Tags" },
+      { key: "isRecurring", label: "Recurring" },
+      { key: "recurringFrequency", label: "Frequency" },
+      { key: "status", label: "Status" },
+      { key: "createdBy", label: "Created By" },
     ],
     entertainment_wishlist: [
-      { key: 'itemNumber', label: 'Item Number' },
-      { key: 'category', label: 'Category' },
-      { key: 'title', label: 'Title' },
-      { key: 'description', label: 'Description' },
-      { key: 'year', label: 'Year', align: 'center' },
-      { key: 'status', label: 'Status', align: 'center' },
-      { key: 'priority', label: 'Priority', align: 'center' },
-      { key: 'rating', label: 'Rating', align: 'center' },
-      { key: 'genres', label: 'Genres' },
-      { key: 'platform', label: 'Platform' },
-      { key: 'imageUrl', label: 'Image URL' },
-      { key: 'episodes', label: 'Episodes', align: 'right' },
-      { key: 'currentEpisode', label: 'Curr. Episode', align: 'right' },
-      { key: 'chapters', label: 'Chapters', align: 'right' },
-      { key: 'currentChapter', label: 'Curr. Chapter', align: 'right' },
-      { key: 'seasons', label: 'Seasons', align: 'right' },
-      { key: 'currentSeason', label: 'Curr. Season', align: 'right' },
-      { key: 'duration', label: 'Duration' },
-      { key: 'studio', label: 'Studio' },
-      { key: 'developer', label: 'Developer' },
-      { key: 'director', label: 'Director' },
-      { key: 'cast', label: 'Cast' },
-      { key: 'notes', label: 'Notes' },
-      { key: 'tags', label: 'Tags' },
-      { key: 'isNsfw', label: 'NSFW', align: 'center' },
-      { key: 'createdBy', label: 'Created By' }
+      { key: "itemNumber", label: "Item Number" },
+      { key: "category", label: "Category" },
+      { key: "title", label: "Title" },
+      { key: "description", label: "Description" },
+      { key: "year", label: "Year", align: "center" },
+      { key: "status", label: "Status", align: "center" },
+      { key: "priority", label: "Priority", align: "center" },
+      { key: "rating", label: "Rating", align: "center" },
+      { key: "genres", label: "Genres" },
+      { key: "platform", label: "Platform" },
+      { key: "imageUrl", label: "Image URL" },
+      { key: "episodes", label: "Episodes", align: "right" },
+      { key: "currentEpisode", label: "Curr. Episode", align: "right" },
+      { key: "chapters", label: "Chapters", align: "right" },
+      { key: "currentChapter", label: "Curr. Chapter", align: "right" },
+      { key: "seasons", label: "Seasons", align: "right" },
+      { key: "currentSeason", label: "Curr. Season", align: "right" },
+      { key: "duration", label: "Duration" },
+      { key: "studio", label: "Studio" },
+      { key: "developer", label: "Developer" },
+      { key: "director", label: "Director" },
+      { key: "cast", label: "Cast" },
+      { key: "notes", label: "Notes" },
+      { key: "tags", label: "Tags" },
+      { key: "isNsfw", label: "NSFW", align: "center" },
+      { key: "createdBy", label: "Created By" },
     ],
     collections: [
       { key: "collectionNumber", label: "collection ID" },
@@ -140,8 +140,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
       {
         key: "items",
         label: "Items",
-        formatter: (value) =>
-          value?.map(x => x.name).join(", ")
+        formatter: (value) => value?.map((x) => x.name).join(", "),
       },
       { key: "createdAt", label: "Created At" },
       { key: "updatedAt", label: "Updated At" },
@@ -161,23 +160,23 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
   const tableConfig = {
     notes: {
       duplicateField: "title",
-      existingKey: "noteNumber"
+      existingKey: "noteNumber",
     },
     expenses: {
-      duplicateField: "description",
-      existingKey: "expenseNumber"
+      duplicateField: ["description", "amount", "date"],
+      existingKey: "expenseNumber",
     },
     entertainment_wishlist: {
       duplicateField: "title",
-      existingKey: "itemNumber"
+      existingKey: "itemNumber",
     },
     materials: {
       duplicateField: "description",
-      existingKey: "materialNumber"
+      existingKey: "materialNumber",
     },
     collections: {
       duplicateField: "title",
-      existingKey: "collectionNumber"
+      existingKey: "collectionNumber",
     },
   };
 
@@ -279,7 +278,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
 
     if (!validateFileType(selectedFile, ["json"])) {
       onStatusMessage("Please select a JSON file", "warning");
-      return
+      return;
     }
 
     setIsProcessing(true);
@@ -292,7 +291,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
         await restoreBackup(selectedFile);
         onStatusMessage(
           "Full backup restored successfully. Please refresh the page.",
-          "success"
+          "success",
         );
         return;
       }
@@ -307,7 +306,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
       const newData = importData;
 
       if (!newData.length) {
-        throw new Error("Imported file is empty.")
+        throw new Error("Imported file is empty.");
       }
 
       const existingKey = tableConfig[selectedTable]?.existingKey;
@@ -317,7 +316,9 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
         const newKey = Object.keys(newData[0])[0];
 
         if (existingKey !== newKey) {
-          throw new Error("The imported file structure does not match the table.");
+          throw new Error(
+            "The imported file structure does not match the table.",
+          );
         }
 
         // 5️⃣ Prepare ID sequence and find missing numbers
@@ -343,14 +344,24 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
 
         const duplicateField = tableConfig[selectedTable]?.duplicateField;
 
-        const existingTitles = new Set(existingData.map((r) => r[duplicateField]));
+        // Create a unique key for duplicate checking
+        const makeDuplicateKey = (record) => {
+          if (Array.isArray(duplicateField)) {
+            return duplicateField
+              .map((field) => String(record[field] ?? "").trim())
+              .join("||");
+          }
 
-        // 6️⃣ Process imported records, skip duplicates by title
+          return String(record[duplicateField] ?? "").trim();
+        };
+
+        const existingRecords = new Set(existingData.map(makeDuplicateKey));
+
         const processedData = [];
         let nextNumber = maxNumber;
 
         newData
-          .filter((record) => !existingTitles.has(record[duplicateField]))
+          .filter((record) => !existingRecords.has(makeDuplicateKey(record)))
           .forEach((record) => {
             // Use a missing number first if available
             const numberToUse = missingNumbers.length
@@ -371,9 +382,10 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
         saveTableData(selectedTable, mergedData);
 
         onStatusMessage(
-          `Imported ${processedData.length} new records to ${selectedTable}. Skipped ${newData.length - processedData.length
+          `Imported ${processedData.length} new records to ${selectedTable}. Skipped ${
+            newData.length - processedData.length
           } duplicates.`,
-          "success"
+          "success",
         );
       } else {
         // 8️⃣ If table is empty, just save new data
@@ -384,7 +396,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
           nextNumber += 1;
           // const numberPart = String(nextNumber).padStart(9, "0");
           const numberPart = nextNumber;
-          let ID = `${prefix}${numberPart}`
+          let ID = `${prefix}${numberPart}`;
           // console.log(newData[0][existingKey], newData, existingKey)
           // console.log(ID);
           return {
@@ -397,7 +409,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
         saveTableData(selectedTable, processedData);
         onStatusMessage(
           `Imported ${processedData.length} records to ${selectedTable}`,
-          "success"
+          "success",
         );
       }
 
@@ -442,7 +454,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
         // 2. Parse it into an object
         const userData = JSON.parse(rawData);
 
-        const tableLength = userData[tableName].length
+        const tableLength = userData[tableName].length;
 
         // 3. Delete the 'Selected' key
         delete userData[tableName];
@@ -671,7 +683,9 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
               gap: "12px",
             }}
           >
-            <SapButton type="close" onClick={handleClose}>Cancel</SapButton>
+            <SapButton type="close" onClick={handleClose}>
+              Cancel
+            </SapButton>
             <SapButton
               onClick={handleExport}
               type="primary"
@@ -680,7 +694,6 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
             >
               {isProcessing ? "Exporting..." : "Export"}
             </SapButton>
-
           </div>
         </div>
       )}
@@ -808,7 +821,9 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
               gap: "12px",
             }}
           >
-            <SapButton type="close" onClick={handleClose}>Cancel</SapButton>
+            <SapButton type="close" onClick={handleClose}>
+              Cancel
+            </SapButton>
             <SapButton
               onClick={handleImport}
               type="primary"
@@ -955,7 +970,9 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
               justifyContent: "flex-end",
             }}
           >
-            <SapButton type="close" onClick={handleClose}>Close</SapButton>
+            <SapButton type="close" onClick={handleClose}>
+              Close
+            </SapButton>
           </div>
         </div>
       )}
@@ -994,7 +1011,9 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
               gap: "12px",
             }}
           >
-            <SapButton type="close" onClick={handleClose}>Cancel</SapButton>
+            <SapButton type="close" onClick={handleClose}>
+              Cancel
+            </SapButton>
             <SapButton
               onClick={() => handleErase(selectedTable)}
               type="primary"
@@ -1006,7 +1025,6 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
           </div>
         </div>
       )}
-
     </SapModal>
   );
 };

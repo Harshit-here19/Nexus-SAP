@@ -16,6 +16,7 @@ import {
 import useTranslation from "../../hooks/useTranslation";
 
 import ExportSpreadsheetModal from "../Common/ExportSpreadsheetModal";
+import SpendingLineChart from "./Charts/SpendingLineChart";
 import { exportExpenseSpreadsheet } from "../../utils/exportExcel";
 
 import { generateDashboardReport } from "./GenerateDashboardReport";
@@ -34,19 +35,96 @@ const DashboardScreen = () => {
   const lang = settings.language || "en";
 
   const printRef = useRef(null);
+  const moreDialogRef = useRef(null);
 
+  const openMoreFilters = () => {
+    moreDialogRef.current?.showModal();
+  };
+
+  const closeMoreFilters = () => {
+    moreDialogRef.current?.close();
+  };
 
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [showExportModal, setShowExportModal] = useState(false);
 
+  const [pieData, setPieData] = useState([]);
+  const [pieFilter, setPieFilter] = useState("month");
+
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    setAnimate(true);
+
+    const timer = setTimeout(() => setAnimate(false), 500);
+
+    return () => clearTimeout(timer);
+  }, [pieData]);
+
+  const pieFilterOptions = [
+    { value: "7days", label: "Last 7 Days" },
+    { value: "30days", label: "Last 30 Days" },
+    { value: "month", label: "This Month" },
+    { value: "lastMonth", label: "Last Month" },
+    { value: "year", label: "This Year" },
+    { value: "all", label: "Full Report" },
+  ];
+
+  const [visibleFilters, setVisibleFilters] = useState(
+    pieFilterOptions.slice(0, 3),
+  );
+
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [lineData, setLineData] = useState([]);
+  const [lineRange, setLineRange] = useState("10days");
+
+  const hiddenFilters = pieFilterOptions.filter(
+    (option) =>
+      !visibleFilters.some((visible) => visible.value === option.value),
+  );
+
+  // SWAP LOGIC
+  const selectHiddenFilter = (option) => {
+    setPieFilter(option.value);
+
+    setVisibleFilters((prev) => {
+      const selectedIndex = prev.findIndex((item) => item.value === pieFilter);
+
+      // If selected filter exists, replace it
+      if (selectedIndex !== -1) {
+        return prev.map((item, index) =>
+          index === selectedIndex ? option : item,
+        );
+      }
+
+      // Fallback: replace first item if current selection is not found
+      return prev.map((item, index) => (index === 0 ? option : item));
+    });
+
+    closeMoreFilters();
+  };
+
   const currentDate = new Date();
 
-  const [exportOptions, setExportOptions] = useState({
-    fromDate: new Date().toISOString().split("T")[0],
-    toDate: new Date().toISOString().split("T")[0],
+  const formatLocalDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
 
+    return `${year}-${month}-${day}`;
+  };
+
+  const firstDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1,
+  );
+
+  const [exportOptions, setExportOptions] = useState({
+    fromDate: formatLocalDate(firstDayOfMonth),
+    toDate: formatLocalDate(currentDate),
     format: "xlsx",
 
     fields: {
@@ -79,6 +157,147 @@ const DashboardScreen = () => {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadPieChartData();
+    loadLineChartData();
+  }, [pieFilter, lineRange]);
+
+  const loadPieChartData = () => {
+    const expenses = getTableData("expenses");
+
+    const today = new Date();
+    let filtered = [...expenses];
+
+    switch (pieFilter) {
+      case "7days": {
+        const from = new Date();
+        from.setDate(today.getDate() - 7);
+
+        filtered = expenses.filter(
+          (e) => new Date(e.date) >= from && new Date(e.date) <= today,
+        );
+        break;
+      }
+
+      case "30days": {
+        const from = new Date();
+        from.setDate(today.getDate() - 29);
+
+        filtered = expenses.filter(
+          (e) => new Date(e.date) >= from && new Date(e.date) <= today,
+        );
+        break;
+      }
+
+      case "month":
+        filtered = expenses.filter((e) => {
+          const d = new Date(e.date);
+
+          return (
+            d.getMonth() === today.getMonth() &&
+            d.getFullYear() === today.getFullYear()
+          );
+        });
+        break;
+
+      case "lastMonth":
+        filtered = expenses.filter((e) => {
+          const d = new Date(e.date);
+
+          const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1);
+
+          return (
+            d.getMonth() === lastMonth.getMonth() &&
+            d.getFullYear() === lastMonth.getFullYear()
+          );
+        });
+        break;
+
+      case "year":
+        filtered = expenses.filter((e) => {
+          return new Date(e.date).getFullYear() === today.getFullYear();
+        });
+        break;
+
+      case "all":
+      default:
+        filtered = expenses;
+    }
+
+    const categories = getExpenseCategories();
+
+    const totalAmount = filtered.reduce((sum, e) => sum + Number(e.amount), 0);
+
+    const breakdown = categories
+      .map((category) => {
+        const categoryExpenses = filtered.filter(
+          (e) => e.category === category.value,
+        );
+
+        const total = categoryExpenses.reduce(
+          (sum, e) => sum + Number(e.amount),
+          0,
+        );
+
+        return {
+          ...category,
+          total,
+          percentage:
+            totalAmount > 0 ? ((total / totalAmount) * 100).toFixed(1) : 0,
+        };
+      })
+      .filter((c) => c.total > 0);
+
+    setPieData(breakdown);
+  };
+
+  const loadLineChartData = () => {
+  const expenses = getTableData("expenses");
+  const today = new Date();
+
+  const daysCount = {
+    "7days": 7,
+    "10days": 10,
+    "30days": 30,
+  }[lineRange] || 10;
+
+  const chartData = [];
+
+  for (let i = daysCount - 1; i >= 0; i--) {
+    const date = new Date(today);
+
+    date.setDate(today.getDate() - i);
+
+    const dateKey = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+
+
+    const total = expenses
+      .filter((e) => e.date === dateKey)
+      .reduce(
+        (sum, e) => sum + Number(e.amount || 0),
+        0
+      );
+
+
+    chartData.push({
+      date: dateKey,
+
+      label: date.toLocaleDateString("en", {
+        day: "numeric",
+        month: "short",
+      }),
+
+      total,
+    });
+  }
+
+  setLineData(chartData);
+};
 
   useEffect(() => {
     registerAction("PRINT", () => {
@@ -120,7 +339,6 @@ const DashboardScreen = () => {
       console.error("Print dashboard error:", error);
       alert("Failed to generate dashboard report");
     }
-
   };
 
   // Quick action handler
@@ -151,15 +369,16 @@ const DashboardScreen = () => {
   };
 
   // Pie chart colors
-  const pieColors = [
-    "#e91e63",
-    "#9c27b0",
-    "#3f51b5",
-    "#00bcd4",
-    "#ff9800",
-    "#4caf50",
-    "#795548",
-    "#607d8b",
+  // Modern color palette
+  const PIE_COLORS = [
+    "#FF6B6B", // Coral
+    "#4ECDC4", // Teal
+    "#FFD166", // Yellow
+    "#6C63FF", // Indigo
+    "#06D6A0", // Emerald
+    "#F72585", // Pink
+    "#118AB2", // Blue
+    "#F77F00", // Orange
   ];
 
   // Generate pie chart gradient
@@ -222,6 +441,9 @@ const DashboardScreen = () => {
     }
   };
 
+  // 1. Calculate the total from pieData
+  const pieTotal = pieData.reduce((sum, item) => sum + Number(item.total), 0);
+
   return (
     <div>
       {/* Welcome Banner */}
@@ -238,7 +460,7 @@ const DashboardScreen = () => {
           flexWrap: "wrap",
         }}
       >
-        <div style={{ marginBottom: isMobile ? '10px' : '0px' }}>
+        <div style={{ marginBottom: isMobile ? "10px" : "0px" }}>
           <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
             💰 {t("dashboard.title")}
           </h2>
@@ -302,7 +524,9 @@ const DashboardScreen = () => {
         {/* Last Month */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">{t("dashboard.lastMonth")}</span>
+            <span className="dashboard-card-title">
+              {t("dashboard.lastMonth")}
+            </span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -317,14 +541,16 @@ const DashboardScreen = () => {
             {formatCurrency(stats?.totalLastMonth || 0)}
           </div>
           <div className="dashboard-card-change">
-            <span>📊</span>  {t("dashboard.comparisonBaseline")}
+            <span>📊</span> {t("dashboard.comparisonBaseline")}
           </div>
         </div>
 
         {/* This Year */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">{t("dashboard.thisYear")}</span>
+            <span className="dashboard-card-title">
+              {t("dashboard.thisYear")}
+            </span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -346,7 +572,9 @@ const DashboardScreen = () => {
         {/* Average */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">{t("dashboard.averageExpense")}</span>
+            <span className="dashboard-card-title">
+              {t("dashboard.projectedMonthEnd")}
+            </span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -358,7 +586,7 @@ const DashboardScreen = () => {
             </div>
           </div>
           <div className="dashboard-card-value">
-            {formatCurrency(stats?.averageExpense || 0)}
+            {formatCurrency(stats?.projectedMonthEnd || 0)}
           </div>
           <div className="dashboard-card-change">
             <span>📝</span> {t("dashboard.perTransaction")}
@@ -372,7 +600,9 @@ const DashboardScreen = () => {
           style={{ cursor: "pointer" }}
         >
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">{t("dashboard.totalEntries")}</span>
+            <span className="dashboard-card-title">
+              {t("dashboard.totalEntries")}
+            </span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -385,14 +615,17 @@ const DashboardScreen = () => {
           </div>
           <div className="dashboard-card-value">{stats?.expenseCount || 0}</div>
           <div className="dashboard-card-change">
-            <span>📋</span> {stats?.thisMonthCount || 0} {t("dashboard.thisMonth")}
+            <span>📋</span> {stats?.thisMonthCount || 0}{" "}
+            {t("dashboard.thisMonth")}
           </div>
         </div>
 
         {/* All Time */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">{t("dashboard.allTime")}</span>
+            <span className="dashboard-card-title">
+              {t("dashboard.allTime")}
+            </span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -414,7 +647,9 @@ const DashboardScreen = () => {
         {/* Top Category Spend */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">{t("dashboard.topCategory")}</span>
+            <span className="dashboard-card-title">
+              {t("dashboard.topCategory")}
+            </span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -442,7 +677,9 @@ const DashboardScreen = () => {
         {/* Average Daily Spend */}
         <div className="dashboard-card">
           <div className="dashboard-card-header">
-            <span className="dashboard-card-title">{t("dashboard.avgDailySpend")}</span>
+            <span className="dashboard-card-title">
+              {t("dashboard.avgDailySpend")}
+            </span>
             <div
               className="dashboard-card-icon"
               style={{
@@ -468,84 +705,212 @@ const DashboardScreen = () => {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
-          gap: "12px",
-          marginBottom: "12px",
+          gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
+          gap: "18px",
+          marginBottom: "18px",
+          alignItems: "stretch",
         }}
       >
         {/* Expenses by Category */}
         <div className="chart-container">
           <div className="chart-title">
-            <span>📊</span> {t("dashboard.expensesByCategory")} ({t("dashboard.thisMonth")})
+            <span>📊</span> {t("dashboard.expensesByCategory")} (
+            {t("dashboard.thisMonth")})
           </div>
-          {stats?.categoryBreakdown?.length > 0 ? (
-            <div className="pie-chart-container">
+          {pieData.length > 0 ? (
+            <>
               <div
-                className="pie-chart"
                 style={{
-                  background: generatePieChart(stats.categoryBreakdown),
+                  display: "flex",
+                  gap: "8px",
+                  flexWrap: "wrap",
+                  marginBottom: "18px",
+                  padding: "4px",
+                  background: "rgba(255,255,255,0.45)",
+                  borderRadius: "12px",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {visibleFilters.map((option) => (
+                  <SapButton
+                    key={option.value}
+                    type={pieFilter === option.value ? "glass-active" : "glass"}
+                    onClick={() => setPieFilter(option.value)}
+                  >
+                    {option.label}
+                  </SapButton>
+                ))}
+
+                <SapButton type="glass" onClick={openMoreFilters}>
+                  ⋯ More
+                </SapButton>
+              </div>
+
+              <dialog
+                ref={moreDialogRef}
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
+                    closeMoreFilters();
+                  }
+                }}
+                style={{
+                  margin: "auto",
+                  border: "none",
+                  borderRadius: "18px",
+                  padding: "22px",
+                  width: "320px",
+                  maxWidth: "90vw",
+                  background:
+                    "linear-gradient(145deg, rgba(255,255,255,.96), rgba(248,250,252,.92))",
+                  boxShadow:
+                    "0 25px 80px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.8)",
                 }}
               >
                 <div
                   style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    background: "white",
-                    width: "70px",
-                    height: "70px",
-                    borderRadius: "50%",
+                    fontSize: "16px",
+                    fontWeight: 700,
+                    marginBottom: "14px",
+                    color: "#111827",
+                  }}
+                >
+                  More Filters
+                </div>
+
+                <div
+                  style={{
                     display: "flex",
                     flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    gap: "10px",
+                  }}
+                >
+                  {hiddenFilters.map((option) => (
+                    <SapButton
+                      className="filter-option"
+                      key={option.value}
+                      type="glass"
+                      onClick={() => selectHiddenFilter(option)}
+                    >
+                      {option.label}
+                    </SapButton>
+                  ))}
+                </div>
+
+                <SapButton
+                  type="glass"
+                  style={{
+                    marginTop: "14px",
+                    width: "100%",
+                  }}
+                  onClick={closeMoreFilters}
+                >
+                  Close
+                </SapButton>
+              </dialog>
+
+              <div className="pie-chart-container">
+                <div
+                  className={`pie-chart ${animate ? "animate-pie" : ""}`}
+                  style={{
+                    background: generatePieChart(pieData),
                   }}
                 >
                   <div
                     style={{
-                      fontSize: "10px",
-                      color: "var(--sap-text-secondary)",
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: "70px",
+                      height: "70px",
+                      borderRadius: "50%",
+                      background:
+                        "linear-gradient(145deg, rgba(255,255,255,.98), rgba(245,247,250,.96))",
+                      boxShadow:
+                        "0 8px 24px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.7)",
+                      border: "1px solid rgba(255,255,255,.8)",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backdropFilter: "blur(12px)",
                     }}
                   >
-                    {t("dashboard.total")}
-                  </div>
-                  <div style={{ fontSize: "12px", fontWeight: "700" }}>
-                    {formatCurrency(stats.totalThisMonth, true)}
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "#6b7280",
+                        fontWeight: 500,
+                        letterSpacing: ".4px",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {t("dashboard.total")}
+                    </div>
+
+                    <div
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: "700",
+                        color: "#111827",
+                        marginTop: "2px",
+                      }}
+                    >
+                      {formatCurrency(pieTotal, true)}
+                    </div>
                   </div>
                 </div>
+                <div className="pie-chart-legend">
+                  {pieData.slice(0, 6).map((item, index) => (
+                    <div key={index} className="pie-chart-legend-item">
+                      <div
+                        className="pie-chart-legend-color"
+                        style={{ background: item.color }}
+                      />
+                      <span className="pie-chart-legend-label">
+                        {item.label[lang].split(" ").slice(1).join(" ")}
+                      </span>
+                      <span className="pie-chart-legend-value">
+                        {formatCurrency(item.total)} ({item.percentage}%)
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="pie-chart-legend">
-                {stats.categoryBreakdown.slice(0, 6).map((item, index) => (
-                  <div key={index} className="pie-chart-legend-item">
-                    <div
-                      className="pie-chart-legend-color"
-                      style={{ background: item.color }}
-                    />
-                    <span className="pie-chart-legend-label">
-                      {item.label[lang].split(" ").slice(1).join(" ")}
-                    </span>
-                    <span className="pie-chart-legend-value">
-                      {formatCurrency(item.total)} ({item.percentage}%)
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            </>
           ) : (
             <div
               style={{
                 textAlign: "center",
-                padding: "30px",
+                padding: "48px 24px",
                 color: "var(--sap-text-secondary)",
+                borderRadius: "16px",
+                background:
+                  "linear-gradient(180deg, rgba(248,250,252,.9), rgba(241,245,249,.8))",
               }}
             >
-              <div style={{ fontSize: "32px", marginBottom: "8px" }}>📭</div>
-              <div>{t("dashboard.noExpensesThisMonth")}</div>
+              <div
+                style={{
+                  fontSize: "42px",
+                  marginBottom: "14px",
+                }}
+              >
+                📭
+              </div>
+
+              <div
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 500,
+                  marginBottom: "18px",
+                }}
+              >
+                {t("dashboard.noExpensesThisMonth")}
+              </div>
+
               <SapButton
                 onClick={() => handleQuickAction("VA01")}
                 type="primary"
-                style={{ marginTop: "12px" }}
               >
                 {t("dashboard.recordFirstExpense")}
               </SapButton>
@@ -555,8 +920,20 @@ const DashboardScreen = () => {
 
         {/* Monthly Trend */}
         <div className="chart-container">
-          <div className="chart-title">
-            <span>📈</span> {t("dashboard.monthlyTrend")} ({t("dashboard.lastSixMonths")})
+          <div
+            className="chart-title"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "16px",
+              fontWeight: 700,
+              marginBottom: "18px",
+              color: "#1f2937",
+            }}
+          >
+            <span>📈</span> {t("dashboard.monthlyTrend")} (
+            {t("dashboard.lastSixMonths")})
           </div>
           {stats?.monthlyTrend?.length > 0 ? (
             <div className="bar-chart">
@@ -571,7 +948,11 @@ const DashboardScreen = () => {
                         className="bar-chart-bar"
                         style={{
                           width: `${Math.max(percentage, 2)}%`,
-                          background: `linear-gradient(90deg, #667eea 0%, #764ba2 100%)`,
+                          background:
+                            "linear-gradient(90deg, #3b82f6 0%, #6366f1 45%, #8b5cf6 100%)",
+                          boxShadow: "0 3px 10px rgba(99,102,241,.35)",
+                          borderRadius: "3px",
+                          transition: "width .5s ease",
                         }}
                       >
                         {percentage > 30 && formatCurrency(item.total, true)}
@@ -620,7 +1001,9 @@ const DashboardScreen = () => {
                     <th>{t("dashboard.date")}</th>
                     <th>{t("dashboard.category")}</th>
                     <th>{t("dashboard.description")}</th>
-                    <th style={{ textAlign: "right" }}>{t("dashboard.amount")}</th>
+                    <th style={{ textAlign: "right" }}>
+                      {t("dashboard.amount")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -643,7 +1026,8 @@ const DashboardScreen = () => {
                               fontSize: "10px",
                             }}
                           >
-                            {category?.label[lang]?.split(" ")[0]} {expense.category}
+                            {category?.label[lang]?.split(" ")[0]}{" "}
+                            {expense.category}
                           </span>
                         </td>
                         <td
@@ -748,7 +1132,8 @@ const DashboardScreen = () => {
           {stats?.paymentBreakdown?.length > 0 && (
             <>
               <div className="chart-title" style={{ marginTop: "16px" }}>
-                <span>💳</span> {t("dashboard.paymentMethods")} ({t("dashboard.thisMonth")})
+                <span>💳</span> {t("dashboard.paymentMethods")} (
+                {t("dashboard.thisMonth")})
               </div>
               <div
                 style={{ display: "flex", flexDirection: "column", gap: "8px" }}
@@ -796,9 +1181,9 @@ const DashboardScreen = () => {
           <div className="chart-title" style={{ marginTop: "16px" }}>
             <span>🏷️</span> {t("dashboard.topCategories")}
           </div>
-          {stats?.categoryBreakdown?.length > 0 ? (
+          {pieData.length > 0 ? (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-              {stats.categoryBreakdown.slice(0, 5).map((cat, index) => (
+              {pieData.slice(0, 5).map((cat, index) => (
                 <span
                   key={index}
                   style={{
@@ -839,6 +1224,13 @@ const DashboardScreen = () => {
           )}
         </div>
       </div>
+
+      <SpendingLineChart
+        data={lineData}
+        title="Spending Trend"
+        range={lineRange}
+        setRange={setLineRange}
+      />
 
       {/* Admin Section */}
       {checkIsAdmin() && (
