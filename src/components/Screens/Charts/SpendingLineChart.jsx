@@ -128,6 +128,7 @@ const SpendingLineChart = ({
           className={styles.filterSelect}
           value={range}
           onChange={(e) => setRange(e.target.value)}
+          style={{height:"40px"}}
         >
           <option value="7days">Last 7 Days</option>
 

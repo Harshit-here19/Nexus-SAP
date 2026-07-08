@@ -1,0 +1,212 @@
+/* ==========================================================================
+   1. STRUCTURAL WRAPPERS & CONTAINER
+   ========================================================================== */
+.container {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 16px;
+  padding: 18px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.header span {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ==========================================================================
+   2. CHART WRAPPER & SVG ELEMENTS
+   ========================================================================== */
+.chartWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  margin: auto;
+  overflow: visible;
+}
+
+.chart {
+  width: 100%;
+  height: 260px;
+}
+
+.grid {
+  stroke: rgba(148, 163, 184, 0.25);
+  stroke-width: 1;
+}
+
+.axis {
+  stroke: rgba(100, 116, 139, 0.5);
+  stroke-width: 1.5;
+}
+
+.axisText {
+  fill: #475569;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.label {
+  fill: #334155;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.value {
+  fill: #111827;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   3. CHART BARS & HOVER STATES
+   ========================================================================== */
+.bar {
+  fill: url(#barGradient);
+  opacity: 0.9;
+  transition:
+    opacity 0.25s ease,
+    filter 0.25s ease,
+    transform 0.25s ease;
+  animation: growBar 0.7s ease forwards; /* Grouped duplicate definition here */
+}
+
+.barAnimate {
+  animation: growBar 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform-origin: center bottom;
+}
+
+.barHover {
+  fill: url(#barGradient);
+  opacity: 1;
+  filter: drop-shadow(0 8px 14px rgba(99, 102, 241, 0.45));
+}
+
+.bar:hover {
+  filter: drop-shadow(0 6px 10px rgba(99, 102, 241, 0.25));
+}
+
+/* ==========================================================================
+   4. TOOLTIP COMPONENT
+   ========================================================================== */
+.tooltip {
+  position: absolute;
+  z-index: 100;
+  pointer-events: none;
+  background: linear-gradient(
+    145deg,
+    rgba(15, 23, 42, 0.96),
+    rgba(30, 41, 59, 0.96)
+  );
+  color: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  min-width: 140px;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  transform: translate(-50%, calc(-100% - 25px));
+  margin-top: -10px;
+  animation: tooltipIn 0.15s ease;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background: rgba(15, 23, 42, 0.96);
+  rotate: 45deg;
+}
+
+.tooltip strong {
+  font-size: 13px;
+  display: block;
+  margin-bottom: 5px;
+  color: #f8fafc;
+}
+
+.tooltip div {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   5. EMPTY STATE COMPONENT
+   ========================================================================== */
+.empty {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.emptyIcon {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+
+/* ==========================================================================
+   6. KEYFRAME ANIMATIONS
+   ========================================================================== */
+@keyframes growBar {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes tooltipIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -120%);
+  }
+}
+
+/* ==========================================================================
+   7. MEDIA QUERIES (RESPONSIVENESS)
+   ========================================================================== */
+@media (max-width: 700px) {
+  .container {
+    padding: 12px;
+  }
+
+  .label {
+    font-size: 9px;
+  }
+
+  .value {
+    display: none;
+  }
+}

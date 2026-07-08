@@ -1131,6 +1131,7 @@ export const getExpenseStats = (userId = null) => {
   const monthlyTrend = [];
   for (let i = 5; i >= 0; i--) {
     const month = new Date(currentYear, currentMonth - i, 1);
+
     const monthExpenses = expenses.filter((e) => {
       const date = new Date(e.date);
       return (
@@ -1138,15 +1139,45 @@ export const getExpenseStats = (userId = null) => {
         date.getFullYear() === month.getFullYear()
       );
     });
+
     const total = monthExpenses.reduce(
       (sum, e) => sum + parseFloat(e.amount || 0),
       0,
     );
+
+    // -----------------------------
+    // 🏷️ TOP CATEGORY FOR THIS MONTH
+    // -----------------------------
+
+    const monthCategoryMap = {};
+
+    monthExpenses.forEach((e) => {
+      const category = e.category || "Unknown";
+
+      monthCategoryMap[category] =
+        (monthCategoryMap[category] || 0) + parseFloat(e.amount || 0);
+    });
+
+    let monthTopCategory = {
+      name: null,
+      amount: 0,
+    };
+
+    Object.entries(monthCategoryMap).forEach(([name, amount]) => {
+      if (amount > monthTopCategory.amount) {
+        monthTopCategory = {
+          name,
+          amount,
+        };
+      }
+    });
+
     monthlyTrend.push({
       month: month.toLocaleString("default", { month: "short" }),
       year: month.getFullYear(),
       total,
       count: monthExpenses.length,
+      topCategory: monthTopCategory,
     });
   }
 

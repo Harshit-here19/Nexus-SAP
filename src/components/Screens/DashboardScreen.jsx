@@ -17,6 +17,9 @@ import useTranslation from "../../hooks/useTranslation";
 
 import ExportSpreadsheetModal from "../Common/ExportSpreadsheetModal";
 import SpendingLineChart from "./Charts/SpendingLineChart";
+import SpendingPieChart from "./Charts/SpendingPieChart";
+import SpendingBarChart from "./Charts/SpendingBarChart";
+
 import { exportExpenseSpreadsheet } from "../../utils/exportExcel";
 
 import { generateDashboardReport } from "./GenerateDashboardReport";
@@ -52,16 +55,6 @@ const DashboardScreen = () => {
 
   const [pieData, setPieData] = useState([]);
   const [pieFilter, setPieFilter] = useState("month");
-
-  const [animate, setAnimate] = useState(false);
-
-  useEffect(() => {
-    setAnimate(true);
-
-    const timer = setTimeout(() => setAnimate(false), 500);
-
-    return () => clearTimeout(timer);
-  }, [pieData]);
 
   const pieFilterOptions = [
     { value: "7days", label: "Last 7 Days" },
@@ -253,51 +246,47 @@ const DashboardScreen = () => {
   };
 
   const loadLineChartData = () => {
-  const expenses = getTableData("expenses");
-  const today = new Date();
+    const expenses = getTableData("expenses");
+    const today = new Date();
 
-  const daysCount = {
-    "7days": 7,
-    "10days": 10,
-    "30days": 30,
-  }[lineRange] || 10;
+    const daysCount =
+      {
+        "7days": 7,
+        "10days": 10,
+        "30days": 30,
+      }[lineRange] || 10;
 
-  const chartData = [];
+    const chartData = [];
 
-  for (let i = daysCount - 1; i >= 0; i--) {
-    const date = new Date(today);
+    for (let i = daysCount - 1; i >= 0; i--) {
+      const date = new Date(today);
 
-    date.setDate(today.getDate() - i);
+      date.setDate(today.getDate() - i);
 
-    const dateKey = [
-      date.getFullYear(),
-      String(date.getMonth() + 1).padStart(2, "0"),
-      String(date.getDate()).padStart(2, "0"),
-    ].join("-");
+      const dateKey = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
 
+      const total = expenses
+        .filter((e) => e.date === dateKey)
+        .reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-    const total = expenses
-      .filter((e) => e.date === dateKey)
-      .reduce(
-        (sum, e) => sum + Number(e.amount || 0),
-        0
-      );
+      chartData.push({
+        date: dateKey,
 
+        label: date.toLocaleDateString("en", {
+          day: "numeric",
+          month: "short",
+        }),
 
-    chartData.push({
-      date: dateKey,
+        total,
+      });
+    }
 
-      label: date.toLocaleDateString("en", {
-        day: "numeric",
-        month: "short",
-      }),
-
-      total,
-    });
-  }
-
-  setLineData(chartData);
-};
+    setLineData(chartData);
+  };
 
   useEffect(() => {
     registerAction("PRINT", () => {
@@ -361,44 +350,6 @@ const DashboardScreen = () => {
       currency: "INR",
       minimumFractionDigits: 2,
     }).format(value);
-  };
-
-  // Calculate max for bar chart scaling
-  const getMaxValue = (data) => {
-    return Math.max(...data.map((d) => d.total), 1);
-  };
-
-  // Pie chart colors
-  // Modern color palette
-  const PIE_COLORS = [
-    "#FF6B6B", // Coral
-    "#4ECDC4", // Teal
-    "#FFD166", // Yellow
-    "#6C63FF", // Indigo
-    "#06D6A0", // Emerald
-    "#F72585", // Pink
-    "#118AB2", // Blue
-    "#F77F00", // Orange
-  ];
-
-  // Generate pie chart gradient
-  const generatePieChart = (data) => {
-    if (!data || data.length === 0)
-      return "conic-gradient(#e5e5e5 0deg 360deg)";
-
-    let gradient = "conic-gradient(";
-    let currentAngle = 0;
-
-    data.forEach((item, index) => {
-      const angle = (item.percentage / 100) * 360;
-      const color = item.color || pieColors[index % pieColors.length];
-      gradient += `${color} ${currentAngle}deg ${currentAngle + angle}deg`;
-      currentAngle += angle;
-      if (index < data.length - 1) gradient += ", ";
-    });
-
-    gradient += ")";
-    return gradient;
   };
 
   if (loading) {
@@ -475,7 +426,7 @@ const DashboardScreen = () => {
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
           <SapButton
             onClick={() => handleQuickAction("VA01")}
-            type="primary"
+            type="gold"
             icon="➕"
           >
             {t("dashboard.addExpense")}
@@ -809,73 +760,12 @@ const DashboardScreen = () => {
               </dialog>
 
               <div className="pie-chart-container">
-                <div
-                  className={`pie-chart ${animate ? "animate-pie" : ""}`}
-                  style={{
-                    background: generatePieChart(pieData),
-                  }}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      width: "70px",
-                      height: "70px",
-                      borderRadius: "50%",
-                      background:
-                        "linear-gradient(145deg, rgba(255,255,255,.98), rgba(245,247,250,.96))",
-                      boxShadow:
-                        "0 8px 24px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.7)",
-                      border: "1px solid rgba(255,255,255,.8)",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backdropFilter: "blur(12px)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: "11px",
-                        color: "#6b7280",
-                        fontWeight: 500,
-                        letterSpacing: ".4px",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {t("dashboard.total")}
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        fontWeight: "700",
-                        color: "#111827",
-                        marginTop: "2px",
-                      }}
-                    >
-                      {formatCurrency(pieTotal, true)}
-                    </div>
-                  </div>
-                </div>
-                <div className="pie-chart-legend">
-                  {pieData.slice(0, 6).map((item, index) => (
-                    <div key={index} className="pie-chart-legend-item">
-                      <div
-                        className="pie-chart-legend-color"
-                        style={{ background: item.color }}
-                      />
-                      <span className="pie-chart-legend-label">
-                        {item.label[lang].split(" ").slice(1).join(" ")}
-                      </span>
-                      <span className="pie-chart-legend-value">
-                        {formatCurrency(item.total)} ({item.percentage}%)
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <SpendingPieChart
+                  data={pieData}
+                  total={pieTotal}
+                  formatCurrency={formatCurrency}
+                  lang={lang}
+                />
               </div>
             </>
           ) : (
@@ -910,7 +800,7 @@ const DashboardScreen = () => {
 
               <SapButton
                 onClick={() => handleQuickAction("VA01")}
-                type="primary"
+                type="glass-active"
               >
                 {t("dashboard.recordFirstExpense")}
               </SapButton>
@@ -919,65 +809,33 @@ const DashboardScreen = () => {
         </div>
 
         {/* Monthly Trend */}
-        <div className="chart-container">
+        {stats?.monthlyTrend?.length > 0 ? (
+          <SpendingBarChart
+            data={stats.monthlyTrend}
+            title={<>📈 {t("dashboard.monthlyTrend")}</>}
+            subtitle={t("dashboard.lastSixMonths")}
+            formatCurrency={formatCurrency}
+          />
+        ) : (
           <div
-            className="chart-title"
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              fontSize: "16px",
-              fontWeight: 700,
-              marginBottom: "18px",
-              color: "#1f2937",
+              textAlign: "center",
+              padding: "30px",
+              color: "var(--sap-text-secondary)",
             }}
           >
-            <span>📈</span> {t("dashboard.monthlyTrend")} (
-            {t("dashboard.lastSixMonths")})
-          </div>
-          {stats?.monthlyTrend?.length > 0 ? (
-            <div className="bar-chart">
-              {stats.monthlyTrend.map((item, index) => {
-                const maxVal = getMaxValue(stats.monthlyTrend);
-                const percentage = maxVal > 0 ? (item.total / maxVal) * 100 : 0;
-                return (
-                  <div key={index} className="bar-chart-row">
-                    <div className="bar-chart-label">{item.month}</div>
-                    <div className="bar-chart-bar-container">
-                      <div
-                        className="bar-chart-bar"
-                        style={{
-                          width: `${Math.max(percentage, 2)}%`,
-                          background:
-                            "linear-gradient(90deg, #3b82f6 0%, #6366f1 45%, #8b5cf6 100%)",
-                          boxShadow: "0 3px 10px rgba(99,102,241,.35)",
-                          borderRadius: "3px",
-                          transition: "width .5s ease",
-                        }}
-                      >
-                        {percentage > 30 && formatCurrency(item.total, true)}
-                      </div>
-                    </div>
-                    <div className="bar-chart-value">
-                      {formatCurrency(item.total, true)}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
             <div
               style={{
-                textAlign: "center",
-                padding: "30px",
-                color: "var(--sap-text-secondary)",
+                fontSize: "32px",
+                marginBottom: "8px",
               }}
             >
-              <div style={{ fontSize: "32px", marginBottom: "8px" }}>📊</div>
-              <div>{t("dashboard.noTrendData")}</div>
+              📊
             </div>
-          )}
-        </div>
+
+            <div>{t("dashboard.noTrendData")}</div>
+          </div>
+        )}
       </div>
 
       {/* Bottom Row */}
@@ -1096,7 +954,7 @@ const DashboardScreen = () => {
           >
             <SapButton
               onClick={() => handleQuickAction("VA01")}
-              type="primary"
+              type="glass-active"
               icon="➕"
               style={{ justifyContent: "flex-start" }}
             >

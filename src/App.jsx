@@ -26,6 +26,7 @@ import { ConfirmProvider } from "./context/ConfirmContext";
 import { NotesScreen } from "./components/Screens/Notes";
 import { Todo } from "./components/Screens/ToDo/Todo";
 import { CollectionScreen } from "./components/Screens/Collections/CollectionScreen";
+import ZExpReport from "./components/Screens/ZEXP_REPORT/ZExpReport";
 
 // Wrapper component to connect transaction tracking with favorites
 const TransactionTracker = ({ children }) => {
@@ -178,6 +179,9 @@ const AppContent = () => {
 
       case "ZDASH":
         return <DashboardScreen />;
+
+      case "ZEXP_REPORT":
+        return <ZExpReport />;
 
       default:
         return (

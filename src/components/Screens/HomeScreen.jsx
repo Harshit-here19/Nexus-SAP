@@ -78,9 +78,11 @@ const HomeScreen = () => {
               <li><strong>MM01-03</strong> - Material Management</li>
               <li><strong>WS01-03</strong> - Wishlist Management</li>
               <li><strong>NT01-03</strong> - Notes Management</li>
+              <li><strong>LC01-03</strong> - List Collection</li>
               <li><strong>SE16</strong> - Data Browser</li>
               <li><strong>SU01</strong> - User Profile & Settings</li>
               <li><strong>ZDASH</strong> - Expense Dashboard & Analytics</li>
+              <li><strong>ZEXP_REPORT</strong> - Expense Reports</li>
               {checkIsAdmin() && <li><strong>ZADMIN</strong> - User Administration</li>}
             </ul>
           </div>

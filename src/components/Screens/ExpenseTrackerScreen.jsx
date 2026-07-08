@@ -9,7 +9,7 @@ import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
 import { useAction } from "../../context/ActionContext";
 import { useConfirm } from "../../context/ConfirmContext";
-import { useSettings } from "../../context/SettingsContext"
+import { useSettings } from "../../context/SettingsContext";
 import {
   getTableData,
   addRecord,
@@ -20,7 +20,7 @@ import {
   getPaymentMethods,
 } from "../../utils/storage";
 
-import useTranslation from '../../hooks/useTranslation'
+import useTranslation from "../../hooks/useTranslation";
 
 // =========================================================
 //                📌📌📌 CONSTANTS 📌📌📌
@@ -87,6 +87,8 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterMonth, setFilterMonth] = useState("all");
+  const [filterFromDate, setFilterFromDate] = useState("");
+  const [filterToDate, setFilterToDate] = useState("");
 
   const { settings } = useSettings();
 
@@ -234,6 +236,28 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
           date.getFullYear() === parseInt(year) &&
           date.getMonth() === parseInt(month) - 1
         );
+      });
+    }
+
+    if (filterFromDate) {
+      expenses = expenses.filter((e) => {
+        const expenseDate = new Date(e.date);
+        const fromDate = new Date(filterFromDate);
+
+        return expenseDate >= fromDate;
+      });
+    }
+
+    if (filterToDate) {
+      expenses = expenses.filter((e) => {
+        const expenseDate = new Date(e.date);
+
+        const toDate = new Date(filterToDate);
+
+        // include the complete selected day
+        toDate.setHours(23, 59, 59, 999);
+
+        return expenseDate <= toDate;
       });
     }
 
@@ -849,20 +873,19 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
           </div>
           <div>
             <span
-              className={`sap-badge ${formData.status === "approved"
-                ? "success"
-                : formData.status === "rejected"
-                  ? "error"
-                  : formData.status === "reimbursed"
-                    ? "success"
-                    : formData.status === "pending"
-                      ? "warning"
-                      : "info"
-                }`}
+              className={`sap-badge ${
+                formData.status === "approved"
+                  ? "success"
+                  : formData.status === "rejected"
+                    ? "error"
+                    : formData.status === "reimbursed"
+                      ? "success"
+                      : formData.status === "pending"
+                        ? "warning"
+                        : "info"
+              }`}
             >
-              {
-                t(`expenseForm.${formData.status || "recorded"}`)
-              }
+              {t(`expenseForm.${formData.status || "recorded"}`)}
             </span>
           </div>
         </div>
@@ -874,7 +897,13 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     { label: t("expenseForm.detailsTab"), icon: "📝", content: detailsTab },
     { label: t("expenseForm.notesTab"), icon: "🏷️", content: notesTab },
     ...(formData.id
-      ? [{ label: t("expenseForm.historyTab"), icon: "📋", content: historyTab }]
+      ? [
+          {
+            label: t("expenseForm.historyTab"),
+            icon: "📋",
+            content: historyTab,
+          },
+        ]
       : []),
   ];
 
@@ -1009,9 +1038,13 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
         <div
           style={{
             display: "flex",
-            gap: "10px",
+            gap: "8px",
             marginBottom: "16px",
             flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily:
+              "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
           }}
         >
           <input
@@ -1020,13 +1053,37 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
             placeholder="🔍 Search by ID, description, vendor..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ flex: 1, minWidth: "200px" }}
+            style={{
+              flex: 1,
+              minWidth: "250px",
+              height: "36px",
+              padding: "0 12px",
+              borderRadius: "10px",
+              backgroundColor: "#F2F2F7",
+              border: "none",
+              fontSize: "14px",
+              color: "#000",
+              outline: "none",
+            }}
           />
+
           <select
             className="sap-select"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            style={{ width: isMobile ? "100%" : "180px" }}
+            style={{
+              width: isMobile ? "100%" : "200px",
+              height: "36px",
+              padding: "0 10px",
+              borderRadius: "10px",
+              backgroundColor: "#F2F2F7",
+              border: "none",
+              fontSize: "14px",
+              color: "#007AFF", // iOS tint color style
+              fontWeight: "500",
+              outline: "none",
+              WebkitAppearance: "none", // Removes default browser styling for a cleaner look
+            }}
           >
             <option value="all">All Categories</option>
             {categories.map((c) => (
@@ -1035,11 +1092,24 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               </option>
             ))}
           </select>
+
           <select
             className="sap-select"
             value={filterMonth}
             onChange={(e) => setFilterMonth(e.target.value)}
-            style={{ width: isMobile ? "100%" : "180px" }}
+            style={{
+              width: isMobile ? "100%" : "200px",
+              height: "36px",
+              padding: "0 10px",
+              borderRadius: "10px",
+              backgroundColor: "#F2F2F7",
+              border: "none",
+              fontSize: "14px",
+              color: "#007AFF",
+              fontWeight: "500",
+              outline: "none",
+              WebkitAppearance: "none",
+            }}
           >
             {getMonthOptions().map((m) => (
               <option key={m.value} value={m.value}>
@@ -1047,7 +1117,60 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
               </option>
             ))}
           </select>
-          <SapButton onClick={handleSearch} type="close">
+
+          <input
+            type="date"
+            className="sap-input"
+            value={filterFromDate}
+            onChange={(e) => setFilterFromDate(e.target.value)}
+            style={{
+              width: isMobile ? "100%" : "135px",
+              height: "36px",
+              padding: "0 10px",
+              borderRadius: "10px",
+              backgroundColor: "#F2F2F7",
+              border: "none",
+              fontSize: "14px",
+              color: "#3A3A3C",
+              outline: "none",
+            }}
+          />
+
+          <input
+            type="date"
+            className="sap-input"
+            value={filterToDate}
+            onChange={(e) => setFilterToDate(e.target.value)}
+            style={{
+              width: isMobile ? "100%" : "135px",
+              height: "36px",
+              padding: "0 10px",
+              borderRadius: "10px",
+              backgroundColor: "#F2F2F7",
+              border: "none",
+              fontSize: "14px",
+              color: "#3A3A3C",
+              outline: "none",
+            }}
+          />
+
+          <SapButton
+            onClick={handleSearch}
+            type="close"
+            style={{
+              height: "36px",
+              padding: "0 20px",
+              borderRadius: "18px", // Fully rounded pill button
+              backgroundColor: "#007AFF", // System blue
+              color: "#FFFFFF",
+              border: "none",
+              fontSize: "14px",
+              fontWeight: "600",
+              cursor: "pointer",
+              boxShadow: "0px 1px 3px rgba(0, 0, 0, 0.1)",
+              margin: "0 10px",
+            }}
+          >
             Search
           </SapButton>
         </div>
@@ -1232,15 +1355,16 @@ const generateExpenseReport = (expenses) => {
         <div class="detail-row">
           <div class="detail-field">
             <span class="field-label">Date</span>
-            <span class="field-value">${expense.date
-          ? new Date(expense.date).toLocaleDateString("en-US", {
-            weekday: "short",
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })
-          : "—"
-        }</span>
+            <span class="field-value">${
+              expense.date
+                ? new Date(expense.date).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "—"
+            }</span>
           </div>
           <div class="detail-field">
             <span class="field-label">Category</span>
@@ -1251,47 +1375,52 @@ const generateExpenseReport = (expenses) => {
             <span class="field-value amount">${formatCurrency(expense.amount)}</span>
           </div>
         </div>
-        ${expense.description
-          ? `
+        ${
+          expense.description
+            ? `
           <div class="detail-description">
             <span class="field-label">Description</span>
             <p>${expense.description}</p>
           </div>
         `
-          : ""
+            : ""
         }
-        ${expense.vendor
-          ? `
+        ${
+          expense.vendor
+            ? `
           <div class="detail-extra">
             <span><strong>Vendor:</strong> ${expense.vendor}</span>
           </div>
         `
-          : ""
+            : ""
         }
-        ${expense.paymentMethod
-          ? `
+        ${
+          expense.paymentMethod
+            ? `
           <div class="detail-extra">
             <span><strong>Payment Method:</strong> ${expense.paymentMethod}</span>
           </div>
         `
-          : ""
+            : ""
         }
-        ${expense.receipt
-          ? `
+        ${
+          expense.receipt
+            ? `
           <div class="detail-extra">
             <span><strong>Receipt:</strong> ✓ Attached</span>
           </div>
         `
-          : ""
+            : ""
         }
-        ${expense.notes
-          ? `
+        ${
+          expense.notes
+            ? `
           <div class="detail-notes">
             <span class="field-label">Notes</span>
             <p>${expense.notes}</p>
           </div>
         `
-          : ""
+            : ""
         }
       </div>
     `,
@@ -1665,20 +1794,20 @@ const generateExpenseReport = (expenses) => {
           <div class="info">
             <div><strong>Report ID:</strong> RPT-${Date.now().toString().slice(-8)}</div>
             <div><strong>Generated:</strong> ${new Date().toLocaleDateString(
-    "en-US",
-    {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    },
-  )}</div>
+              "en-US",
+              {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              },
+            )}</div>
             <div><strong>Time:</strong> ${new Date().toLocaleTimeString(
-    "en-US",
-    {
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  )}</div>
+              "en-US",
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+              },
+            )}</div>
           </div>
         </div>
 

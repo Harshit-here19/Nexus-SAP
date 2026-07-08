@@ -10,6 +10,11 @@ import "./TreeMenu.css";
 // Transaction definitions - UPDATE THIS SECTION
 const transactionDefinitions = {
   ZDASH: { label: "Dashboard", icon: "📊", description: "Expense Dashboard" },
+  ZEXP_REPORT: {
+    label: "Expense Report",
+    icon: "📊",
+    description: "Expense Report",
+  },
   MM01: {
     label: "Create Material",
     icon: "➕",
@@ -167,7 +172,25 @@ const TreeMenu = () => {
       label: "SAP Menu",
       icon: "📁",
       children: [
-        { id: "zdash", label: "ZDASH - Dashboard", icon: "📊", tcode: "ZDASH" },
+        {
+          id: "reporting",
+          label: "Dashboard & Reporting",
+          icon: "📊",
+          children: [
+            {
+              id: "zdash",
+              label: "ZDASH - Dashboard",
+              icon: "📈",
+              tcode: "ZDASH",
+            },
+            {
+              id: "zexp_report",
+              label: "ZEXP_REPORT - Reporting",
+              icon: "📋",
+              tcode: "ZEXP_REPORT",
+            },
+          ],
+        },
         {
           id: "logistics",
           label: "Logistics",
@@ -328,21 +351,21 @@ const TreeMenu = () => {
         // Admin section - only show for admin users
         ...(isAdmin
           ? [
-            {
-              id: "admin",
-              label: "Administration",
-              icon: "🔐",
-              children: [
-                {
-                  id: "zadmin",
-                  label: "ZADMIN - User Admin",
-                  icon: "👥",
-                  tcode: "ZADMIN",
-                  adminOnly: true,
-                },
-              ],
-            },
-          ]
+              {
+                id: "admin",
+                label: "Administration",
+                icon: "🔐",
+                children: [
+                  {
+                    id: "zadmin",
+                    label: "ZADMIN - User Admin",
+                    icon: "👥",
+                    tcode: "ZADMIN",
+                    adminOnly: true,
+                  },
+                ],
+              },
+            ]
           : []),
       ],
     },
