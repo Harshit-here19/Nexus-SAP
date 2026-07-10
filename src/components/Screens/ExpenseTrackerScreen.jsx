@@ -994,7 +994,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                     setShowSearchModal(true);
                   }}
                 />
-                <SapButton onClick={loadExpense} type="primary" icon="📂">
+                <SapButton onClick={loadExpense} type="neo" icon="📂">
                   Load
                 </SapButton>
                 <SapButton

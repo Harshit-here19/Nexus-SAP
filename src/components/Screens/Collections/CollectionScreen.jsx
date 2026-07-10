@@ -21,11 +21,8 @@ import { INITIAL_COLLECTION } from "./CollectionConstants";
 
 import "./CollectionStyles.css";
 
-export const CollectionScreen = ({
-  mode = "create",
-}) => {
-  const { registerAction, clearAction } =
-    useAction();
+export const CollectionScreen = ({ mode = "create" }) => {
+  const { registerAction, clearAction } = useAction();
 
   const {
     updateStatus,
@@ -73,92 +70,66 @@ export const CollectionScreen = ({
       return;
     }
 
-    const collections =
-      getTableData("collections") || [];
+    const collections = getTableData("collections") || [];
 
-    const search =
-      value.toLowerCase().trim();
+    const search = value.toLowerCase().trim();
 
     const regex = new RegExp(
-      search
-        .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
-        .replace(/\*/g, ".*"),
-      "i"
+      search.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*"),
+      "i",
     );
 
-    const results = collections.filter(
-      (collection) => {
-        const fields = [
-          collection.collectionNumber,
-          collection.title,
-          collection.description,
-          collection.tags,
-        ];
+    const results = collections.filter((collection) => {
+      const fields = [
+        collection.collectionNumber,
+        collection.title,
+        collection.description,
+        collection.tags,
+      ];
 
-        return fields.some((field) => {
-          if (!field) return false;
+      return fields.some((field) => {
+        if (!field) return false;
 
-          const text =
-            String(field).toLowerCase();
+        const text = String(field).toLowerCase();
 
-          return search.includes("*")
-            ? regex.test(text)
-            : text.includes(search);
-        });
-      }
-    );
+        return search.includes("*") ? regex.test(text) : text.includes(search);
+      });
+    });
 
     setSuggestions(results.slice(0, 10));
     setShowSuggestions(results.length > 0);
   };
 
   const selectSuggestion = (collection) => {
-
-    setCollectionId(
-      collection.collectionNumber
-    );
+    setCollectionId(collection.collectionNumber);
 
     setFormData(collection);
 
     setIsLoaded(true);
 
-
     setTransactionHistory((prev) => [
       ...prev,
-      `COLLECTION_${collection.collectionNumber}`
+      `COLLECTION_${collection.collectionNumber}`,
     ]);
-
 
     setSuggestions([]);
     setShowSuggestions(false);
 
-    updateStatus(
-      `${collection.collectionNumber} loaded`,
-      "success"
-    );
+    updateStatus(`${collection.collectionNumber} loaded`, "success");
   };
 
   const handleSearch = () => {
-    let collections =
-      getTableData("collections") || [];
+    let collections = getTableData("collections") || [];
 
     if (searchTerm) {
-      const term =
-        searchTerm.toLowerCase();
+      const term = searchTerm.toLowerCase();
 
-      collections =
-        collections.filter(
-          (collection) =>
-            collection.collectionNumber
-              ?.toLowerCase()
-              .includes(term) ||
-            collection.name
-              ?.toLowerCase()
-              .includes(term) ||
-            collection.description
-              ?.toLowerCase()
-              .includes(term)
-        );
+      collections = collections.filter(
+        (collection) =>
+          collection.collectionNumber?.toLowerCase().includes(term) ||
+          collection.name?.toLowerCase().includes(term) ||
+          collection.description?.toLowerCase().includes(term),
+      );
     }
 
     setSearchResults(collections);
@@ -167,10 +138,7 @@ export const CollectionScreen = ({
   };
 
   const handleSelectCollection = (collection) => {
-
-    setCollectionId(
-      collection.collectionNumber
-    );
+    setCollectionId(collection.collectionNumber);
 
     setFormData(collection);
 
@@ -180,14 +148,10 @@ export const CollectionScreen = ({
 
     setTransactionHistory((prev) => [
       ...prev,
-      `COLLECTION_${collection.collectionNumber}`
+      `COLLECTION_${collection.collectionNumber}`,
     ]);
 
-    updateStatus(
-      `${collection.collectionNumber} loaded`,
-      "success"
-    );
-
+    updateStatus(`${collection.collectionNumber} loaded`, "success");
   };
 
   /*
@@ -195,21 +159,14 @@ export const CollectionScreen = ({
    */
 
   const loadCollection = () => {
-    const collections =
-      getTableData("collections") || [];
+    const collections = getTableData("collections") || [];
 
-    const collection =
-      collections.find(
-        (c) =>
-          c.collectionNumber ===
-          collectionId.trim()
-      );
+    const collection = collections.find(
+      (c) => c.collectionNumber === collectionId.trim(),
+    );
 
     if (!collection) {
-      updateStatus(
-        "Collection not found",
-        "error"
-      );
+      updateStatus("Collection not found", "error");
       return;
     }
 
@@ -218,13 +175,10 @@ export const CollectionScreen = ({
 
     setTransactionHistory((prev) => [
       ...prev,
-      `COLLECTION_${collection.collectionNumber}`
+      `COLLECTION_${collection.collectionNumber}`,
     ]);
 
-    updateStatus(
-      `Collection ${collection.collectionNumber} loaded`,
-      "success"
-    );
+    updateStatus(`Collection ${collection.collectionNumber} loaded`, "success");
   };
 
   /*
@@ -239,57 +193,44 @@ export const CollectionScreen = ({
     }
 
     if (mode === "create") {
-      const collectionNumber =
-        generateNextNumber(
-          "collections",
-          "collectionNumber",
-          "LC"
-        );
+      const collectionNumber = generateNextNumber(
+        "collections",
+        "collectionNumber",
+        "LC",
+      );
 
       const newCollection = {
         ...formData,
         id: Date.now(),
         collectionNumber,
-        createdAt:
-          new Date().toISOString(),
-        updatedAt:
-          new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
-      allData.collections.push(
-        newCollection
-      );
+      allData.collections.push(newCollection);
 
       saveAllData(allData);
 
-      handleChange(
-        "collectionNumber",
-        collectionNumber
-      );
+      updateStatus(`${collectionNumber} created`, "success");
 
-      updateStatus(
-        `${collectionNumber} created`,
-        "success"
-      );
+      // Reset form after successful save
+      setFormData(INITIAL_COLLECTION);
+
+      setCollectionId("");
+
+      setIsLoaded(false);
     } else {
-      const index =
-        allData.collections.findIndex(
-          (c) => c.id === formData.id
-        );
+      const index = allData.collections.findIndex((c) => c.id === formData.id);
 
       if (index !== -1) {
         allData.collections[index] = {
           ...formData,
-          updatedAt:
-            new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
 
         saveAllData(allData);
 
-        updateStatus(
-          `${formData.collectionNumber} updated`,
-          "success"
-        );
+        updateStatus(`${formData.collectionNumber} updated`, "success");
       }
     }
   };
@@ -317,28 +258,23 @@ export const CollectionScreen = ({
     );
 
     if (confirmed) {
-      allData.collections =
-        allData.collections.filter(
-          (c) => c.id !== formData.id
-        );
+      allData.collections = allData.collections.filter(
+        (c) => c.id !== formData.id,
+      );
 
       saveAllData(allData);
 
       clearRef.current();
 
-      updateStatus(
-        "Collection deleted",
-        "success"
-      );
+      updateStatus("Collection deleted", "success");
     }
   };
 
   /*
-   * PRINT 
+   * PRINT
    */
 
   printRef.current = () => {
-
     let collections = [];
 
     // If a collection is opened, print only that
@@ -360,13 +296,12 @@ export const CollectionScreen = ({
         <td class="col-num">${index + 1}</td>
         <td class="col-name">${item.title || "Unnamed Item"}</td>
         <td class="col-date">
-          ${item.createdAt
-            ? new Date(item.createdAt).toLocaleDateString()
-            : "—"
+          ${
+            item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"
           }
         </td>
       </tr>
-    `
+    `,
       )
       .join("");
 
@@ -396,10 +331,11 @@ export const CollectionScreen = ({
           <span>
             Created:
             <strong>
-            ${item.createdAt
-            ? new Date(item.createdAt).toLocaleString()
-            : "Unknown"
-          }
+            ${
+              item.createdAt
+                ? new Date(item.createdAt).toLocaleString()
+                : "Unknown"
+            }
             </strong>
           </span>
 
@@ -407,19 +343,24 @@ export const CollectionScreen = ({
 
         <div class="detail-content">
 
-          ${item.items
-            ? item.items.map((row, rowNo) => `
+          ${
+            item.items
+              ? item.items
+                  .map(
+                    (row, rowNo) => `
                 <div class="collectionRow">
                   <span class="rowNo">${rowNo + 1}</span>
                   <span class="rowName">${row.name}</span>
                 </div>
-              `).join("")
-            : "No content"
+              `,
+                  )
+                  .join("")
+              : "No content"
           }
         </div>
 
       </div>
-    `
+    `,
       )
       .join("");
 
@@ -641,7 +582,7 @@ export const CollectionScreen = ({
 
     const previewHtml = html.replace(
       "</body>",
-          `
+      `
       <div class="save-container">
         <button id="saveHtmlBtn">
           💾 Save HTML Report
@@ -675,13 +616,10 @@ export const CollectionScreen = ({
           }
       </script>
 
-      </body>`
+      </body>`,
     );
 
-
-    const printWindow =
-      window.open("", "_blank", "width=900,height=700");
-
+    const printWindow = window.open("", "_blank", "width=900,height=700");
 
     printWindow.document.write(previewHtml);
 
@@ -715,25 +653,13 @@ export const CollectionScreen = ({
    */
 
   useEffect(() => {
-    registerAction(
-      "SAVE",
-      () => saveRef.current?.()
-    );
+    registerAction("SAVE", () => saveRef.current?.());
 
-    registerAction(
-      "CLEAR",
-      () => clearRef.current?.()
-    );
+    registerAction("CLEAR", () => clearRef.current?.());
 
-    registerAction(
-      "DELETE",
-      () => deleteRef.current?.()
-    );
+    registerAction("DELETE", () => deleteRef.current?.());
 
-    registerAction(
-      "PRINT",
-      () => printRef.current?.()
-    );
+    registerAction("PRINT", () => printRef.current?.());
 
     return () => {
       clearAction("SAVE");
@@ -747,7 +673,6 @@ export const CollectionScreen = ({
   useEffect(() => {
     if (isLoaded) {
       registerBackHandler(() => {
-
         // Close opened collection
         setIsLoaded(false);
         setCollectionId("");
@@ -760,8 +685,7 @@ export const CollectionScreen = ({
 
           if (
             newHistory.length > 0 &&
-            newHistory[newHistory.length - 1]
-              ?.startsWith("COLLECTION_")
+            newHistory[newHistory.length - 1]?.startsWith("COLLECTION_")
           ) {
             newHistory.pop();
           }
@@ -769,25 +693,18 @@ export const CollectionScreen = ({
           return newHistory;
         });
 
-        updateStatus(
-          "Close the Opened Collection",
-          "info"
-        );
+        updateStatus("Close the Opened Collection", "info");
 
         return true; // stop default back
       });
-
     } else {
-
       // on search/load screen allow normal back
       clearBackHandler();
-
     }
 
     return () => {
       clearBackHandler();
     };
-
   }, [
     isLoaded,
     registerBackHandler,
@@ -801,10 +718,7 @@ export const CollectionScreen = ({
    * LOAD SCREEN
    */
 
-  const needsLoad =
-    (mode === "change" ||
-      mode === "display") &&
-    !isLoaded;
+  const needsLoad = (mode === "change" || mode === "display") && !isLoaded;
 
   const tabs = [
     {
@@ -814,9 +728,7 @@ export const CollectionScreen = ({
         <CollectionEditor
           formData={formData}
           onChange={handleChange}
-          isReadOnly={
-            mode === "display"
-          }
+          isReadOnly={mode === "display"}
         />
       ),
     },
@@ -824,47 +736,32 @@ export const CollectionScreen = ({
 
   return (
     <div className="sap-panel">
-
       <div className="sap-panel-header">
-
-        <span>
-          📚 Collection Manager
-        </span>
+        <span>📚 Collection Manager</span>
 
         <div>
-
           <span
-            className={`sap-badge ${mode === "create"
-              ? "info"
-              : mode === "change"
-                ? "warning"
-                : "success"
-              }`}
+            className={`sap-badge ${
+              mode === "create"
+                ? "info"
+                : mode === "change"
+                  ? "warning"
+                  : "success"
+            }`}
           >
-            {mode === "create"
-              ? "NEW"
-              : mode === "change"
-                ? "EDIT"
-                : "VIEW"}
+            {mode === "create" ? "NEW" : mode === "change" ? "EDIT" : "VIEW"}
           </span>
-
         </div>
-
       </div>
 
       <div className="sap-panel-content">
-
         {needsLoad ? (
-
-          <div
-            className="collection-load-box"
-          >
-
+          <div className="collection-load-box">
             <div
               style={{
                 position: "relative",
                 width: "330px",
-                overflow: "visible"
+                overflow: "visible",
               }}
             >
               <SapInput
@@ -876,148 +773,90 @@ export const CollectionScreen = ({
                 onIconClick={handleSearch}
               />
 
-              {showSuggestions &&
-                suggestions.length > 0 && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "100%",
-                      left: 0,
-                      width: "100%",
-                      marginTop: "4px",
-                      background: "#fff",
-                      border:
-                        "1px solid #ddd",
-                      borderRadius: "8px",
-                      zIndex: 9999,
-                      maxHeight: "300px",
-                      overflowY: "auto",
-                      boxShadow:
-                        "0 8px 20px rgba(0,0,0,.15)"
-                    }}
-                  >
-                    {suggestions.map(
-                      (collection) => (
-                        <div
-                          key={collection.id}
-                          onClick={() =>
-                            selectSuggestion(
-                              collection
-                            )
-                          }
-                          style={{
-                            padding: "10px",
-                            cursor: "pointer",
-                            borderBottom:
-                              "1px solid #eee"
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontWeight:
-                                "bold",
-                              color:
-                                "#2563eb"
-                            }}
-                          >
-                            {
-                              collection.collectionNumber
-                            }
-                          </div>
+              {showSuggestions && suggestions.length > 0 && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    width: "100%",
+                    marginTop: "4px",
+                    background: "#fff",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    zIndex: 9999,
+                    maxHeight: "300px",
+                    overflowY: "auto",
+                    boxShadow: "0 8px 20px rgba(0,0,0,.15)",
+                  }}
+                >
+                  {suggestions.map((collection) => (
+                    <div
+                      key={collection.id}
+                      onClick={() => selectSuggestion(collection)}
+                      style={{
+                        padding: "10px",
+                        cursor: "pointer",
+                        borderBottom: "1px solid #eee",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontWeight: "bold",
+                          color: "#2563eb",
+                        }}
+                      >
+                        {collection.collectionNumber}
+                      </div>
 
-                          <div>
-                            {collection.title ||
-                              "Unnamed Collection"}
-                          </div>
+                      <div>{collection.title || "Unnamed Collection"}</div>
 
-                          <div
-                            style={{
-                              fontSize:
-                                "12px",
-                              color:
-                                "#777"
-                            }}
-                          >
-                            {
-                              collection.description
-                            }
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </div>
-                )}
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#777",
+                        }}
+                      >
+                        {collection.description}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <SapButton
-              type="primary"
-              onClick={loadCollection}
-            >
+            <SapButton type="neo" onClick={loadCollection}>
               Load
             </SapButton>
 
-            <SapButton
-              type="search"
-              icon="🔎"
-              onClick={handleSearch}
-            >
+            <SapButton type="search" icon="🔎" onClick={handleSearch}>
               Search
             </SapButton>
-
           </div>
-
         ) : (
-
           <>
             {formData.collectionNumber && (
-              <div
-                className="collection-info"
-              >
+              <div className="collection-info">
                 Collection:
-                <strong>
-                  {" "}
-                  {
-                    formData.collectionNumber
-                  }
-                </strong>
+                <strong> {formData.collectionNumber}</strong>
               </div>
             )}
 
             <SapTabs tabs={tabs} />
           </>
-
         )}
-
       </div>
 
       {/* ADD MODAL HERE */}
       <CollectionSearchModal
         isOpen={showSearchModal}
-
-        onClose={() =>
-          setShowSearchModal(false)
-        }
-
+        onClose={() => setShowSearchModal(false)}
         searchTerm={searchTerm}
-
-        onSearchTermChange={
-          setSearchTerm
-        }
-
-        searchResults={
-          searchResults
-        }
-
-        onSearch={
-          handleSearch
-        }
-
-        onSelectCollection={
-          handleSelectCollection
-        }
+        onSearchTermChange={setSearchTerm}
+        searchResults={searchResults}
+        onSearch={handleSearch}
+        onSelectCollection={handleSelectCollection}
       />
-
-
     </div>
   );
 };

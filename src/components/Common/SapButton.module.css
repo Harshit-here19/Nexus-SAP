@@ -1,23 +1,25 @@
-/* ===== Base Button ===== */
+/* ==========================================================================
+   1. Base Button & Core System
+   ========================================================================== */
 .sapButton {
-  height: 30px;
-  padding: 0 14px;
-  border: 1px solid #888;
-  background: linear-gradient(180deg, #f0f4f8 0%, #d9e2ec 100%);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  height: 30px;
+  padding: 0 14px;
+  background: linear-gradient(180deg, #f0f4f8 0%, #d9e2ec 100%);
   color: #003366;
+  border: 1px solid #888888;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
   white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-/* Hover & Active for Default */
+/* Base States */
 .sapButton:hover {
   background: linear-gradient(180deg, #e1e9f2 0%, #c7d8e7 100%);
   border-color: #0072c6;
@@ -27,29 +29,67 @@
   transform: translateY(1px);
 }
 
-/* Disabled */
 .sapButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* ===== Variants ===== */
+/* ==========================================================================
+   2. Framework & Utility Components
+   ========================================================================== */
+/* Button Group */
+.sapButton-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Spinner */
+.sapSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #cccccc;
+  border-top-color: #003366;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   3. Standard Variants
+   ========================================================================== */
+/* Primary */
 .sapButton.primary {
-  background: linear-gradient(180deg, var(--sap-brand) 0%, var(--sap-brand-dark) 100%);
-  color: white;
+  background: linear-gradient(
+    180deg,
+    var(--sap-brand) 0%,
+    var(--sap-brand-dark) 100%
+  );
+  color: #ffffff;
   border-color: var(--sap-brand-darker);
 }
 
 .sapButton.primary:hover {
-  background: linear-gradient(180deg, var(--sap-brand-light) 0%, var(--sap-brand) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--sap-brand-light) 0%,
+    var(--sap-brand) 100%
+  );
 }
 
+/* Success */
 .sapButton.success {
   background: linear-gradient(180deg, #12a150 0%, #107e3e 100%);
-  color: white;
+  color: #ffffff;
   border-color: #0a6129;
 }
 
+/* Danger */
 .sapButton.danger {
   display: inline-flex;
   align-items: center;
@@ -58,9 +98,9 @@
   min-width: 32px;
   padding: 0 12px;
   background: transparent;
+  color: #dc3545;
   border: 2px solid #dc3545;
   border-radius: 4px;
-  color: #dc3545;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -77,97 +117,10 @@
   border-color: #c82333;
 }
 
-/* Button Group */
-.sapButton-group {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-/* Spinner */
-.sapSpinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #ccc;
-  border-top-color: #003366;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Dark Theme */
-[data-theme="dark"] .sapButton {
-  background: linear-gradient(180deg, #2a2a4a 0%, #1f1f3a 100%);
-  border-color: #3a3a5a;
-  color: #eaeaea;
-}
-
-[data-theme="dark"] .sapButton:hover {
-  background: linear-gradient(180deg, #3a3a5a 0%, #2a2a4a 100%);
-  border-color: #4a4a6a;
-}
-
-[data-theme="dark"] .sapButton.danger {
-  border-color: #ff6b7a;
-  color: #ff6b7a;
-}
-
-[data-theme="dark"] .sapButton.danger:hover {
-  background: #ff6b7a;
-  color: #1a1a2e;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .sapButton {
-    width: 100%;
-    height: 36px;
-    font-size: 12px;
-  }
-
-  .sapButton-group {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .sapButton-group .sapButton {
-    width: 100%;
-  }
-}
-
-/* Search Button */
-
-/* .sapButton.search {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  min-width: 32px;
-  padding: 0 12px;
-  background: rgba(10, 110, 209, 0.1);
-  border: none;
-  border-radius: 4px;
-  color: #0a6ed1;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.sapButton.search:hover {
-  background: rgba(10, 110, 209, 0.2);
-}
-
-.sapButton.search:active {
-  background: rgba(10, 110, 209, 0.3);
-} */
-
-/* ========== STYLE 28: ELEGANT SHADOW ========== */
+/* ==========================================================================
+   4. Custom UI Styles
+   ========================================================================== */
+/* Elegant Shadow Search */
 .sapButton.search {
   display: inline-flex;
   align-items: center;
@@ -176,19 +129,19 @@
   min-width: 36px;
   padding: 0 14px;
   background: #ffffff;
+  color: #333333;
   border: 1px solid #e8e8e8;
   border-radius: 8px;
-  color: #333333;
   font-size: 13px;
   font-weight: 500;
-  cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .sapButton.search:hover {
-  border-color: #0a6ed1;
   color: #0a6ed1;
+  border-color: #0a6ed1;
   box-shadow: 0 4px 16px rgba(10, 110, 209, 0.15);
   transform: translateY(-1px);
 }
@@ -203,40 +156,40 @@
   cursor: not-allowed;
 }
 
-/* Close Button */
-
+/* Close Button - Blue Shimmer */
 .sapButton.close {
-  margin: 0 auto;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
   height: 30px;
   min-width: 15rem;
+  margin: 0 auto;
   padding: 0 14px;
   background: linear-gradient(135deg, #3aafff 0%, #0a6ed1 50%, #074a8a 100%);
+  color: #ffffff;
   border: none;
   border-radius: 6px;
-  color: #ffffff;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
   transition: all 0.2s ease;
 }
 
 .sapButton.close::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.3),
-      transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   transition: left 0.4s ease;
 }
 
@@ -250,37 +203,39 @@
 
 /* Login Button - Royal Purple */
 .sapButton.login {
-  margin: 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
-  min-width: 100%;
-  padding: 0 20px;
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%);
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  height: 44px;
+  min-width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
   box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .sapButton.login::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.3),
-      transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -299,37 +254,39 @@
 
 /* Signup Button - Indigo Variant */
 .sapButton.signup {
-  margin: 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
-  min-width: 100%;
-  padding: 0 20px;
-  background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #4f46e5 100%);
-  border: none;
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  height: 44px;
+  min-width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #4f46e5 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .sapButton.signup::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.3),
-      transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -342,59 +299,48 @@
   box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
 }
 
-/* Glassmorphic button */
-
+/* Glassmorphic Base */
 .sapButton.glass {
+  padding: 0.5rem 1.5rem;
   background: rgba(255, 255, 255, 0.08);
   color: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-
   border-radius: 8px;
-  padding: 0.5rem 1.5rem;
-  cursor: pointer;
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
     0 4px 12px rgba(0, 0, 0, 0.12);
-
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .sapButton.glass:hover {
   background: rgba(255, 255, 255, 0.12);
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
-/* Active Glass Button */
+/* Glassmorphic Active */
 .sapButton.glass-active {
+  padding: 0.5rem 1.5rem;
   background: linear-gradient(
     135deg,
     rgba(59, 130, 246, 0.28),
     rgba(139, 92, 246, 0.32)
   );
-
-  color: #000;
-
+  color: #000000;
   border: 1px solid rgba(139, 92, 246, 0.35);
-
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-
   border-radius: 8px;
-  padding: 0.5rem 1.5rem;
-  cursor: pointer;
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
     0 0 0 1px rgba(99, 102, 241, 0.15),
     0 8px 24px rgba(99, 102, 241, 0.35),
     0 4px 12px rgba(0, 0, 0, 0.12);
-
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
   transition: all 0.25s ease;
 }
 
@@ -404,9 +350,7 @@
     rgba(59, 130, 246, 0.35),
     rgba(139, 92, 246, 0.42)
   );
-
   transform: translateY(-1px);
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     0 0 18px rgba(99, 102, 241, 0.45),
@@ -420,62 +364,246 @@
     0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
-/* Premium Gold Button */
+/* Premium Gold */
 .sapButton.gold {
-  background: linear-gradient(
-    135deg,
-    #ffe082, /* Bright, polished gold */
-    #cc9922  /* Deep, rich metallic gold */
-  );
-
-  /* Dark charcoal text for perfect readability on gold */
-  color: #1a1508; 
-  font-weight: 600;
-
-  /* Crisp, solid metallic border */
-  border: 1px solid #b3861b;
-
-  border-radius: 8px;
   padding: 0.5rem 1.5rem;
-  cursor: pointer;
-
-  /* Layered metallic reflections and a warm amber shadow */
+  background: linear-gradient(135deg, #ffe082, #cc9922);
+  color: #1a1508;
+  border: 1px solid #b3861b;
+  border-radius: 8px;
+  font-weight: 600;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5), /* Catch-light on the top edge */
-    inset 0 -1px 0 rgba(0, 0, 0, 0.15),     /* Subtle bottom inset shadow */
-    0 4px 12px rgba(204, 153, 34, 0.3),     /* Warm gold ambient glow */
-    0 2px 4px rgba(0, 0, 0, 0.1);           /* Grounding drop shadow */
-
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(204, 153, 34, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
 
 .sapButton.gold:hover {
-  background: linear-gradient(
-    135deg,
-    #fff0b3, /* Illuminates on hover */
-    #ddaa33
-  );
-
+  background: linear-gradient(135deg, #fff0b3, #ddaa33);
   transform: translateY(-1px);
-
-  /* Enhanced shine and reflection on hover */
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    0 0 14px rgba(255, 215, 0, 0.4),        /* Pure gold outer bloom */
+    0 0 14px rgba(255, 215, 0, 0.4),
     0 8px 20px rgba(204, 153, 34, 0.35);
 }
 
 .sapButton.gold:active {
-  background: linear-gradient(
-    135deg,
-    #cc9922, /* Inverts slightly to look pressed into the screen */
-    #b3861b
-  );
-  
+  background: linear-gradient(135deg, #cc9922, #b3861b);
   transform: translateY(0);
-  
-  /* Deep, recessed shadow for the click feel */
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.25),
     0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================= */
+/* Korean Save */
+/* ========================= */
+
+.sapButton.korean-save {
+  padding: 0.5rem 1.5rem;
+  background: #6366f1;
+  border: 1px solid #6366f1;
+  color: #fff;
+  box-shadow: none;
+}
+
+.sapButton.korean-save:hover {
+  background: #5558ee;
+  border-color: #5558ee;
+  color: #fff;
+}
+
+.sapButton.korean-save:active {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  transform: scale(0.98);
+}
+
+/* ========================= */
+/* Korean Close */
+/* ========================= */
+
+.sapButton.korean-close {
+  padding: 0.5rem 1.5rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  box-shadow: none;
+}
+
+.sapButton.korean-close:hover {
+  background: #f8faff;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.sapButton.korean-close:active {
+  background: #eef2ff;
+  transform: scale(0.98);
+}
+
+/* ========================= */
+/* Korean Delete */
+/* ========================= */
+
+.sapButton.korean-delete {
+  padding: 0.5rem 1.5rem;
+  background: #f43f5e;
+  border: 1px solid #f43f5e;
+  color: #fff;
+  box-shadow: none;
+}
+
+.sapButton.korean-delete:hover {
+  background: #e11d48;
+  border-color: #e11d48;
+}
+
+.sapButton.korean-delete:active {
+  background: #be123c;
+  border-color: #be123c;
+  transform: scale(0.98);
+}
+
+/* Ghost / Outline Button */
+.sapButton.outline {
+  padding: 0.5rem 1.5rem;
+  background: transparent;
+  border: 1px solid #003366;
+  color: #003366;
+}
+
+.sapButton.outline:hover {
+  background: #003366;
+  color: #ffffff;
+  border-color: #003366;
+}
+
+.sapButton.outline:active {
+  background: #002244;
+  border-color: #002244;
+}
+
+/* Retro Neobrutalism Button */
+.sapButton.neo {
+  padding: 0.5rem 1.5rem;
+  background: linear-gradient(135deg, #0d9488, #059669); /* Rich Teal to Emerald Mix */
+  color: #ffffff; /* Flipped to white for optimal contrast on teal/emerald */
+  border: 2px solid #111827;
+  border-radius: 4px;
+  font-weight: 700;
+  box-shadow: 3px 3px 0px #111827;
+}
+
+.sapButton.neo:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #111827;
+  background: linear-gradient(135deg, #14b8a6, #10b981); /* Brighter Teal to Emerald on hover */
+}
+
+.sapButton.neo:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #111827;
+  background: linear-gradient(135deg, #0f766e, #047857); /* Slightly deeper mix on click */
+}
+
+/* Dashed Upload / Placeholder Button */
+.sapButton.dashed {
+  background: #f8fafc;
+  border: 1px dashed #94a3b8;
+  color: #64748b;
+  box-shadow: none;
+}
+
+.sapButton.dashed:hover {
+  background: #f1f5f9;
+  border-color: #64748b;
+  color: #334155;
+}
+
+.sapButton.dashed:active {
+  background: #e2e8f0;
+}
+
+/* ==========================================================================
+   5. Theme Variations
+   ========================================================================== */
+/* Dark Theme Defaults */
+[data-theme="dark"] .sapButton {
+  background: linear-gradient(180deg, #2a2a4a 0%, #1f1f3a 100%);
+  border-color: #3a3a5a;
+  color: #eaeaea;
+}
+
+[data-theme="dark"] .sapButton:hover {
+  background: linear-gradient(180deg, #3a3a5a 0%, #2a2a4a 100%);
+  border-color: #4a4a6a;
+}
+
+/* Dark Theme Danger Variant */
+[data-theme="dark"] .sapButton.danger {
+  border-color: #ff6b7a;
+  color: #ff6b7a;
+}
+
+[data-theme="dark"] .sapButton.danger:hover {
+  background: #ff6b7a;
+  color: #1a1a2e;
+}
+
+/* ==========================================================================
+   6. Unified Media Queries (Responsive Design)
+   ========================================================================== */
+@media (max-width: 480px) {
+  /* Layout adjustments */
+  .sapButton-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  /* Universal component stretching */
+  .sapButton,
+  .sapButton-group .sapButton,
+  .sapButton.close,
+  .sapButton.login,
+  .sapButton.signup {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Structural/Sizing tweaks for touch targets */
+  .sapButton {
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .sapButton.danger {
+    height: 36px;
+  }
+
+  .sapButton.search {
+    height: 36px;
+  }
+
+  .sapButton.close {
+    height: 36px;
+  }
+
+  .sapButton.login,
+  .sapButton.signup {
+    height: 44px; /* Retain original emphasis size */
+  }
+
+  .sapButton.glass,
+  .sapButton.glass-active,
+  .sapButton.gold {
+    padding: 0.5rem 1rem;
+    height: 36px;
+  }
 }

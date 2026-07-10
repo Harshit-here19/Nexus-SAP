@@ -1280,7 +1280,8 @@ body {
 }
 
 .sap-table tbody tr.selected {
-  background: var(--sap-brand-lighter);
+  /* background: var(--sap-brand-lighter); */
+  background: var(--sap-selected);
 }
 
 .sap-table tbody tr:nth-child(even) {

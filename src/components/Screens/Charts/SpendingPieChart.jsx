@@ -52,6 +52,10 @@ const SpendingPieChart = ({
       ([entry]) => {
         if (entry.isIntersecting) {
           setVisible(true);
+          setAnimate(true);
+        } else {
+          setVisible(false);
+          setAnimate(false);
         }
       },
       {
@@ -59,11 +63,19 @@ const SpendingPieChart = ({
       },
     );
 
-    if (chartRef.current) {
-      observer.observe(chartRef.current);
+    const element = chartRef.current;
+
+    if (element) {
+      observer.observe(element);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      if (element) {
+        observer.unobserve(element);
+      }
+
+      observer.disconnect();
+    };
   }, []);
 
   /*
@@ -76,11 +88,13 @@ const SpendingPieChart = ({
 
     setAnimate(false);
 
-    const timer = setTimeout(() => {
-      setAnimate(true);
-    }, 50);
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setAnimate(true);
+      });
+    });
 
-    return () => clearTimeout(timer);
+    return () => cancelAnimationFrame(id);
   }, [data, visible]);
 
   if (!data.length) {

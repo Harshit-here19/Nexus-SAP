@@ -156,6 +156,10 @@ const DashboardScreen = () => {
     loadLineChartData();
   }, [pieFilter, lineRange]);
 
+  const topCategoryDetails = getExpenseCategories().find(
+    (cat) => cat.value === stats?.topCategory.name,
+  );
+
   const loadPieChartData = () => {
     const expenses = getTableData("expenses");
 
@@ -616,7 +620,7 @@ const DashboardScreen = () => {
             className="dashboard-card-value"
             style={{ textTransform: "capitalize" }}
           >
-            {stats?.topCategory?.name || "—"}
+            {topCategoryDetails?.label?.[lang] || topCategory.name || "-"}
           </div>
 
           <div className="dashboard-card-change">

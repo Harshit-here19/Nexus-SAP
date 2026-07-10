@@ -1,7 +1,7 @@
 // src/App.js
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useRegisterSW } from "virtual:pwa-register/react";
 import {
   TransactionProvider,
   useTransaction,
@@ -27,6 +27,7 @@ import { NotesScreen } from "./components/Screens/Notes";
 import { Todo } from "./components/Screens/ToDo/Todo";
 import { CollectionScreen } from "./components/Screens/Collections/CollectionScreen";
 import ZExpReport from "./components/Screens/ZEXP_REPORT/ZExpReport";
+import CalendarScreen from "./components/Screens/Calendar/CalendarScreen";
 
 // Wrapper component to connect transaction tracking with favorites
 const TransactionTracker = ({ children }) => {
@@ -57,14 +58,13 @@ const AppContent = () => {
   }, []);
 
   // 2. Create a small helper for the notification UI
-  const UpdateToast = () => (
+  const UpdateToast = () =>
     needRefresh ? (
       <div className="pwa-update-toast">
         <span>🚀 New version available!</span>
         <button onClick={() => updateServiceWorker(true)}>Update</button>
       </div>
-    ) : null
-  );
+    ) : null;
 
   // Show loading while checking session
   if (isLoading) {
@@ -81,7 +81,10 @@ const AppContent = () => {
           }}
         >
           <div style={{ textAlign: "center", color: "white" }}>
-            <div className="sap-spinner" style={{ margin: "0 auto 16px" }}></div>
+            <div
+              className="sap-spinner"
+              style={{ margin: "0 auto 16px" }}
+            ></div>
             <div>Loading SAP GUI...</div>
           </div>
         </div>
@@ -91,10 +94,11 @@ const AppContent = () => {
 
   // Show login if not authenticated
   if (!isAuthenticated) {
-    return (<>
-      <UpdateToast /> {/* Show on login screen */}
-      <LoginScreen />
-    </>
+    return (
+      <>
+        <UpdateToast /> {/* Show on login screen */}
+        <LoginScreen />
+      </>
     );
   }
 
@@ -159,6 +163,15 @@ const AppContent = () => {
 
       case "LC03":
         return <CollectionScreen mode="display" />;
+
+      case "CS01":
+        return <CalendarScreen mode="create" />;
+
+      case "CS02":
+        return <CalendarScreen mode="edit" />;
+
+      case "CS03":
+        return <CalendarScreen mode="display" />;
 
       case "SM37":
         return (

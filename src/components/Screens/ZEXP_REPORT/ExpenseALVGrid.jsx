@@ -82,7 +82,7 @@ const ExpenseALVGrid = ({ data = [] }) => {
   });
 
   const [showChooser, setShowChooser] = useState(false);
-  const [groupByCategory, setGroupByCategory] = useState(true);
+  const [groupByCategory, setGroupByCategory] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState(null);
 
   // SORT

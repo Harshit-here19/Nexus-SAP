@@ -92,6 +92,21 @@ const transactionDefinitions = {
     icon: "🔍",
     description: "General Table Display",
   },
+  CS01: {
+    label: "Create Event",
+    icon: "📅",
+    description: "Create Calendar Event",
+  },
+  CS02: {
+    label: "Change Event",
+    icon: "✏️",
+    description: "Change Calendar Event",
+  },
+  CS03: {
+    label: "Display Calendar",
+    icon: "👁️",
+    description: "Display Calendar Schedule",
+  },
 
   FB01: { label: "Post Document", icon: "📄", description: "Post Document" },
   FB03: {
@@ -293,6 +308,31 @@ const TreeMenu = () => {
                   label: "LC03 - Display",
                   icon: "👁️",
                   tcode: "LC03",
+                },
+              ],
+            },
+            {
+              id: "cs",
+              label: "Calendar Management",
+              icon: "📅",
+              children: [
+                {
+                  id: "cs01",
+                  label: "CS01 - Create Calendar",
+                  icon: "➕",
+                  tcode: "CS01",
+                },
+                {
+                  id: "cs02",
+                  label: "CS02 - Change Calendar",
+                  icon: "✏️",
+                  tcode: "CS02",
+                },
+                {
+                  id: "cs03",
+                  label: "CS03 - Display Calendar",
+                  icon: "👁️",
+                  tcode: "CS03",
                 },
               ],
             },

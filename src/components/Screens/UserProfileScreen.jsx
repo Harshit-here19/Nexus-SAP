@@ -1,63 +1,73 @@
 // src/components/Screens/UserProfileScreen.jsx
-import React, { useState, useEffect } from 'react';
-import styles from './UserProfileScreen.module.css';
-import SapButton from '../Common/SapButton';
-import SapInput from '../Common/SapInput';
-import SapSelect from '../Common/SapSelect';
-import SapModal from '../Common/SapModal';
-import { useTransaction } from '../../context/TransactionContext';
-import { useAuth } from '../../context/AuthContext';
-import { useSettings } from '../../context/SettingsContext';
-import { useConfirm } from '../../context/ConfirmContext';
+import React, { useEffect, useMemo, useState } from "react";
+import styles from "./UserProfileScreen.module.css";
+import SapButton from "../Common/SapButton";
+import SapInput from "../Common/SapInput";
+import SapSelect from "../Common/SapSelect";
+import SapModal from "../Common/SapModal";
+import { AvatarPicker, AvatarSVG } from "../Common/Avatar/Avatarpicker";
+import { useTransaction } from "../../context/TransactionContext";
+import { useAuth } from "../../context/AuthContext";
+import { useSettings } from "../../context/SettingsContext";
+import { useConfirm } from "../../context/ConfirmContext";
 import {
   getUsers,
   updateUserProfile,
-  changePassword
-} from '../../utils/storage';
+  changePassword,
+} from "../../utils/storage";
 
 const UserProfileScreen = () => {
   const { updateStatus, markAsChanged, markAsSaved } = useTransaction();
   const { user } = useAuth();
-  const { settings, updateSetting, saveSettings, resetSettings } = useSettings();
+  const { settings, updateSetting, saveSettings, resetSettings } =
+    useSettings();
   const { confirm } = useConfirm();
 
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState("profile");
   const [profileData, setProfileData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    department: '',
-    phone: '',
-    address: '',
-    city: '',
-    country: ''
+    firstName: "",
+    lastName: "",
+    email: "",
+    department: "",
+    phone: "",
+    address: "",
+    city: "",
+    country: "",
+    avatar: {
+      style: "cyber",
+    },
   });
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
-  const [passwordError, setPasswordError] = useState('');
+  const [passwordError, setPasswordError] = useState("");
   const [originalData, setOriginalData] = useState({});
   const [saveAnimation, setSaveAnimation] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
   // Load user profile data
   useEffect(() => {
     if (user?.userId) {
       const users = getUsers();
-      const currentUser = users.find(u => u.id === user.userId);
+      const currentUser = users.find((u) => u.id === user.userId);
       if (currentUser) {
         const data = {
-          firstName: currentUser.firstName || '',
-          lastName: currentUser.lastName || '',
-          email: currentUser.email || '',
-          department: currentUser.department || '',
-          phone: currentUser.phone || '',
-          address: currentUser.address || '',
-          city: currentUser.city || '',
-          country: currentUser.country || ''
+          firstName: currentUser.firstName || "",
+          lastName: currentUser.lastName || "",
+          email: currentUser.email || "",
+          department: currentUser.department || "",
+          phone: currentUser.phone || "",
+          address: currentUser.address || "",
+          city: currentUser.city || "",
+          country: currentUser.country || "",
+          avatar: currentUser.avatar ||
+            settings.avatar || {
+              style: "cyber",
+            },
         };
         setProfileData(data);
         setOriginalData(data);
@@ -65,9 +75,27 @@ const UserProfileScreen = () => {
     }
   }, [user?.userId]);
 
+  const handleAvatarChange = (avatar) => {
+    // Update profile
+    setProfileData((prev) => ({
+      ...prev,
+      avatar,
+    }));
+
+    // Store globally in settings
+    updateSetting("avatar", avatar);
+
+    // persist immediately
+    saveSettings();
+
+    markAsChanged();
+
+    updateStatus("Avatar updated successfully", "success");
+  };
+
   // Handle profile field change
   const handleProfileChange = (field, value) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData((prev) => ({ ...prev, [field]: value }));
     markAsChanged();
   };
 
@@ -81,9 +109,9 @@ const UserProfileScreen = () => {
       if (result.success) {
         setOriginalData(profileData);
         markAsSaved();
-        updateStatus('Profile updated successfully', 'success');
+        updateStatus("Profile updated successfully", "success");
       } else {
-        updateStatus(result.message || 'Failed to update profile', 'error');
+        updateStatus(result.message || "Failed to update profile", "error");
       }
     }, 600);
   };
@@ -92,43 +120,47 @@ const UserProfileScreen = () => {
   const handleResetProfile = () => {
     setProfileData(originalData);
     markAsSaved();
-    updateStatus('Changes discarded', 'info');
+    updateStatus("Changes discarded", "info");
   };
 
   // Handle password change
   const handleChangePassword = () => {
-    setPasswordError('');
+    setPasswordError("");
 
     if (!passwordData.currentPassword) {
-      setPasswordError('Current password is required');
+      setPasswordError("Current password is required");
       return;
     }
 
     if (!passwordData.newPassword || passwordData.newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters');
+      setPasswordError("New password must be at least 6 characters");
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError('New passwords do not match');
+      setPasswordError("New passwords do not match");
       return;
     }
 
     if (passwordData.currentPassword === passwordData.newPassword) {
-      setPasswordError('New password must be different from current password');
+      setPasswordError("New password must be different from current password");
       return;
     }
 
     const result = changePassword(
       user.userId,
       passwordData.currentPassword,
-      passwordData.newPassword
+      passwordData.newPassword,
     );
 
     if (result.success) {
       setShowPasswordModal(false);
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      updateStatus('Password changed successfully', 'success');
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      updateStatus("Password changed successfully", "success");
     } else {
       setPasswordError(result.message);
     }
@@ -137,7 +169,7 @@ const UserProfileScreen = () => {
   // Handle settings change
   const handleSettingChange = (key, value) => {
     updateSetting(key, value);
-    updateStatus(`Setting updated: ${key}`, 'success');
+    updateStatus(`Setting updated: ${key}`, "success");
   };
 
   // Calculate session duration
@@ -157,19 +189,20 @@ const UserProfileScreen = () => {
 
   // Get user initials
   const getInitials = () => {
-    const first = profileData.firstName?.[0] || user?.username?.[0] || '';
-    const last = profileData.lastName?.[0] || '';
-    return (first + last).toUpperCase() || '?';
+    const first = profileData.firstName?.[0] || user?.username?.[0] || "";
+    const last = profileData.lastName?.[0] || "";
+    return (first + last).toUpperCase() || "?";
   };
 
   // Check if profile has changes
-  const hasChanges = JSON.stringify(profileData) !== JSON.stringify(originalData);
+  const hasChanges =
+    JSON.stringify(profileData) !== JSON.stringify(originalData);
 
   // Tabs configuration
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: '👤' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' },
-    { id: 'account', label: 'Account', icon: '🔐' }
+    { id: "profile", label: "Profile", icon: "👤" },
+    { id: "settings", label: "Settings", icon: "⚙️" },
+    { id: "account", label: "Account", icon: "🔐" },
   ];
 
   return (
@@ -180,9 +213,15 @@ const UserProfileScreen = () => {
           {/* Avatar Section */}
           <div className={styles.avatarSection}>
             <div className={styles.avatar}>
-              <span className={styles.avatarText}>{getInitials()}</span>
+              <AvatarSVG
+                initials={getInitials()}
+                style={profileData.avatar?.style || "cyber"}
+              />
               <div className={styles.avatarStatus} />
-              <button className={styles.avatarEdit}>
+              <button
+                className={styles.avatarEdit}
+                onClick={() => setShowAvatarPicker(true)}
+              >
                 <span>📷</span>
               </button>
             </div>
@@ -194,15 +233,17 @@ const UserProfileScreen = () => {
                   : user?.fullName || user?.username}
               </h1>
               <p className={styles.userRole}>
-                <span className={`${styles.roleBadge} ${user?.isAdmin ? styles.admin : ''}`}>
+                <span
+                  className={`${styles.roleBadge} ${user?.isAdmin ? styles.admin : ""}`}
+                >
                   {user?.role}
                 </span>
                 <span className={styles.userDept}>
-                  {profileData.department || 'No Department'}
+                  {profileData.department || "No Department"}
                 </span>
               </p>
               <p className={styles.userEmail}>
-                {profileData.email || 'No email set'}
+                {profileData.email || "No email set"}
               </p>
             </div>
           </div>
@@ -213,7 +254,7 @@ const UserProfileScreen = () => {
               <span className={styles.statIcon}>🕐</span>
               <div className={styles.statContent}>
                 <span className={styles.statValue}>
-                  {user?.loginTime ? calculateDuration(user.loginTime) : '-'}
+                  {user?.loginTime ? calculateDuration(user.loginTime) : "-"}
                 </span>
                 <span className={styles.statLabel}>Session</span>
               </div>
@@ -221,7 +262,9 @@ const UserProfileScreen = () => {
             <div className={styles.statCard}>
               <span className={styles.statIcon}>🏢</span>
               <div className={styles.statContent}>
-                <span className={styles.statValue}>{user?.client || '100'}</span>
+                <span className={styles.statValue}>
+                  {user?.client || "100"}
+                </span>
                 <span className={styles.statLabel}>Client</span>
               </div>
             </div>
@@ -239,15 +282,15 @@ const UserProfileScreen = () => {
       {/* Navigation Tabs */}
       <div className={styles.tabsContainer}>
         <div className={styles.tabs}>
-          {tabs.map(tab => (
+          {tabs.map((tab) => (
             <button
               key={tab.id}
-              className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
+              className={`${styles.tab} ${activeTab === tab.id ? styles.active : ""}`}
               onClick={() => setActiveTab(tab.id)}
             >
               <span className={styles.tabIcon}>{tab.icon}</span>
               <span className={styles.tabLabel}>{tab.label}</span>
-              {tab.id === 'profile' && hasChanges && (
+              {tab.id === "profile" && hasChanges && (
                 <span className={styles.tabBadge}>●</span>
               )}
             </button>
@@ -258,7 +301,7 @@ const UserProfileScreen = () => {
       {/* Tab Content */}
       <div className={styles.content}>
         {/* Profile Tab */}
-        {activeTab === 'profile' && (
+        {activeTab === "profile" && (
           <div className={styles.tabContent}>
             <div className={styles.formGrid}>
               {/* Personal Information Card */}
@@ -283,7 +326,9 @@ const UserProfileScreen = () => {
                         type="text"
                         className={styles.input}
                         value={profileData.firstName}
-                        onChange={(e) => handleProfileChange('firstName', e.target.value)}
+                        onChange={(e) =>
+                          handleProfileChange("firstName", e.target.value)
+                        }
                         placeholder="Enter first name"
                       />
                     </div>
@@ -293,7 +338,9 @@ const UserProfileScreen = () => {
                         type="text"
                         className={styles.input}
                         value={profileData.lastName}
-                        onChange={(e) => handleProfileChange('lastName', e.target.value)}
+                        onChange={(e) =>
+                          handleProfileChange("lastName", e.target.value)
+                        }
                         placeholder="Enter last name"
                       />
                     </div>
@@ -305,7 +352,9 @@ const UserProfileScreen = () => {
                       type="email"
                       className={styles.input}
                       value={profileData.email}
-                      onChange={(e) => handleProfileChange('email', e.target.value)}
+                      onChange={(e) =>
+                        handleProfileChange("email", e.target.value)
+                      }
                       placeholder="name@company.com"
                     />
                   </div>
@@ -316,7 +365,9 @@ const UserProfileScreen = () => {
                       type="tel"
                       className={styles.input}
                       value={profileData.phone}
-                      onChange={(e) => handleProfileChange('phone', e.target.value)}
+                      onChange={(e) =>
+                        handleProfileChange("phone", e.target.value)
+                      }
                       placeholder="+1 (555) 000-0000"
                     />
                   </div>
@@ -343,7 +394,9 @@ const UserProfileScreen = () => {
                     <select
                       className={styles.select}
                       value={profileData.department}
-                      onChange={(e) => handleProfileChange('department', e.target.value)}
+                      onChange={(e) =>
+                        handleProfileChange("department", e.target.value)
+                      }
                     >
                       <option value="">Select Department</option>
                       <option value="Sales">Sales</option>
@@ -362,7 +415,9 @@ const UserProfileScreen = () => {
                       type="text"
                       className={styles.input}
                       value={profileData.address}
-                      onChange={(e) => handleProfileChange('address', e.target.value)}
+                      onChange={(e) =>
+                        handleProfileChange("address", e.target.value)
+                      }
                       placeholder="Street address"
                     />
                   </div>
@@ -374,7 +429,9 @@ const UserProfileScreen = () => {
                         type="text"
                         className={styles.input}
                         value={profileData.city}
-                        onChange={(e) => handleProfileChange('city', e.target.value)}
+                        onChange={(e) =>
+                          handleProfileChange("city", e.target.value)
+                        }
                         placeholder="City"
                       />
                     </div>
@@ -383,7 +440,9 @@ const UserProfileScreen = () => {
                       <select
                         className={styles.select}
                         value={profileData.country}
-                        onChange={(e) => handleProfileChange('country', e.target.value)}
+                        onChange={(e) =>
+                          handleProfileChange("country", e.target.value)
+                        }
                       >
                         <option value="">Select Country</option>
                         <option value="USA">United States</option>
@@ -403,7 +462,7 @@ const UserProfileScreen = () => {
             {/* Action Buttons */}
             <div className={styles.actions}>
               <button
-                className={`${styles.btnPrimary} ${saveAnimation ? styles.saving : ''}`}
+                className={`${styles.btnPrimary} ${saveAnimation ? styles.saving : ""}`}
                 onClick={handleSaveProfile}
                 disabled={!hasChanges}
               >
@@ -439,7 +498,7 @@ const UserProfileScreen = () => {
         )}
 
         {/* Settings Tab */}
-        {activeTab === 'settings' && (
+        {activeTab === "settings" && (
           <div className={styles.tabContent}>
             <div className={styles.settingsGrid}>
               {/* Display Settings */}
@@ -452,18 +511,20 @@ const UserProfileScreen = () => {
                   <div className={styles.settingItem}>
                     <div className={styles.settingInfo}>
                       <span className={styles.settingLabel}>Theme</span>
-                      <span className={styles.settingDesc}>Choose your preferred color scheme</span>
+                      <span className={styles.settingDesc}>
+                        Choose your preferred color scheme
+                      </span>
                     </div>
                     <div className={styles.themeToggle}>
                       <button
-                        className={`${styles.themeBtn} ${settings.theme === 'light' ? styles.active : ''}`}
-                        onClick={() => handleSettingChange('theme', 'light')}
+                        className={`${styles.themeBtn} ${settings.theme === "light" ? styles.active : ""}`}
+                        onClick={() => handleSettingChange("theme", "light")}
                       >
                         ☀️ Light
                       </button>
                       <button
-                        className={`${styles.themeBtn} ${settings.theme === 'dark' ? styles.active : ''}`}
-                        onClick={() => handleSettingChange('theme', 'dark')}
+                        className={`${styles.themeBtn} ${settings.theme === "dark" ? styles.active : ""}`}
+                        onClick={() => handleSettingChange("theme", "dark")}
                       >
                         🌙 Dark
                       </button>
@@ -473,12 +534,16 @@ const UserProfileScreen = () => {
                   <div className={styles.settingItem}>
                     <div className={styles.settingInfo}>
                       <span className={styles.settingLabel}>Font Size</span>
-                      <span className={styles.settingDesc}>Adjust text size for better readability</span>
+                      <span className={styles.settingDesc}>
+                        Adjust text size for better readability
+                      </span>
                     </div>
                     <select
                       className={styles.settingSelect}
                       value={settings.fontSize}
-                      onChange={(e) => handleSettingChange('fontSize', e.target.value)}
+                      onChange={(e) =>
+                        handleSettingChange("fontSize", e.target.value)
+                      }
                     >
                       <option value="small">Small</option>
                       <option value="medium">Medium</option>
@@ -489,12 +554,16 @@ const UserProfileScreen = () => {
                   <div className={styles.settingItem}>
                     <div className={styles.settingInfo}>
                       <span className={styles.settingLabel}>Code Theme</span>
-                      <span className={styles.settingDesc}>Syntax highlighting for code blocks</span>
+                      <span className={styles.settingDesc}>
+                        Syntax highlighting for code blocks
+                      </span>
                     </div>
                     <select
                       className={styles.settingSelect}
                       value={settings.codeTheme}
-                      onChange={(e) => handleSettingChange('codeTheme', e.target.value)}
+                      onChange={(e) =>
+                        handleSettingChange("codeTheme", e.target.value)
+                      }
                     >
                       <option value="Dracula">🦇 Dracula</option>
                       <option value="MacOS">💻 MacOS</option>
@@ -508,12 +577,19 @@ const UserProfileScreen = () => {
                   <div className={styles.settingItem}>
                     <div className={styles.settingInfo}>
                       <span className={styles.settingLabel}>Rows Per Page</span>
-                      <span className={styles.settingDesc}>Number of items to display in tables</span>
+                      <span className={styles.settingDesc}>
+                        Number of items to display in tables
+                      </span>
                     </div>
                     <select
                       className={styles.settingSelect}
                       value={settings.rowsPerPage?.toString()}
-                      onChange={(e) => handleSettingChange('rowsPerPage', parseInt(e.target.value))}
+                      onChange={(e) =>
+                        handleSettingChange(
+                          "rowsPerPage",
+                          parseInt(e.target.value),
+                        )
+                      }
                     >
                       <option value="10">10</option>
                       <option value="20">20</option>
@@ -534,12 +610,16 @@ const UserProfileScreen = () => {
                   <div className={styles.settingItem}>
                     <div className={styles.settingInfo}>
                       <span className={styles.settingLabel}>Date Format</span>
-                      <span className={styles.settingDesc}>How dates are displayed</span>
+                      <span className={styles.settingDesc}>
+                        How dates are displayed
+                      </span>
                     </div>
                     <select
                       className={styles.settingSelect}
                       value={settings.dateFormat}
-                      onChange={(e) => handleSettingChange('dateFormat', e.target.value)}
+                      onChange={(e) =>
+                        handleSettingChange("dateFormat", e.target.value)
+                      }
                     >
                       <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                       <option value="DD/MM/YYYY">DD/MM/YYYY</option>
@@ -550,12 +630,16 @@ const UserProfileScreen = () => {
                   <div className={styles.settingItem}>
                     <div className={styles.settingInfo}>
                       <span className={styles.settingLabel}>Time Format</span>
-                      <span className={styles.settingDesc}>12-hour or 24-hour clock</span>
+                      <span className={styles.settingDesc}>
+                        12-hour or 24-hour clock
+                      </span>
                     </div>
                     <select
                       className={styles.settingSelect}
                       value={settings.timeFormat}
-                      onChange={(e) => handleSettingChange('timeFormat', e.target.value)}
+                      onChange={(e) =>
+                        handleSettingChange("timeFormat", e.target.value)
+                      }
                     >
                       <option value="12h">12 Hour (AM/PM)</option>
                       <option value="24h">24 Hour</option>
@@ -565,12 +649,16 @@ const UserProfileScreen = () => {
                   <div className={styles.settingItem}>
                     <div className={styles.settingInfo}>
                       <span className={styles.settingLabel}>Number Format</span>
-                      <span className={styles.settingDesc}>Decimal and thousand separators</span>
+                      <span className={styles.settingDesc}>
+                        Decimal and thousand separators
+                      </span>
                     </div>
                     <select
                       className={styles.settingSelect}
                       value={settings.decimalNotation}
-                      onChange={(e) => handleSettingChange('decimalNotation', e.target.value)}
+                      onChange={(e) =>
+                        handleSettingChange("decimalNotation", e.target.value)
+                      }
                     >
                       <option value="1,234,567.89">1,234,567.89</option>
                       <option value="1.234.567,89">1.234.567,89</option>
@@ -580,12 +668,16 @@ const UserProfileScreen = () => {
                   <div className={styles.settingItem}>
                     <div className={styles.settingInfo}>
                       <span className={styles.settingLabel}>Language</span>
-                      <span className={styles.settingDesc}>Choose your preferred display language</span>
+                      <span className={styles.settingDesc}>
+                        Choose your preferred display language
+                      </span>
                     </div>
                     <select
                       className={styles.settingSelect}
                       value={settings.language}
-                      onChange={(e) => handleSettingChange('language', e.target.value)}
+                      onChange={(e) =>
+                        handleSettingChange("language", e.target.value)
+                      }
                     >
                       <option value="en">English</option>
                       <option value="hi">Hindi</option>
@@ -604,14 +696,23 @@ const UserProfileScreen = () => {
                   <div className={styles.toggleGrid}>
                     <label className={styles.toggleItem}>
                       <div className={styles.toggleInfo}>
-                        <span className={styles.toggleLabel}>Confirm on Exit</span>
-                        <span className={styles.toggleDesc}>Ask before leaving unsaved changes</span>
+                        <span className={styles.toggleLabel}>
+                          Confirm on Exit
+                        </span>
+                        <span className={styles.toggleDesc}>
+                          Ask before leaving unsaved changes
+                        </span>
                       </div>
                       <div className={styles.toggle}>
                         <input
                           type="checkbox"
                           checked={settings.confirmOnExit}
-                          onChange={(e) => handleSettingChange('confirmOnExit', e.target.checked)}
+                          onChange={(e) =>
+                            handleSettingChange(
+                              "confirmOnExit",
+                              e.target.checked,
+                            )
+                          }
                         />
                         <span className={styles.toggleSlider}></span>
                       </div>
@@ -619,14 +720,23 @@ const UserProfileScreen = () => {
 
                     <label className={styles.toggleItem}>
                       <div className={styles.toggleInfo}>
-                        <span className={styles.toggleLabel}>Show Tooltips</span>
-                        <span className={styles.toggleDesc}>Display helpful hints on hover</span>
+                        <span className={styles.toggleLabel}>
+                          Show Tooltips
+                        </span>
+                        <span className={styles.toggleDesc}>
+                          Display helpful hints on hover
+                        </span>
                       </div>
                       <div className={styles.toggle}>
                         <input
                           type="checkbox"
                           checked={settings.showTooltips}
-                          onChange={(e) => handleSettingChange('showTooltips', e.target.checked)}
+                          onChange={(e) =>
+                            handleSettingChange(
+                              "showTooltips",
+                              e.target.checked,
+                            )
+                          }
                         />
                         <span className={styles.toggleSlider}></span>
                       </div>
@@ -634,14 +744,23 @@ const UserProfileScreen = () => {
 
                     <label className={styles.toggleItem}>
                       <div className={styles.toggleInfo}>
-                        <span className={styles.toggleLabel}>Notifications</span>
-                        <span className={styles.toggleDesc}>Show system notifications</span>
+                        <span className={styles.toggleLabel}>
+                          Notifications
+                        </span>
+                        <span className={styles.toggleDesc}>
+                          Show system notifications
+                        </span>
                       </div>
                       <div className={styles.toggle}>
                         <input
                           type="checkbox"
                           checked={settings.showNotifications}
-                          onChange={(e) => handleSettingChange('showNotifications', e.target.checked)}
+                          onChange={(e) =>
+                            handleSettingChange(
+                              "showNotifications",
+                              e.target.checked,
+                            )
+                          }
                         />
                         <span className={styles.toggleSlider}></span>
                       </div>
@@ -649,14 +768,23 @@ const UserProfileScreen = () => {
 
                     <label className={styles.toggleItem}>
                       <div className={styles.toggleInfo}>
-                        <span className={styles.toggleLabel}>Sound Effects</span>
-                        <span className={styles.toggleDesc}>Play sounds for actions</span>
+                        <span className={styles.toggleLabel}>
+                          Sound Effects
+                        </span>
+                        <span className={styles.toggleDesc}>
+                          Play sounds for actions
+                        </span>
                       </div>
                       <div className={styles.toggle}>
                         <input
                           type="checkbox"
                           checked={settings.soundEnabled}
-                          onChange={(e) => handleSettingChange('soundEnabled', e.target.checked)}
+                          onChange={(e) =>
+                            handleSettingChange(
+                              "soundEnabled",
+                              e.target.checked,
+                            )
+                          }
                         />
                         <span className={styles.toggleSlider}></span>
                       </div>
@@ -671,10 +799,12 @@ const UserProfileScreen = () => {
               <button
                 className={styles.btnDanger}
                 onClick={async () => {
-                  const confirmed = await confirm('Reset all settings to default? This cannot be undone.');
+                  const confirmed = await confirm(
+                    "Reset all settings to default? This cannot be undone.",
+                  );
                   if (confirmed) {
                     resetSettings();
-                    updateStatus('Settings reset to default', 'success');
+                    updateStatus("Settings reset to default", "success");
                   }
                 }}
               >
@@ -686,12 +816,15 @@ const UserProfileScreen = () => {
         )}
 
         {/* Account Tab */}
-        {activeTab === 'account' && (
+        {activeTab === "account" && (
           <div className={styles.tabContent}>
             {/* Info Banner */}
             <div className={styles.infoBanner}>
               <span className={styles.infoIcon}>ℹ️</span>
-              <span>Account information is managed by your administrator. Contact support for changes.</span>
+              <span>
+                Account information is managed by your administrator. Contact
+                support for changes.
+              </span>
             </div>
 
             <div className={styles.accountGrid}>
@@ -712,7 +845,9 @@ const UserProfileScreen = () => {
                   </div>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Role</span>
-                    <span className={`${styles.badge} ${user?.isAdmin ? styles.badgeAdmin : styles.badgeUser}`}>
+                    <span
+                      className={`${styles.badge} ${user?.isAdmin ? styles.badgeAdmin : styles.badgeUser}`}
+                    >
                       {user?.role}
                     </span>
                   </div>
@@ -733,13 +868,17 @@ const UserProfileScreen = () => {
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Login Time</span>
                     <span className={styles.detailValue}>
-                      {user?.loginTime ? new Date(user.loginTime).toLocaleString() : '-'}
+                      {user?.loginTime
+                        ? new Date(user.loginTime).toLocaleString()
+                        : "-"}
                     </span>
                   </div>
                   <div className={styles.detailRow}>
                     <span className={styles.detailLabel}>Duration</span>
                     <span className={styles.detailValue}>
-                      {user?.loginTime ? calculateDuration(user.loginTime) : '-'}
+                      {user?.loginTime
+                        ? calculateDuration(user.loginTime)
+                        : "-"}
                     </span>
                   </div>
                   <div className={styles.detailRow}>
@@ -762,30 +901,58 @@ const UserProfileScreen = () => {
                   <div className={styles.permissionsGrid}>
                     <div className={styles.permissionItem}>
                       <span className={styles.permissionIcon}>📦</span>
-                      <span className={styles.permissionLabel}>Materials (MM)</span>
-                      <span className={`${styles.permissionBadge} ${styles.granted}`}>Granted</span>
+                      <span className={styles.permissionLabel}>
+                        Materials (MM)
+                      </span>
+                      <span
+                        className={`${styles.permissionBadge} ${styles.granted}`}
+                      >
+                        Granted
+                      </span>
                     </div>
                     <div className={styles.permissionItem}>
                       <span className={styles.permissionIcon}>💰</span>
                       <span className={styles.permissionLabel}>Sales (SD)</span>
-                      <span className={`${styles.permissionBadge} ${styles.granted}`}>Granted</span>
+                      <span
+                        className={`${styles.permissionBadge} ${styles.granted}`}
+                      >
+                        Granted
+                      </span>
                     </div>
                     <div className={styles.permissionItem}>
                       <span className={styles.permissionIcon}>🗄️</span>
-                      <span className={styles.permissionLabel}>Data Browser</span>
-                      <span className={`${styles.permissionBadge} ${styles.granted}`}>Granted</span>
+                      <span className={styles.permissionLabel}>
+                        Data Browser
+                      </span>
+                      <span
+                        className={`${styles.permissionBadge} ${styles.granted}`}
+                      >
+                        Granted
+                      </span>
                     </div>
                     {user?.isAdmin && (
                       <>
                         <div className={styles.permissionItem}>
                           <span className={styles.permissionIcon}>👥</span>
-                          <span className={styles.permissionLabel}>User Admin</span>
-                          <span className={`${styles.permissionBadge} ${styles.admin}`}>Admin</span>
+                          <span className={styles.permissionLabel}>
+                            User Admin
+                          </span>
+                          <span
+                            className={`${styles.permissionBadge} ${styles.admin}`}
+                          >
+                            Admin
+                          </span>
                         </div>
                         <div className={styles.permissionItem}>
                           <span className={styles.permissionIcon}>⚙️</span>
-                          <span className={styles.permissionLabel}>System Config</span>
-                          <span className={`${styles.permissionBadge} ${styles.admin}`}>Admin</span>
+                          <span className={styles.permissionLabel}>
+                            System Config
+                          </span>
+                          <span
+                            className={`${styles.permissionBadge} ${styles.admin}`}
+                          >
+                            Admin
+                          </span>
                         </div>
                       </>
                     )}
@@ -802,8 +969,12 @@ const UserProfileScreen = () => {
         isOpen={showPasswordModal}
         onClose={() => {
           setShowPasswordModal(false);
-          setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-          setPasswordError('');
+          setPasswordData({
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+          });
+          setPasswordError("");
         }}
         title="Change Password"
         width="420px"
@@ -813,8 +984,12 @@ const UserProfileScreen = () => {
               className={styles.btnSecondary}
               onClick={() => {
                 setShowPasswordModal(false);
-                setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                setPasswordError('');
+                setPasswordData({
+                  currentPassword: "",
+                  newPassword: "",
+                  confirmPassword: "",
+                });
+                setPasswordError("");
               }}
             >
               Cancel
@@ -842,7 +1017,12 @@ const UserProfileScreen = () => {
               type="password"
               className={styles.input}
               value={passwordData.currentPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  currentPassword: e.target.value,
+                })
+              }
               placeholder="Enter current password"
             />
           </div>
@@ -853,7 +1033,12 @@ const UserProfileScreen = () => {
               type="password"
               className={styles.input}
               value={passwordData.newPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  newPassword: e.target.value,
+                })
+              }
               placeholder="Minimum 6 characters"
             />
           </div>
@@ -864,17 +1049,30 @@ const UserProfileScreen = () => {
               type="password"
               className={styles.input}
               value={passwordData.confirmPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  confirmPassword: e.target.value,
+                })
+              }
               placeholder="Confirm new password"
             />
           </div>
 
           <div className={styles.passwordHint}>
             <span>💡</span>
-            Password must be at least 6 characters long and different from your current password.
+            Password must be at least 6 characters long and different from your
+            current password.
           </div>
         </div>
       </SapModal>
+      <AvatarPicker
+        name={`${profileData.firstName} ${profileData.lastName}`}
+        value={profileData.avatar}
+        onChange={handleAvatarChange}
+        isOpen={showAvatarPicker}
+        onClose={() => setShowAvatarPicker(false)}
+      />
     </div>
   );
 };

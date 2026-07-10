@@ -4,7 +4,10 @@ import { useAuth } from "../../context/AuthContext";
 import { useTransaction } from "../../context/TransactionContext";
 import { useSettings } from "../../context/SettingsContext";
 import { useConfirm } from "../../context/ConfirmContext";
+import { getUsers } from "../../utils/storage";
 import "./UserProfileDropdown.css";
+
+import { AvatarSVG } from "../Common/Avatar/Avatarpicker";
 
 const UserProfileDropdown = () => {
   const { user, logout } = useAuth();
@@ -16,6 +19,13 @@ const UserProfileDropdown = () => {
   const { confirm } = useConfirm();
 
   const isMobile = window.innerWidth <= 786;
+  let userAvatar = "cyber";
+
+  if (user?.userId) {
+    const users = getUsers();
+    const currentUser = users.find((u) => u.id === user.userId);
+    userAvatar = currentUser.avatar;
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -68,6 +78,8 @@ const UserProfileDropdown = () => {
     return "U";
   };
 
+  // console.log(settings);
+
   const formatName = (name = "") => {
     if (name.length > 10) {
       return name.slice(0, 8) + "..";
@@ -81,7 +93,12 @@ const UserProfileDropdown = () => {
         onClick={() => setShowDropdown(!showDropdown)}
         className="sap-user-button"
       >
-        <div className="sap-user-avatar">{getInitials()}</div>
+        <div className="sap-user-avatar">
+          <AvatarSVG
+            initials={getInitials()}
+            style={userAvatar?.style || "cyber"}
+          />
+        </div>
 
         {!isMobile && (
           <>
@@ -100,7 +117,10 @@ const UserProfileDropdown = () => {
 
           {/* Header */}
           <div className="sap-user-header">
-            <div className="sap-user-avatar-large">{getInitials()}</div>
+            <div className="sap-user-avatar-large"><AvatarSVG
+            initials={getInitials()}
+            style={userAvatar?.style || "cyber"}
+          /></div>
 
             <div className="sap-user-info">
               <div className="sap-user-fullname">{user?.fullName}</div>
@@ -139,14 +159,15 @@ const UserProfileDropdown = () => {
               display: "flex",
               alignItems: "center",
               gap: "8px",
-              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+              fontFamily:
+                "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
             }}
           >
             <span
               style={{
                 fontSize: "12px",
                 fontWeight: "500",
-                color: "var(--sap-content-label-color, #666)"
+                color: "var(--sap-content-label-color, #666)",
               }}
             >
               Quick Settings:
@@ -158,8 +179,8 @@ const UserProfileDropdown = () => {
               aria-label="Select language"
               style={{
                 padding: "4px 24px 4px 8px", // Extra right padding for custom/default arrow spacing
-                borderRadius: "6px",         // Modern subtle curve instead of pill shape
-                height:"35px",
+                borderRadius: "6px", // Modern subtle curve instead of pill shape
+                height: "35px",
                 border: "1px solid rgba(0, 0, 0, 0.15)",
                 background: "var(--sap-content-bg, #fff)",
                 fontSize: "12px",
@@ -169,8 +190,13 @@ const UserProfileDropdown = () => {
                 outline: "none",
                 transition: "border-color 0.2s, box-shadow 0.2s",
               }}
-              onFocus={(e) => e.target.style.borderColor = "var(--sap-content-focus-color, #0a6ed1)"}
-              onBlur={(e) => e.target.style.borderColor = "rgba(0, 0, 0, 0.15)"}
+              onFocus={(e) =>
+                (e.target.style.borderColor =
+                  "var(--sap-content-focus-color, #0a6ed1)")
+              }
+              onBlur={(e) =>
+                (e.target.style.borderColor = "rgba(0, 0, 0, 0.15)")
+              }
             >
               <option value="en">🇺🇸 English</option>
               <option value="hi">🇮🇳 हिन्दी</option>

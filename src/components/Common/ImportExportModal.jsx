@@ -45,10 +45,11 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
   const tables = [
     { value: "all", label: "All Data (Full Backup)" },
     { value: "entertainment_wishlist", label: "Wishlist Items" },
-    { value: "materials", label: "Materials (MARA)" },
     { value: "expenses", label: "Expenses (KONV)" },
+    { value: "materials", label: "Materials (MARA)" },
     { value: "notes", label: "Notes (NT)" },
     { value: "collections", label: "List Collections (LC)" },
+    { value: "calendar_events", label: "Calendar Events" },
     { value: "customers", label: "Customers (KNA1)" },
     { value: "vendors", label: "Vendors (LFA1)" },
     { value: "plants", label: "Plants (T001W)" },
@@ -145,6 +146,14 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
       { key: "createdAt", label: "Created At" },
       { key: "updatedAt", label: "Updated At" },
     ],
+    calendar_events: [
+      { key: "calendarNumber", label: "Calendar Number" },
+      { key: "title", label: "Title" },
+      { key: "date", label: "Date" },
+      { key: "description", label: "Description" },
+      { key: "createdBy", label: "Created By" },
+      { key: "createdOn", label: "Created On" },
+    ],
     plants: [
       { key: "plantCode", label: "Plant Code" },
       { key: "plantName", label: "Plant Name" },
@@ -177,6 +186,10 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
     collections: {
       duplicateField: "title",
       existingKey: "collectionNumber",
+    },
+    calendar_events: {
+      duplicateField: ["title", "date"],
+      existingKey: "calendarNumber",
     },
   };
 

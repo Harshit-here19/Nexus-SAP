@@ -949,7 +949,7 @@ const NotesScreen = ({ mode = "create" }) => {
                   )}
 
                 </div>
-                <SapButton onClick={loadNote} type="primary" icon="📂">
+                <SapButton onClick={loadNote} type="neo" icon="📂">
                   Load
                 </SapButton>
                 <SapButton

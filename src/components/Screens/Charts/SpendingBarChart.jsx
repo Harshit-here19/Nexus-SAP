@@ -21,27 +21,43 @@ const SpendingBarChart = ({
       ([entry]) => {
         if (entry.isIntersecting) {
           setVisible(true);
+        } else {
+          setVisible(false);
+          setAnimate(false);
         }
       },
-      { threshold: 0.3 },
+      {
+        threshold: 0.3,
+      },
     );
 
-    if (chartRef.current) {
-      observer.observe(chartRef.current);
+    const element = chartRef.current;
+
+    if (element) {
+      observer.observe(element);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      if (element) {
+        observer.unobserve(element);
+      }
+
+      observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {
     if (!visible) return;
 
     setAnimate(false);
-    const timer = setTimeout(() => {
-      setAnimate(true);
-    }, 50);
 
-    return () => clearTimeout(timer);
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setAnimate(true);
+      });
+    });
+
+    return () => cancelAnimationFrame(id);
   }, [data, visible]);
 
   /* ==========================================================================

@@ -33,6 +33,7 @@ const transactionDescriptions = {
 
 export const TransactionProvider = ({ children }) => {
   const [currentTransaction, setCurrentTransaction] = useState("HOME");
+  const [transactionData, setTransactionData] = useState({});
   const [isTransactionActive, setIsTransactionActive] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [transactionHistory, setTransactionHistory] = useState(["HOME"]);
@@ -47,11 +48,18 @@ export const TransactionProvider = ({ children }) => {
 
   // Navigate to transaction
   const navigateToTransaction = useCallback(
-    (tcode, bypassLock = false) => {
+    (tcode, bypassLock = false, data = {}) => {
       const newSession = tcode.startsWith("/n") || tcode.startsWith("/N");
       const cleanTcode = tcode.replace(/^\/n/i, "").toUpperCase();
 
-      const readOnlyTransactions = ["MM03", "VA03", "FB03", "WS03", "SE16", "Home"];
+      const readOnlyTransactions = [
+        "MM03",
+        "VA03",
+        "FB03",
+        "WS03",
+        "SE16",
+        "Home",
+      ];
 
       if (readOnlyTransactions.includes(cleanTcode)) {
         setHasUnsavedChanges(false);
@@ -84,6 +92,7 @@ export const TransactionProvider = ({ children }) => {
 
       // Navigate to new transaction
       setCurrentTransaction(cleanTcode);
+      setTransactionData(data);
       setIsTransactionActive(cleanTcode !== "HOME");
       setHasUnsavedChanges(false);
 
@@ -121,36 +130,69 @@ export const TransactionProvider = ({ children }) => {
   );
 
   const resetTransactionHistory = useCallback(() => {
-  setTransactionHistory(["HOME"]);
-}, []);
+    setTransactionHistory(["HOME"]);
+  }, []);
+
+  const openTable = (table) => {
+    navigateToTransaction("SE16", false, {
+      table,
+      autoExecute: true,
+      forceHomeOnBack: true,
+    });
+
+    // Make SE16 a standalone transaction
+    setTransactionHistory(["HOME", "SE16"]);
+  };
 
   // Go back to previous screen or HOME
-  const goBack = useCallback((hasUnsavedChanges = false) => {
-    // If screen has its own back logic → use it first
-    if (customBackHandler) {
-      const handled = customBackHandler();
-      if (handled) return;
-    }
+  const goBack = useCallback(
+    (hasUnsavedChanges = false) => {
+      // Special case for openTable()
+      if (transactionData?.forceHomeOnBack) {
+        if (hasUnsavedChanges) {
+          setPendingTransaction("BACK");
+          setShowExitConfirm(true);
+          setTransactionData({});
+          return;
+        }
 
-    if (hasUnsavedChanges) {
-      setPendingTransaction("BACK");
-      setShowExitConfirm(true);
-      return;
-    }
+        setTransactionData({});
+        setCurrentTransaction("HOME");
+        setIsTransactionActive(false);
+        resetTransactionHistory();
+        return;
+      }
 
-    // Default transaction-level back
-    setTransactionHistory((prev) => {
-      if (prev.length <= 1) return ["HOME"];
+      // If screen has its own back logic → use it first
+      if (customBackHandler) {
+        const handled = customBackHandler();
+        if (handled) return;
+      }
 
-      const newHistory = [...prev];
-      newHistory.pop();
-      const previous = newHistory[newHistory.length - 1];
+      if (hasUnsavedChanges) {
+        setPendingTransaction("BACK");
+        setShowExitConfirm(true);
+        setTransactionData({});
+        return;
+      }
 
-      setCurrentTransaction(previous);
-      setIsTransactionActive(previous !== "HOME");
-      return newHistory;
-    });
-  }, [hasUnsavedChanges, customBackHandler]);
+      setTransactionData({});
+
+      // Default transaction-level back
+      setTransactionHistory((prev) => {
+        if (prev.length <= 1) return ["HOME"];
+
+        const newHistory = [...prev];
+        newHistory.pop();
+        const previous = newHistory[newHistory.length - 1];
+
+        setCurrentTransaction(previous);
+        setIsTransactionActive(previous !== "HOME");
+        return newHistory;
+      });
+    },
+    [hasUnsavedChanges, customBackHandler],
+  );
 
   const registerBackHandler = useCallback((handler) => {
     setCustomBackHandler(() => handler);
@@ -174,12 +216,13 @@ export const TransactionProvider = ({ children }) => {
     resetTransactionHistory();
     setStatusMessage("Transaction ended");
     setStatusType("info");
+    setTransactionData({});
 
     setTimeout(() => {
       setStatusMessage("Ready");
       setStatusType("info");
     }, 2000);
-  }, [hasUnsavedChanges,resetTransactionHistory]);
+  }, [hasUnsavedChanges, resetTransactionHistory]);
 
   // Cancel current operation
   const cancelOperation = useCallback(() => {
@@ -287,6 +330,9 @@ export const TransactionProvider = ({ children }) => {
     markAsSaved,
     updateStatus,
     registerTransactionCallback,
+    transactionData,
+    setTransactionData,
+    openTable,
   };
 
   return (

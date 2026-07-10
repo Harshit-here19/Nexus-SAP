@@ -28,7 +28,10 @@ const defaultSettings = {
   autoLogoutMinutes: 30,
   rowsPerPage: 20,
   confirmOnExit: true,
-  showTooltips: true
+  showTooltips: true,
+  avatar: {
+    style: "cyber",
+  },
 };
 
 export const SettingsProvider = ({ children }) => {

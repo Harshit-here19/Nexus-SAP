@@ -1,0 +1,99 @@
+/* ========================= */
+/* FORM FIELDS */
+/* ========================= */
+
+.fieldRow {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  margin-bottom: 18px;
+}
+
+.fieldRow label {
+  font-size: 13px;
+
+  font-weight: 600;
+
+  color: #6b7280;
+}
+
+/* ========================= */
+/* INPUTS */
+/* ========================= */
+
+.fieldRow input,
+.fieldRow textarea,
+.customSelect {
+  width: 100%;
+
+  min-height: 44px;
+
+  padding: 10px 14px;
+
+  border-radius: 14px;
+
+  border: 1px solid #dbe4ff;
+
+  background: #fafbff;
+
+  color: #374151;
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  transition: 0.2s;
+}
+
+.fieldRow textarea {
+  min-height: 110px;
+
+  resize: vertical;
+}
+
+.fieldRow input:focus,
+.fieldRow textarea:focus,
+.customSelect:focus {
+  outline: none;
+
+  border-color: #818cf8;
+
+  box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.15);
+
+  background: white;
+}
+
+/* ========================= */
+/* CHECKBOX */
+/* ========================= */
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 20px;
+
+  color: #4b5563;
+
+  font-size: 14px;
+}
+
+/* ========================= */
+/* BUTTONS */
+/* ========================= */
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.rightActions {
+  display: flex;
+  gap: 10px;
+}

@@ -1572,7 +1572,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     setShowSearchModal(true);
                   }}
                 />
-                <SapButton onClick={loadItem} type="primary" icon="📂">
+                <SapButton onClick={loadItem} type="neo" icon="📂">
                   Load
                 </SapButton>
                 <SapButton
