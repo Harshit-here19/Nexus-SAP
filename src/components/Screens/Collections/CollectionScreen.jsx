@@ -825,7 +825,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
               )}
             </div>
 
-            <SapButton type="neo" onClick={loadCollection}>
+            <SapButton type="neo" icon="📂" onClick={loadCollection}>
               Load
             </SapButton>
 
