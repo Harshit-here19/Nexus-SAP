@@ -91,6 +91,8 @@ const GENRE_OPTIONS = [
   { value: "bdsm", label: "BDSM" },
   { value: "mind_control", label: "Mind Control" },
   { value: "blackmail", label: "Blackmail" },
+  { value: "gay", label: "Gay" },
+  { value: "shemale", label: "Shemale" },
 
   // ========== OTHER ==========
   { value: "other", label: "Other" },
@@ -1412,7 +1414,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             style={{
               display: "flex",
               flexWrap: "wrap",
-              gap: "8px",
+              gap: "12px",
               maxHeight: "200px",
               overflowY: "auto",
               padding: "8px",
@@ -1421,30 +1423,22 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             }}
           >
             {GENRE_OPTIONS.map((genre) => (
-              <button
+              <SapButton
                 key={genre.value}
                 onClick={() => !isReadOnly && handleGenreToggle(genre.value)}
                 disabled={isReadOnly}
+                type={(formData.genres || []).includes(genre.value)? "glass-active" : "glass"}
                 style={{
                   padding: "6px 12px",
-                  border: "1px solid",
-                  borderColor: (formData.genres || []).includes(genre.value)
-                    ? "var(--sap-brand)"
-                    : "var(--sap-border)",
-                  background: (formData.genres || []).includes(genre.value)
-                    ? "var(--sap-brand)"
-                    : "white",
-                  color: (formData.genres || []).includes(genre.value)
-                    ? "white"
-                    : "var(--sap-text-primary)",
                   borderRadius: "16px",
                   cursor: isReadOnly ? "default" : "pointer",
-                  fontSize: "11px",
+                  fontSize: isMobile ? "11px" :"12px",
                   transition: "all 0.2s",
+                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
                 }}
               >
                 {genre.label}
-              </button>
+              </SapButton>
             ))}
           </div>
 
@@ -1715,9 +1709,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                         : ""
               }`}
               style={{
-                fontSize: isDisplayMode ? "12px" : "11px",
-
-                padding: isDisplayMode ? "6px 14px" : "2px 8px",
+                fontSize: "11px",
+                padding: "2px 8px",
               }}
             >
               {getStatusInfo(formData.status).label}
@@ -1786,9 +1779,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                   marginLeft: "8px",
                   background: getCategoryInfo(formData.category).color,
                   color: "white",
-                  fontSize: isDisplayMode ? "15px" : "11px",
-
-                  padding: isDisplayMode ? "6px 14px" : "2px 8px",
+                  fontSize: "11px",
+                  padding: "2px 8px",
                 }}
               >
                 {getCategoryInfo(formData.category).icon} {formData.category}
@@ -1799,9 +1791,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 className="sap-badge error"
                 style={{
                   marginLeft: "8px",
-                  fontSize: isDisplayMode ? "15px" : "11px",
-
-                  padding: isDisplayMode ? "6px 14px" : "2px 8px",
+                  fontSize:"11px",
+                  padding: "2px 8px",
                 }}
               >
                 🔞 NSFW
@@ -2184,9 +2175,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                                   : ""
                         }`}
                         style={{
-                          fontSize: isDisplayMode ? "15px" : "11px",
-
-                          padding: isDisplayMode ? "6px 14px" : "2px 8px",
+                          fontSize: "11px",
+                          padding: "2px 8px",
                         }}
                       >
                         {getStatusInfo(item.status).label}
@@ -2210,7 +2200,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                         <span
                           style={{
                             color: "#ffc107",
-                            fontSize: isDisplayMode ? "18px" : "12px",
+                            fontSize: "12px",
                           }}
                         >
                           ⭐ {item.rating}/10
