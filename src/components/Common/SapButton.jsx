@@ -2,10 +2,28 @@
 import React from "react";
 import styles from "./SapButton.module.css";
 
+/**
+ * @typedef {"default"|"primary"|"success"|"danger"|"warning"|"search"|"close"|"login"|"signup"|"glass"|"glass-active"|"gold"|"korean-save"|"korean-close"|"korean-delete"|"outline"|"neo"|"neo-danger"|"neo-active"|"neo-dashed"} ButtonType
+ */
+
+/**
+ * @param {{
+ *  children: React.ReactNode,
+ *  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void,
+ *  type?: ButtonType,
+ *  disabled?: boolean,
+ *  icon?: React.ReactNode,
+ *  loading?: boolean,
+ *  onKeyPress?: (e: React.KeyboardEvent<HTMLButtonElement>) => void,
+ *  className?: string,
+ *  style?: React.CSSProperties
+ * }} props
+ */
+
 const SapButton = ({
   children,
   onClick,
-  type = "default", // 'default', 'primary', 'success', 'danger', 'search', 'close', 'login', 'signup', 'glass', 'glass-active', 'gold', 'korean-save' , 'korean-close', 'korean-delete', 'outline', 'neo', 'dashed'
+  type = "default", // 'default', 'primary', 'success', 'danger','warning', 'search', 'close', 'login', 'signup', 'glass', 'glass-active', 'gold', 'korean-save' , 'korean-close', 'korean-delete', 'outline', 'neo','neo-danger','neo-active', 'neo-dashed'
   disabled = false,
   icon,
   loading = false,

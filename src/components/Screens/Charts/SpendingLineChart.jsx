@@ -72,16 +72,6 @@ const SpendingLineChart = ({
     return () => cancelAnimationFrame(id);
   }, [data, isVisible]);
 
-  //   useEffect(() => {
-  //     setAnimate(false);
-
-  //     const timer = setTimeout(() => {
-  //       setAnimate(true);
-  //     }, 50);
-
-  //     return () => clearTimeout(timer);
-  //   }, [data]);
-
   const padding = {
     top: 35,
     right: 25,

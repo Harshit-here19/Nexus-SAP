@@ -89,22 +89,22 @@
   border-color: #0a6129;
 }
 
-/* Danger */
-.sapButton.danger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* Shared Border-Button Layout (Danger & Warning) */
+.sapButton.danger,
+.sapButton.warning {
   height: 32px;
   min-width: 32px;
   padding: 0 12px;
   background: transparent;
-  color: #dc3545;
-  border: 2px solid #dc3545;
+  border: 2px solid currentColor;
   border-radius: 4px;
   font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
   transition: all 0.15s ease;
+}
+
+/* Danger */
+.sapButton.danger {
+  color: #dc3545;
 }
 
 .sapButton.danger:hover {
@@ -117,14 +117,26 @@
   border-color: #c82333;
 }
 
+/* Warning */
+.sapButton.warning {
+  color: #d97706; /* High-contrast Amber/Warning Orange-Yellow */
+}
+
+.sapButton.warning:hover {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.sapButton.warning:active {
+  background: #b45309;
+  border-color: #b45309;
+}
+
 /* ==========================================================================
    4. Custom UI Styles
    ========================================================================== */
 /* Elegant Shadow Search */
 .sapButton.search {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   height: 30px;
   min-width: 36px;
   padding: 0 14px;
@@ -133,10 +145,7 @@
   border: 1px solid #e8e8e8;
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 500;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .sapButton.search:hover {
@@ -151,129 +160,19 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.sapButton.search:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Close Button - Blue Shimmer */
-.sapButton.close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  height: 30px;
-  min-width: 15rem;
-  margin: 0 auto;
-  padding: 0 14px;
-  background: linear-gradient(135deg, #3aafff 0%, #0a6ed1 50%, #074a8a 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.sapButton.close::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  transition: left 0.4s ease;
-}
-
-.sapButton.close:hover::before {
-  left: 100%;
-}
-
-.sapButton.close:hover {
-  box-shadow: 0 4px 15px rgba(10, 110, 209, 0.4);
-}
-
-/* Login Button - Royal Purple */
-.sapButton.login {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  height: 44px;
-  min-width: 100%;
-  margin: 0 auto;
-  padding: 0 20px;
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.sapButton.login::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.sapButton.login:hover::before {
-  left: 100%;
-}
-
-.sapButton.login:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
-}
-
-.sapButton.login:active {
-  transform: translateY(0);
-}
-
-/* Signup Button - Indigo Variant */
+/* Shared Shimmer Animation Base (Close, Login, Signup) */
+.sapButton.close,
+.sapButton.login,
 .sapButton.signup {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
   overflow: hidden;
-  height: 44px;
-  min-width: 100%;
-  margin: 0 auto;
-  padding: 0 20px;
-  background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #4f46e5 100%);
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  margin: 0 auto;
 }
 
+.sapButton.close::before,
+.sapButton.login::before,
 .sapButton.signup::before {
   content: "";
   position: absolute;
@@ -287,32 +186,95 @@
     rgba(255, 255, 255, 0.3),
     transparent
   );
-  transition: left 0.5s ease;
 }
 
+.sapButton.close:hover::before,
+.sapButton.login:hover::before,
 .sapButton.signup:hover::before {
   left: 100%;
 }
 
+/* Close Button - Blue Shimmer */
+.sapButton.close {
+  height: 30px;
+  min-width: 15rem;
+  background: linear-gradient(135deg, #3aafff 0%, #0a6ed1 50%, #074a8a 100%);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.sapButton.close::before {
+  transition: left 0.4s ease;
+}
+
+.sapButton.close:hover {
+  box-shadow: 0 4px 15px rgba(10, 110, 209, 0.4);
+}
+
+/* Shared Forms Entry Layout (Login & Signup) */
+.sapButton.login,
+.sapButton.signup {
+  height: 44px;
+  min-width: 100%;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.sapButton.login::before,
+.sapButton.signup::before {
+  transition: left 0.5s ease;
+}
+
+.sapButton.login:hover,
 .sapButton.signup:hover {
   transform: translateY(-2px);
+}
+
+.sapButton.login:active,
+.sapButton.signup:active {
+  transform: translateY(0);
+}
+
+/* Login Button - Royal Purple */
+.sapButton.login {
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.sapButton.login:hover {
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+}
+
+/* Signup Button - Indigo Variant */
+.sapButton.signup {
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #4f46e5 100%);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.sapButton.signup:hover {
   box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+}
+
+/* Shared Glassmorphic Layout Base */
+.sapButton.glass,
+.sapButton.glass-active {
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Glassmorphic Base */
 .sapButton.glass {
-  padding: 0.5rem 1.5rem;
   background: rgba(255, 255, 255, 0.08);
   color: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 8px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
     0 4px 12px rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .sapButton.glass:hover {
@@ -324,7 +286,6 @@
 
 /* Glassmorphic Active */
 .sapButton.glass-active {
-  padding: 0.5rem 1.5rem;
   background: linear-gradient(
     135deg,
     rgba(59, 130, 246, 0.28),
@@ -332,7 +293,6 @@
   );
   color: #000000;
   border: 1px solid rgba(139, 92, 246, 0.35);
-  border-radius: 8px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
     0 0 0 1px rgba(99, 102, 241, 0.15),
@@ -340,7 +300,6 @@
     0 4px 12px rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  cursor: pointer;
   transition: all 0.25s ease;
 }
 
@@ -377,7 +336,6 @@
     inset 0 -1px 0 rgba(0, 0, 0, 0.15),
     0 4px 12px rgba(204, 153, 34, 0.3),
     0 2px 4px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
 
@@ -398,40 +356,43 @@
     0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* ========================= */
-/* Korean Save */
-/* ========================= */
-
-.sapButton.korean-save {
+/* Shared Korean Flat Layout Base */
+.sapButton.korean-save,
+.sapButton.korean-close,
+.sapButton.korean-delete,
+.sapButton.outline {
   padding: 0.5rem 1.5rem;
+}
+
+.sapButton.korean-save,
+.sapButton.korean-close,
+.sapButton.korean-delete {
+  box-shadow: none;
+}
+
+.sapButton.korean-save:active,
+.sapButton.korean-close:active,
+.sapButton.korean-delete:active {
+  transform: scale(0.98);
+}
+
+/* Korean Save */
+.sapButton.korean-save {
   background: #6366f1;
   border: 1px solid #6366f1;
   color: #fff;
-  box-shadow: none;
 }
 
 .sapButton.korean-save:hover {
   background: #5558ee;
   border-color: #5558ee;
-  color: #fff;
 }
 
-.sapButton.korean-save:active {
-  background: #4f46e5;
-  border-color: #4f46e5;
-  transform: scale(0.98);
-}
-
-/* ========================= */
 /* Korean Close */
-/* ========================= */
-
 .sapButton.korean-close {
-  padding: 0.5rem 1.5rem;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   color: #6b7280;
-  box-shadow: none;
 }
 
 .sapButton.korean-close:hover {
@@ -442,19 +403,13 @@
 
 .sapButton.korean-close:active {
   background: #eef2ff;
-  transform: scale(0.98);
 }
 
-/* ========================= */
 /* Korean Delete */
-/* ========================= */
-
 .sapButton.korean-delete {
-  padding: 0.5rem 1.5rem;
   background: #f43f5e;
   border: 1px solid #f43f5e;
   color: #fff;
-  box-shadow: none;
 }
 
 .sapButton.korean-delete:hover {
@@ -465,12 +420,10 @@
 .sapButton.korean-delete:active {
   background: #be123c;
   border-color: #be123c;
-  transform: scale(0.98);
 }
 
 /* Ghost / Outline Button */
 .sapButton.outline {
-  padding: 0.5rem 1.5rem;
   background: transparent;
   border: 1px solid #003366;
   color: #003366;
@@ -479,7 +432,6 @@
 .sapButton.outline:hover {
   background: #003366;
   color: #ffffff;
-  border-color: #003366;
 }
 
 .sapButton.outline:active {
@@ -487,44 +439,110 @@
   border-color: #002244;
 }
 
-/* Retro Neobrutalism Button */
-.sapButton.neo {
+/* Shared Retro Neobrutalism Structural Rules (neo, neo-danger, neo-active, neo-dashed) */
+.sapButton.neo,
+.sapButton.neo-danger,
+.sapButton.neo-active,
+.sapButton.neo-dashed {
   padding: 0.5rem 1.5rem;
-  background: linear-gradient(135deg, #0d9488, #059669); /* Rich Teal to Emerald Mix */
-  color: #ffffff; /* Flipped to white for optimal contrast on teal/emerald */
   border: 2px solid #111827;
   border-radius: 4px;
   font-weight: 700;
   box-shadow: 3px 3px 0px #111827;
 }
 
-.sapButton.neo:hover {
+.sapButton.neo:hover,
+.sapButton.neo-danger:hover,
+.sapButton.neo-active:hover,
+.sapButton.neo-dashed:hover {
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0px #111827;
-  background: linear-gradient(135deg, #14b8a6, #10b981); /* Brighter Teal to Emerald on hover */
+}
+
+.sapButton.neo:active,
+.sapButton.neo-danger:active,
+.sapButton.neo-active:active,
+.sapButton.neo-dashed:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #111827;
+}
+
+/* Retro Neobrutalism Base */
+.sapButton.neo {
+  background: linear-gradient(
+    135deg,
+    #0d9488,
+    #059669
+  ); /* Rich Teal to Emerald Mix */
+  color: #ffffff;
+}
+
+.sapButton.neo:hover {
+  background: linear-gradient(135deg, #14b8a6, #10b981);
 }
 
 .sapButton.neo:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px #111827;
-  background: linear-gradient(135deg, #0f766e, #047857); /* Slightly deeper mix on click */
+  background: linear-gradient(135deg, #0f766e, #047857);
 }
 
-/* Dashed Upload / Placeholder Button */
-.sapButton.dashed {
+/* Retro Neobrutalism - Danger Variant */
+.sapButton.neo-danger {
+  background: linear-gradient(
+    135deg,
+    #dc2626,
+    #b91c1c
+  ); /* Vibrant Red to Crimson Mix */
+  color: #ffffff;
+}
+
+.sapButton.neo-danger:hover {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.sapButton.neo-danger:active {
+  background: linear-gradient(135deg, #991b1b, #7f1d1d);
+}
+
+/* Retro Neobrutalism - Active Variant */
+.sapButton.neo-active {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.28),
+    rgba(139, 92, 246, 0.32)
+  );
+  color: #111827;
+  backdrop-filter: blur(4px);
+}
+
+.sapButton.neo-active:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.38),
+    rgba(139, 92, 246, 0.42)
+  );
+}
+
+.sapButton.neo-active:active {
+  background: linear-gradient(
+    135deg,
+    rgba(29, 78, 216, 0.4),
+    rgba(109, 40, 217, 0.4)
+  );
+}
+
+/* Retro Neobrutalism - Dashed Variant */
+.sapButton.neo-dashed {
   background: #f8fafc;
-  border: 1px dashed #94a3b8;
-  color: #64748b;
-  box-shadow: none;
+  color: #475569;
+  border-style: dashed;
 }
 
-.sapButton.dashed:hover {
+.sapButton.neo-dashed:hover {
   background: #f1f5f9;
-  border-color: #64748b;
-  color: #334155;
+  color: #111827;
 }
 
-.sapButton.dashed:active {
+.sapButton.neo-dashed:active {
   background: #e2e8f0;
 }
 
@@ -578,21 +596,18 @@
   }
 
   /* Structural/Sizing tweaks for touch targets */
+  .sapButton,
+  .sapButton.danger,
+  .sapButton.search,
+  .sapButton.close,
+  .sapButton.glass,
+  .sapButton.glass-active,
+  .sapButton.gold {
+    height: 36px;
+  }
+
   .sapButton {
-    height: 36px;
     font-size: 12px;
-  }
-
-  .sapButton.danger {
-    height: 36px;
-  }
-
-  .sapButton.search {
-    height: 36px;
-  }
-
-  .sapButton.close {
-    height: 36px;
   }
 
   .sapButton.login,
@@ -604,6 +619,5 @@
   .sapButton.glass-active,
   .sapButton.gold {
     padding: 0.5rem 1rem;
-    height: 36px;
   }
 }

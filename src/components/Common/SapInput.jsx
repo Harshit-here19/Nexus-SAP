@@ -19,6 +19,7 @@ const SapInput = ({
   min,
   max,
   step = "any",
+  labelWidth,
   ...rest
 }) => {
   const isMobile = window.innerWidth <= 768;
@@ -55,6 +56,7 @@ const SapInput = ({
           className={`${styles.formLabel} ${
             required ? styles.formLabelRequired : ""
           }`}
+          style={{ "--label-width": labelWidth }}
         >
           {label}
         </label>

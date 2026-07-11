@@ -98,6 +98,11 @@ export const avatarThemes = {
     name: "Sakura",
     colors: ["#FDA4AF", "#FBCFE8"],
   },
+
+  blank: {
+    name: "Custom",
+    colors: ["#CBD5E1", "#94A3B8"],
+  },
 };
 
 export const avatarStyles = Object.keys(avatarThemes);

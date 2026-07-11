@@ -1,7 +1,12 @@
 import { useMemo, useState } from "react";
 import { useConfirm } from "../../../context/ConfirmContext";
 
-const CollectionEditor = ({ formData, onChange, isReadOnly }) => {
+const CollectionEditor = ({
+  formData,
+  onChange,
+  onToggleCompleted,
+  isReadOnly,
+}) => {
   const [itemText, setItemText] = useState("");
   const [deleteCandidate, setDeleteCandidate] = useState(null);
 
@@ -24,6 +29,7 @@ const CollectionEditor = ({ formData, onChange, isReadOnly }) => {
       {
         id: Date.now(),
         name: itemText.trim(),
+        completed: false,
       },
     ]);
 
@@ -35,6 +41,46 @@ const CollectionEditor = ({ formData, onChange, isReadOnly }) => {
       "items",
       formData.items.filter((item) => item.id !== id),
     );
+  };
+
+  const handleCompleteClick = (id) => {
+    onToggleCompleted(id);
+  };
+
+  const handleDeleteClick = async (id) => {
+    if (deleteCandidate !== id) {
+      setDeleteCandidate(id);
+      return;
+    }
+
+    const confirmed = await confirm("Delete this item?", "danger");
+
+    if (confirmed) {
+      removeItem(id);
+    }
+
+    setDeleteCandidate(null);
+  };
+
+  const handleCardClick = (event, item) => {
+    if (isReadOnly) return;
+
+    const card = event.currentTarget;
+
+    const rect = card.getBoundingClientRect();
+
+    // click position inside card
+    const clickPosition = event.clientY - rect.top;
+
+    // upper 50%
+    const isUpperPart = clickPosition < rect.height * 0.65;
+
+    if (isUpperPart) {
+      handleCompleteClick(item.id);
+      return;
+    }
+
+    handleDeleteClick(item.id);
   };
 
   return (
@@ -78,6 +124,11 @@ const CollectionEditor = ({ formData, onChange, isReadOnly }) => {
             className="collection-add-input"
             value={itemText}
             onChange={(e) => setItemText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                addItem();
+              }
+            }}
             placeholder="Add new item..."
           />
 
@@ -98,25 +149,15 @@ const CollectionEditor = ({ formData, onChange, isReadOnly }) => {
               key={item.id}
               className={`
                   collection-card
+                  ${item.completed ? "completed" : ""}
                   ${!isReadOnly ? "editable" : ""}
                   ${deleteCandidate === item.id ? "delete-selected" : ""}
-                `}
-              onClick={async () => {
-                if (isReadOnly) return;
-
-                if (deleteCandidate !== item.id) {
-                  setDeleteCandidate(item.id);
-
-                  return;
-                }
-
-                const confirmed = await confirm("Delete this item?", "danger");
-
-                if (confirmed) {
-                  removeItem(item.id);
-                }
-
-                setDeleteCandidate(null);
+              `}
+              onClick={(e) => handleCardClick(e, item)}
+              onDoubleClick={(e) => {
+                e.preventDefault();
+                const selection = window.getSelection();
+                if (selection) selection.removeAllRanges();
               }}
             >
               <span className="collection-card-text">{item.name}</span>

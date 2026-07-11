@@ -9,7 +9,7 @@ const SpendingBarChart = ({
 }) => {
   const chartRef = useRef(null);
   const [visible, setVisible] = useState(false);
-  const [animate, setAnimate] = useState(false);
+  const [animationKey, setAnimationKey] = useState(0);
   const [hoveredBar, setHoveredBar] = useState(null);
   const [tooltip, setTooltip] = useState(null);
 
@@ -20,10 +20,7 @@ const SpendingBarChart = ({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVisible(true);
-        } else {
-          setVisible(false);
-          setAnimate(false);
+          setAnimationKey((prev) => prev + 1);
         }
       },
       {
@@ -38,11 +35,7 @@ const SpendingBarChart = ({
     }
 
     return () => {
-      if (element) {
-        observer.unobserve(element);
-      }
-
-      observer.disconnect();
+      if (element) observer.disconnect();
     };
   }, []);
 
@@ -100,8 +93,9 @@ const SpendingBarChart = ({
 
       <div className={styles.chartWrapper}>
         <svg
+          key={animationKey}
           viewBox={`0 0 ${width} ${height}`}
-          className={`${styles.chart} ${animate ? styles.chartAnimate : ""}`}
+          className={styles.chart}
         >
           <defs>
             <linearGradient id="barGradient" x1="0" y1="0" x2="1" y2="0">
@@ -153,15 +147,17 @@ const SpendingBarChart = ({
               <g key={index}>
                 <rect
                   x={x}
-                  y={animate ? y : height - padding.bottom}
+                  y={y}
                   width={barWidth}
-                  height={animate ? barHeight : 0}
+                  height={barHeight}
                   rx="8"
                   className={`
-                    ${animate ? styles.barAnimate : ""}
-                    ${hoveredBar === index ? styles.barHover : styles.bar}
-                  `}
-                  style={{ animationDelay: `${index * 100}ms` }}
+  ${styles.bar}
+  ${hoveredBar === index ? styles.barHover : ""}
+`}
+                  style={{
+                    "--index": index,
+                  }}
                   onMouseEnter={(e) => {
                     setHoveredBar(index);
 

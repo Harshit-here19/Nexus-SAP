@@ -11,7 +11,6 @@ const CollectionSearchModal = ({
   onSearch,
   onSelectCollection,
 }) => {
-
   return (
     <SapModal
       isOpen={isOpen}
@@ -25,126 +24,83 @@ const CollectionSearchModal = ({
         </SapButton>
       }
     >
-
       {/* Search */}
       <div
         style={{
-          display:"flex",
-          gap:"10px",
-          marginBottom:"15px"
+          display: "flex",
+          gap: "10px",
+          marginBottom: "15px",
         }}
       >
-
         <input
           className="sap-input"
           placeholder="Search collection..."
           value={searchTerm}
-          onChange={(e)=>
-            onSearchTermChange(e.target.value)
-          }
+          onChange={(e) => onSearchTermChange(e.target.value)}
           style={{
-            flex:1
+            flex: 1,
           }}
         />
 
-        <SapButton
-          type="primary"
-          onClick={onSearch}
-        >
+        <SapButton type="primary" onClick={onSearch}>
           Search
         </SapButton>
-
       </div>
-
 
       {/* Result Table */}
       <div className="sap-table-scroller">
-
         <table className="sap-table">
-
           <thead>
             <tr>
               <th>ID</th>
               <th>Title</th>
-              <th>Description</th>
             </tr>
           </thead>
 
-
           <tbody>
-
-          {
-            searchResults.length === 0 ?
-
-            (
+            {searchResults.length === 0 ? (
               <tr>
-                <td colSpan="3"
+                <td
+                  colSpan="3"
                   style={{
-                    textAlign:"center",
-                    padding:"30px"
+                    textAlign: "center",
+                    padding: "30px",
                   }}
                 >
                   📭 No collections found
                 </td>
               </tr>
-            )
+            ) : (
+              searchResults.map((collection) => (
+                <tr
+                  key={collection.id}
+                  onDoubleClick={() => onSelectCollection(collection)}
+                  style={{
+                    cursor: "pointer",
+                  }}
+                >
+                  <td>{collection.collectionNumber}</td>
 
-            :
-
-            searchResults.map(
-              (collection)=>(
-              <tr
-                key={collection.id}
-                onDoubleClick={()=>
-                  onSelectCollection(collection)
-                }
-                style={{
-                  cursor:"pointer"
-                }}
-              >
-
-                <td>
-                  {collection.collectionNumber}
-                </td>
-
-                <td>
-                  {collection.title ||
-                  "Unnamed"}
-                </td>
-
-                <td>
-                  {collection.description}
-                </td>
-
-              </tr>
-            ))
-
-          }
-
+                  <td>{collection.title || "Unnamed"}</td>
+                </tr>
+              ))
+            )}
           </tbody>
-
         </table>
-
       </div>
 
-
-      {
-        searchResults.length > 0 &&
+      {searchResults.length > 0 && (
         <div
           style={{
-            marginTop:"10px",
-            color:"#666"
+            marginTop: "10px",
+            color: "#666",
           }}
         >
-          {searchResults.length}
-          {" "}collection(s) found
+          {searchResults.length} collection(s) found
         </div>
-      }
-
-
+      )}
     </SapModal>
   );
 };
-
 
 export default CollectionSearchModal;

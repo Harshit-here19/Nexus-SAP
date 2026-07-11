@@ -18,6 +18,7 @@ import Sakura from "./avatars/Sakura";
 import Samurai from "./avatars/Samurai";
 import Tiger from "./avatars/Tiger";
 import Wolf from "./avatars/Wolf";
+import Blank from "./avatars/Blank";
 
 export const avatarRegistry = {
   angel: Angel,
@@ -40,4 +41,5 @@ export const avatarRegistry = {
   samurai: Samurai,
   tiger: Tiger,
   wolf: Wolf,
+  blank: Blank,
 };

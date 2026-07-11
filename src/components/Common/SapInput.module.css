@@ -24,7 +24,8 @@
 }
 
 .formLabel {
-  width: 130px;
+  /* width: 130px; */
+  width: var(--label-width, 130px);
   min-width: 90px;
   text-align: right;
   padding-right: 10px;

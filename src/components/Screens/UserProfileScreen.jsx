@@ -216,6 +216,7 @@ const UserProfileScreen = () => {
               <AvatarSVG
                 initials={getInitials()}
                 style={profileData.avatar?.style || "cyber"}
+                avatar={profileData.avatar}
               />
               <div className={styles.avatarStatus} />
               <button

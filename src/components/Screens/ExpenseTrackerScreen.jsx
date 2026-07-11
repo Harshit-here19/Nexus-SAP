@@ -5,6 +5,8 @@ import SapInput from "../Common/SapInput";
 import SapSelect from "../Common/SapSelect";
 import SapTabs from "../Common/SapTabs";
 import SapModal from "../Common/SapModal";
+import Autocomplete from "../Common/Autocomplete";
+
 import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
 import { useAction } from "../../context/ActionContext";
@@ -979,21 +981,36 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                 className="sap-form-row"
                 style={{ display: "flex", alignItems: "flex-end", gap: "10px" }}
               >
-                <SapInput
-                  label="Expense ID"
-                  value={expenseId}
-                  onChange={setExpenseId}
-                  placeholder="EXP100000001"
-                  icon="🔍"
-                  onIconClick={() => {
-                    setSearchResults(
-                      getTableData("expenses").sort(
-                        (a, b) => new Date(b.date) - new Date(a.date),
-                      ),
-                    );
-                    setShowSearchModal(true);
-                  }}
-                />
+                <div style={{ width: "330px" }}>
+                  <Autocomplete
+                    label="Expense ID"
+                    value={expenseId}
+                    onChange={setExpenseId}
+                    placeholder="EXP100000001"
+                    icon="🔍"
+                    data={getTableData("expenses").sort(
+                      (a, b) => new Date(b.date) - new Date(a.date),
+                    )}
+                    searchFields={["expenseNumber", "description", "vendor"]}
+                    onSelect={(expense) => {
+                      handleSelectExpense(expense);
+                    }}
+                    renderSuggestion={(expense) => (
+                      <>
+                        <div style={{ fontWeight: "bold", color: "#2563eb" }}>
+                          {expense.expenseNumber}
+                        </div>
+
+                        <div>{expense.description || "No description"}</div>
+
+                        <div style={{ fontSize: "12px", color: "#666" }}>
+                          {expense.vendor || "No vendor"} • ₹{expense.amount}
+                        </div>
+                      </>
+                    )}
+                    getSuggestionValue={(expense)=>expense.expenseNumber}
+                  />
+                </div>
                 <SapButton onClick={loadExpense} type="neo" icon="📂">
                   Load
                 </SapButton>

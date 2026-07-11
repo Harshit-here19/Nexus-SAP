@@ -11,7 +11,7 @@ import { AvatarSVG } from "../Common/Avatar/Avatarpicker";
 
 const UserProfileDropdown = () => {
   const { user, logout } = useAuth();
-  const { navigateToTransaction, isTransactionActive } = useTransaction();
+  const { navigateToTransaction, isTransactionActive, currentTransaction } = useTransaction();
   const { settings, updateSetting } = useSettings();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -20,6 +20,7 @@ const UserProfileDropdown = () => {
 
   const isMobile = window.innerWidth <= 786;
   let userAvatar = "cyber";
+  const isProfile = currentTransaction === "SU01";
 
   if (user?.userId) {
     const users = getUsers();
@@ -92,11 +93,13 @@ const UserProfileDropdown = () => {
       <button
         onClick={() => setShowDropdown(!showDropdown)}
         className="sap-user-button"
+        disabled={isProfile}
       >
         <div className="sap-user-avatar">
           <AvatarSVG
             initials={getInitials()}
             style={userAvatar?.style || "cyber"}
+            avatar={userAvatar}
           />
         </div>
 
@@ -117,10 +120,13 @@ const UserProfileDropdown = () => {
 
           {/* Header */}
           <div className="sap-user-header">
-            <div className="sap-user-avatar-large"><AvatarSVG
-            initials={getInitials()}
-            style={userAvatar?.style || "cyber"}
-          /></div>
+            <div className="sap-user-avatar-large">
+              <AvatarSVG
+                initials={getInitials()}
+                style={userAvatar?.style || "cyber"}
+                avatar={userAvatar}
+              />
+            </div>
 
             <div className="sap-user-info">
               <div className="sap-user-fullname">{user?.fullName}</div>

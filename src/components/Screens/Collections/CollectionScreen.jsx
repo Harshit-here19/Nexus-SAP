@@ -6,9 +6,11 @@ import { useConfirm } from "../../../context/ConfirmContext";
 import SapButton from "../../Common/SapButton";
 import SapInput from "../../Common/SapInput";
 import SapTabs from "../../Common/SapTabs";
+import Autocomplete from "../../Common/Autocomplete";
 
 import CollectionEditor from "./CollectionEditor";
 import CollectionSearchModal from "./CollectionSearchModal";
+import { DEFAULT_COLLECTION } from "./CollectionDefault";
 
 import {
   getAllData,
@@ -35,8 +37,6 @@ export const CollectionScreen = ({ mode = "create" }) => {
   const [collectionId, setCollectionId] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
   const [formData, setFormData] = useState(INITIAL_COLLECTION);
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
@@ -55,67 +55,6 @@ export const CollectionScreen = ({ mode = "create" }) => {
       ...prev,
       [field]: value,
     }));
-  };
-
-  /*
-    Handle Suggestion
-  */
-
-  const handleAutoSearch = (value) => {
-    setCollectionId(value);
-
-    if (!value.trim()) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    const collections = getTableData("collections") || [];
-
-    const search = value.toLowerCase().trim();
-
-    const regex = new RegExp(
-      search.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*"),
-      "i",
-    );
-
-    const results = collections.filter((collection) => {
-      const fields = [
-        collection.collectionNumber,
-        collection.title,
-        collection.description,
-        collection.tags,
-      ];
-
-      return fields.some((field) => {
-        if (!field) return false;
-
-        const text = String(field).toLowerCase();
-
-        return search.includes("*") ? regex.test(text) : text.includes(search);
-      });
-    });
-
-    setSuggestions(results.slice(0, 10));
-    setShowSuggestions(results.length > 0);
-  };
-
-  const selectSuggestion = (collection) => {
-    setCollectionId(collection.collectionNumber);
-
-    setFormData(collection);
-
-    setIsLoaded(true);
-
-    setTransactionHistory((prev) => [
-      ...prev,
-      `COLLECTION_${collection.collectionNumber}`,
-    ]);
-
-    setSuggestions([]);
-    setShowSuggestions(false);
-
-    updateStatus(`${collection.collectionNumber} loaded`, "success");
   };
 
   const handleSearch = () => {
@@ -181,6 +120,21 @@ export const CollectionScreen = ({ mode = "create" }) => {
     updateStatus(`Collection ${collection.collectionNumber} loaded`, "success");
   };
 
+  const toggleItemCompleted = (id) => {
+    setFormData((prev) => ({
+      ...prev,
+
+      items: prev.items.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              completed: item.completed === true ? false : true,
+            }
+          : item,
+      ),
+    }));
+  };
+
   /*
    * SAVE
    */
@@ -190,6 +144,12 @@ export const CollectionScreen = ({ mode = "create" }) => {
 
     if (!allData.collections) {
       allData.collections = [];
+    }
+
+    if (formData.system) {
+      updateStatus("System collection cannot be modified", "error");
+
+      return;
     }
 
     if (mode === "create") {
@@ -251,6 +211,12 @@ export const CollectionScreen = ({ mode = "create" }) => {
 
   deleteRef.current = async () => {
     const allData = getAllData();
+
+    if (formData.system) {
+      updateStatus("System collection cannot be deleted", "error");
+
+      return;
+    }
 
     const confirmed = await confirm(
       "Are you sure you want to delete this note?",
@@ -714,6 +680,24 @@ export const CollectionScreen = ({ mode = "create" }) => {
     updateStatus,
   ]);
 
+  useEffect(() => {
+    const allData = getAllData();
+
+    if (!allData.collections) {
+      allData.collections = [];
+    }
+
+    const exists = allData.collections.some(
+      (collection) => collection.collectionNumber === "LC00000000",
+    );
+
+    if (!exists) {
+      allData.collections.unshift(DEFAULT_COLLECTION);
+
+      saveAllData(allData);
+    }
+  }, []);
+
   /*
    * LOAD SCREEN
    */
@@ -728,6 +712,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
         <CollectionEditor
           formData={formData}
           onChange={handleChange}
+          onToggleCompleted={toggleItemCompleted}
           isReadOnly={mode === "display"}
         />
       ),
@@ -757,72 +742,46 @@ export const CollectionScreen = ({ mode = "create" }) => {
       <div className="sap-panel-content">
         {needsLoad ? (
           <div className="collection-load-box">
-            <div
-              style={{
-                position: "relative",
-                width: "330px",
-                overflow: "visible",
-              }}
-            >
-              <SapInput
+            <div style={{ width: "330px" }}>
+              <Autocomplete
                 label="Collec. ID / Search"
                 value={collectionId}
-                onChange={handleAutoSearch}
+                onChange={setCollectionId}
                 placeholder="LC100000001"
                 icon="🔍"
-                onIconClick={handleSearch}
-              />
+                data={getTableData("collections") || []}
+                searchFields={["collectionNumber", "title", "tags"]}
+                onSelect={(collection) => {
+                  setCollectionId(collection.collectionNumber);
+                  setFormData(collection);
+                  setIsLoaded(true);
 
-              {showSuggestions && suggestions.length > 0 && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "100%",
-                    left: 0,
-                    width: "100%",
-                    marginTop: "4px",
-                    background: "#fff",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    zIndex: 9999,
-                    maxHeight: "300px",
-                    overflowY: "auto",
-                    boxShadow: "0 8px 20px rgba(0,0,0,.15)",
-                  }}
-                >
-                  {suggestions.map((collection) => (
+                  setTransactionHistory((prev) => [
+                    ...prev,
+                    `COLLECTION_${collection.collectionNumber}`,
+                  ]);
+
+                  updateStatus(
+                    `${collection.collectionNumber} loaded`,
+                    "success",
+                  );
+                }}
+                renderSuggestion={(collection) => (
+                  <>
                     <div
-                      key={collection.id}
-                      onClick={() => selectSuggestion(collection)}
                       style={{
-                        padding: "10px",
-                        cursor: "pointer",
-                        borderBottom: "1px solid #eee",
+                        fontWeight: "bold",
+                        color: "#2563eb",
                       }}
                     >
-                      <div
-                        style={{
-                          fontWeight: "bold",
-                          color: "#2563eb",
-                        }}
-                      >
-                        {collection.collectionNumber}
-                      </div>
-
-                      <div>{collection.title || "Unnamed Collection"}</div>
-
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: "#777",
-                        }}
-                      >
-                        {collection.description}
-                      </div>
+                      {collection.collectionNumber}
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    <div>{collection.title || "Unnamed Collection"}</div>
+                  </>
+                )}
+                getSuggestionValue={(collection) => collection.collectionNumber}
+              />
             </div>
 
             <SapButton type="neo" icon="📂" onClick={loadCollection}>

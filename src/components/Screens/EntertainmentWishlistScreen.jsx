@@ -5,10 +5,15 @@ import SapInput from "../Common/SapInput";
 import SapSelect from "../Common/SapSelect";
 import SapTabs from "../Common/SapTabs";
 import SapModal from "../Common/SapModal";
+import SapToggleBox from "../Common/SapToggleBox";
+import Autocomplete from "../Common/Autocomplete";
+
 import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
 import { useAction } from "../../context/ActionContext";
 import { useConfirm } from "../../context/ConfirmContext";
+
+import { resizeImage } from "../../utils/imageUtils";
 import {
   getTableData,
   addRecord,
@@ -137,12 +142,21 @@ const initialFormState = (user) => ({
   tags: "",
   isNsfw: false,
   createdBy: user?.username || "SAPUSER",
-})
+});
 
 const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const isMobile = window.innerWidth <= 768;
 
-  const { updateStatus, markAsChanged, markAsSaved, goBack, currentTransaction,setTransactionHistory, registerBackHandler, clearBackHandler  } = useTransaction();
+  const {
+    updateStatus,
+    markAsChanged,
+    markAsSaved,
+    goBack,
+    currentTransaction,
+    setTransactionHistory,
+    registerBackHandler,
+    clearBackHandler,
+  } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
   const { confirm } = useConfirm();
@@ -151,6 +165,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const clearRef = useRef(null);
   const deleteRef = useRef(null);
   const printRef = useRef(null);
+  const imageInputRef = useRef(null);
 
   const [itemId, setItemId] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
@@ -180,6 +195,46 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     });
 
     return `${category}${String(maxNum + 1).padStart(9, "0")}`;
+  };
+
+  const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
+
+  const processCoverImage = async (file) => {
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      updateStatus("Please select an image file", "error");
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      updateStatus("Image size must be below 8 MB", "error");
+      return;
+    }
+
+    try {
+      const base64 = await resizeImage(file, 1200, 1600, 0.82);
+
+      handleChange("imageUrl", base64);
+
+      updateStatus("Cover image processed successfully", "success");
+    } catch (error) {
+      updateStatus("Unable to process image", "error");
+    }
+  };
+
+  const handleImageDrop = (e) => {
+    e.preventDefault();
+
+    const file = e.dataTransfer.files?.[0];
+
+    processCoverImage(file);
+  };
+
+  const handleImageBrowse = (e) => {
+    const file = e.target.files?.[0];
+
+    processCoverImage(file);
   };
 
   // Handle form field change
@@ -479,7 +534,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     }
 
     if (!mediaItems.length) {
-      confirm("No Wishlist Item to print!","warning");
+      confirm("No Wishlist Item to print!", "warning");
       return;
     }
 
@@ -523,12 +578,10 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           }
       </script>
 
-      </body>`
+      </body>`,
     );
 
-
-    const printWindow =
-      window.open("", "_blank", "width=900,height=700");
+    const printWindow = window.open("", "_blank", "width=900,height=700");
 
     printWindow.document.write(previewHtml);
 
@@ -592,7 +645,14 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     const currentRating = parseInt(rating) || 0;
 
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: "4px", justifyContent: "space-around" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "4px",
+          justifyContent: "space-around",
+        }}
+      >
         {[...Array(maxRating)].map((_, i) => (
           <span
             key={i}
@@ -635,14 +695,26 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const showStudioField = ["AN", "MO", "SE", "HE"].includes(formData.category);
   const showDirectorField = ["MO", "PO"].includes(formData.category);
 
+  const isDisplayMode = mode === "display";
+
   // Details Tab
   const detailsTab = (
     <div className="sap-form">
       <div
-        style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "20px" }}
+        style={{
+          display: mode === "display" ? "none" : "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 225px",
+          gap: "20px",
+        }}
       >
         {/* Left Column */}
-        <div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "7px",
+          }}
+        >
           <h4
             style={{
               marginBottom: "14px",
@@ -668,6 +740,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             value={formData.itemNumber}
             readOnly={true}
             placeholder="Select category first"
+            labelWidth="90px"
           />
 
           <SapSelect
@@ -682,6 +755,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             disabled={isReadOnly || mode === "change"}
             placeholder="Select category..."
             error={errors.category}
+            labelWidth="90px"
           />
 
           <SapInput
@@ -692,6 +766,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             disabled={isReadOnly}
             error={errors.title}
             placeholder="Enter title..."
+            labelWidth="90px"
           />
 
           <SapInput
@@ -703,19 +778,18 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             type="number"
             min="1900"
             max="2099"
-          />
-
-          <SapInput
-            label="Image URL"
-            value={formData.imageUrl}
-            onChange={(val) => handleChange("imageUrl", val)}
-            disabled={isReadOnly}
-            placeholder="Poster/cover image URL"
+            labelWidth="90px"
           />
         </div>
 
         {/* Right Column */}
-        <div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "7px",
+          }}
+        >
           <h4
             style={{
               marginBottom: "14px",
@@ -739,6 +813,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             }))}
             required={true}
             disabled={isReadOnly}
+            labelWidth="90px"
           />
 
           <SapSelect
@@ -750,10 +825,26 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
               label: p.label,
             }))}
             disabled={isReadOnly}
+            labelWidth="90px"
           />
 
           <div className="sap-form-group">
-            <label className="sap-form-label" style={{ width: "130px" }}>Rating</label>
+            <label
+              className="sap-form-label"
+              style={{
+                width: "90px",
+                textAlign: "right",
+                paddingRight: "10px",
+                fontSize: "11px",
+                fontWeight: "600",
+                color: "#4a5568",
+                lineHeight: "26px",
+                letterSpacing: "0.5px",
+                flexShrink: 0,
+              }}
+            >
+              Rating
+            </label>
             <div className="sap-form-field">
               {renderRating(formData.rating, !isReadOnly)}
               {!isReadOnly && formData.rating && (
@@ -781,46 +872,143 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             options={PLATFORM_OPTIONS}
             disabled={isReadOnly}
             placeholder="Where to watch/play..."
+            labelWidth="90px"
+          />
+        </div>
+
+        {/* Image Drag and Drop */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "60px 150px",
+            gap: "16px",
+            alignItems: "stretch",
+          }}
+        >
+          {/* NSFW Toggle */}
+          <SapToggleBox
+            value={formData.isNsfw}
+            disabled={isReadOnly}
+            onChange={(value) => handleChange("isNsfw", value)}
+            height="100%"
           />
 
-          <div style={{ marginTop: "12px" }}>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "10px 12px",
-                background: formData.isNsfw
-                  ? "#ffebee"
-                  : "var(--sap-content-bg)",
-                borderRadius: "6px",
-                cursor: isReadOnly ? "default" : "pointer",
-                width: "fit-content",
-                border: formData.isNsfw
-                  ? "1px solid #f44336"
-                  : "1px solid transparent",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={formData.isNsfw}
-                onChange={(e) => handleChange("isNsfw", e.target.checked)}
-                disabled={isReadOnly}
+          {/* Image Upload Zone */}
+          <div
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleImageDrop}
+            onClick={() => !isReadOnly && imageInputRef.current?.click()}
+            style={{
+              position: "relative",
+              border: "2px dashed #000000", // Sharp, high-contrast comic-dashed border
+              borderRadius: "14px",
+              padding: "12px",
+              cursor: isReadOnly ? "default" : "pointer",
+              backgroundColor: "#ffffff",
+              boxShadow: "3px 3px 0px #000000", // Flat indie-comic shadow
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "200px",
+              userSelect: "none",
+              transition: "transform 0.1s ease, box-shadow 0.1s ease",
+            }}
+            // Quick active state emulation via inline events for that tactile click down
+            onMouseDown={(e) => {
+              if (!isReadOnly) {
+                e.currentTarget.style.transform = "translate(2px, 2px)";
+                e.currentTarget.style.boxShadow = "3px 3px 0px #000000";
+              }
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform = "none";
+              e.currentTarget.style.boxShadow = "5px 5px 0px #000000";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "none";
+              e.currentTarget.style.boxShadow = "5px 5px 0px #000000";
+            }}
+          >
+            {/* Empty State: Only shows when there is no image */}
+            {!formData.imageUrl && (
+              <div
                 style={{
-                  width: "18px",
-                  height: "18px",
-                  accentColor: "#f44336",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: "13px",
-                  color: formData.isNsfw ? "#f44336" : "inherit",
+                  textAlign: "center",
+                  color: "#000000",
+                  fontFamily: "system-ui, -apple-system, sans-serif",
                 }}
               >
-                🔞 NSFW Content
-              </span>
-            </label>
+                <div
+                  style={{
+                    fontSize: "36px",
+                    marginBottom: "12px",
+                    filter: "grayscale(1)", // Keeps emoji clean and monochrome
+                  }}
+                >
+                  📷
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    letterSpacing: "1px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Click to upload
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: "500",
+                    color: "#64748b",
+                    marginTop: "6px",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  or drag & drop an image
+                </div>
+              </div>
+            )}
+
+            {/* Hidden Native File Input */}
+            {!isReadOnly && (
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleImageBrowse}
+              />
+            )}
+
+            {/* Image Preview State */}
+            {formData.imageUrl && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
+                <img
+                  src={formData.imageUrl}
+                  alt="cover preview"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "10px",
+                    border: "2px solid #000000", // Matches the comic framing style
+                    boxShadow: "2px 2px 0px #000000",
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -829,14 +1017,27 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       {formData.title && (
         <div
           style={{
-            marginTop: "20px",
-            padding: isMobile ? "12px" : "16px",
+            padding: isDisplayMode
+              ? isMobile
+                ? "10px"
+                : "20px"
+              : isMobile
+                ? "12px"
+                : "16px",
             background: `linear-gradient(135deg, ${getCategoryInfo(formData.category).color}15 0%, ${getCategoryInfo(formData.category).color}05 100%)`,
             borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
             borderRadius: "6px",
             display: "flex",
             flexDirection: isMobile ? "column" : "row",
-            gap: isMobile ? "12px" : "16px",
+            gap: isDisplayMode
+              ? isMobile
+                ? "18px"
+                : "32px"
+              : isMobile
+                ? "12px"
+                : "16px",
+            minHeight: isDisplayMode ? "60vh" : "auto",
+            alignItems: isDisplayMode ? "flex-start" : "stretch",
           }}
         >
           {formData.imageUrl && (
@@ -844,16 +1045,39 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
               src={formData.imageUrl}
               alt={formData.title}
               style={{
-                width: isMobile ? "100%" : "80px",
-                height: isMobile ? "180px" : "120px",
+                width: isDisplayMode
+                  ? isMobile
+                    ? "100%"
+                    : "260px"
+                  : isMobile
+                    ? "100%"
+                    : "80px",
+
+                height: isDisplayMode
+                  ? isMobile
+                    ? "420px"
+                    : "380px"
+                  : isMobile
+                    ? "180px"
+                    : "120px",
                 objectFit: "cover",
-                borderRadius: "4px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                borderRadius: isDisplayMode ? "12px" : "4px",
+
+                boxShadow: isDisplayMode
+                  ? "0 10px 30px rgba(0,0,0,.25)"
+                  : "0 2px 8px rgba(0,0,0,.2)",
               }}
               onError={(e) => (e.target.style.display = "none")}
             />
           )}
-          <div style={{ flex: 1 }}>
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: isDisplayMode ? "14px" : "8px",
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -864,7 +1088,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             >
               <span
                 style={{
-                  fontSize: "11px",
+                  fontSize: isDisplayMode ? "12px" : "11px",
                   padding: "2px 8px",
                   background: getCategoryInfo(formData.category).color,
                   color: "white",
@@ -877,7 +1101,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
               {formData.isNsfw && (
                 <span
                   style={{
-                    fontSize: "10px",
+                    fontSize: isDisplayMode ? "12px" : "11px",
                     padding: "2px 6px",
                     background: "#f44336",
                     color: "white",
@@ -890,9 +1114,17 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             </div>
             <div
               style={{
-                fontWeight: "700",
-                fontSize: isMobile ? "15px" : "16px",
-                marginBottom: "4px",
+                fontSize: isDisplayMode
+                  ? isMobile
+                    ? "28px"
+                    : "40px"
+                  : isMobile
+                    ? "15px"
+                    : "16px",
+
+                fontWeight: "800",
+
+                lineHeight: 1.2,
               }}
             >
               {formData.title}
@@ -908,23 +1140,30 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
               }}
             >
               <span
-                className={`sap-badge ${formData.status === "completed"
-                  ? "success"
-                  : formData.status === "in_progress"
-                    ? "info"
-                    : formData.status === "dropped"
-                      ? "error"
-                      : formData.status === "on_hold"
-                        ? "warning"
-                        : ""
-                  }`}
+                className={`sap-badge ${
+                  formData.status === "completed"
+                    ? "success"
+                    : formData.status === "in_progress"
+                      ? "info"
+                      : formData.status === "dropped"
+                        ? "error"
+                        : formData.status === "on_hold"
+                          ? "warning"
+                          : ""
+                }`}
+                style={{
+                  fontSize: isDisplayMode ? "12px" : "11px",
+
+                  padding: isDisplayMode ? "6px 14px" : "2px 8px",
+                }}
               >
                 {getStatusInfo(formData.status).label}
               </span>
               <span
                 style={{
-                  fontSize: "11px",
-                  padding: "2px 8px",
+                  fontSize: isDisplayMode ? "12px" : "11px",
+
+                  padding: isDisplayMode ? "6px 14px" : "2px 8px",
                   background: getPriorityInfo(formData.priority).color,
                   color: "white",
                   borderRadius: "10px",
@@ -950,16 +1189,26 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
             </div>
             <div
               style={{
-                marginTop: "10px",
-                fontSize: isMobile ? "14px" : "13px",
+                marginTop: isDisplayMode ? "2px" : "10px",
+                fontSize: isDisplayMode
+                  ? isMobile
+                    ? "16px"
+                    : "18px"
+                  : isMobile
+                    ? "13px"
+                    : "12px",
                 fontWeight: "500",
                 lineHeight: "1.6",
                 color: "#6b7280",
-                maxHeight: isMobile ? "none" : "90px",
-                overflow: "hidden",
-                display: "-webkit-box",
-                WebkitLineClamp: isMobile ? 5 : 2,
-                WebkitBoxOrient: "vertical",
+                ...(isDisplayMode
+                  ? {}
+                  : {
+                      maxHeight: isMobile ? "none" : "90px",
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: isMobile ? 5 : 2,
+                      WebkitBoxOrient: "vertical",
+                    }),
               }}
             >
               {formData.description}
@@ -974,7 +1223,11 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const progressTab = (
     <div className="sap-form">
       <div
-        style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "20px" }}
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+          gap: "20px",
+        }}
       >
         <div>
           <h4
@@ -992,7 +1245,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
 
           {showEpisodeFields && (
             <SapInput
-              label='Episodes'
+              label="Episodes"
               type="number"
               value={formData.episodes}
               onChange={(val) => handleChange("episodes", val)}
@@ -1016,7 +1269,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
 
           {showChapterFields && (
             <SapInput
-              label='Chapters'
+              label="Chapters"
               type="number"
               value={formData.chapters}
               onChange={(val) => handleChange("chapters", val)}
@@ -1087,9 +1340,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   // Details/Credits Tab
   const creditsTab = (
     <div className="sap-form">
-      <div
-        style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}
-      >
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "20px" }}>
         <div>
           <h4
             style={{
@@ -1452,16 +1703,22 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           </div>
           <div>
             <span
-              className={`sap-badge ${formData.status === "completed"
-                ? "success"
-                : formData.status === "dropped"
-                  ? "error"
-                  : formData.status === "in_progress"
-                    ? "info"
-                    : formData.status === "on_hold"
-                      ? "warning"
-                      : ""
-                }`}
+              className={`sap-badge ${
+                formData.status === "completed"
+                  ? "success"
+                  : formData.status === "dropped"
+                    ? "error"
+                    : formData.status === "in_progress"
+                      ? "info"
+                      : formData.status === "on_hold"
+                        ? "warning"
+                        : ""
+              }`}
+              style={{
+                fontSize: isDisplayMode ? "12px" : "11px",
+
+                padding: isDisplayMode ? "6px 14px" : "2px 8px",
+              }}
             >
               {getStatusInfo(formData.status).label}
             </span>
@@ -1529,13 +1786,24 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                   marginLeft: "8px",
                   background: getCategoryInfo(formData.category).color,
                   color: "white",
+                  fontSize: isDisplayMode ? "15px" : "11px",
+
+                  padding: isDisplayMode ? "6px 14px" : "2px 8px",
                 }}
               >
                 {getCategoryInfo(formData.category).icon} {formData.category}
               </span>
             )}
             {formData.isNsfw && (
-              <span className="sap-badge error" style={{ marginLeft: "8px" }}>
+              <span
+                className="sap-badge error"
+                style={{
+                  marginLeft: "8px",
+                  fontSize: isDisplayMode ? "15px" : "11px",
+
+                  padding: isDisplayMode ? "6px 14px" : "2px 8px",
+                }}
+              >
                 🔞 NSFW
               </span>
             )}
@@ -1559,19 +1827,46 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 className="sap-form-row"
                 style={{ display: "flex", alignItems: "flex-end", gap: "10px" }}
               >
-                <SapInput
-                  label="Item ID"
-                  value={itemId}
-                  onChange={setItemId}
-                  placeholder="e.g., MO000000001, AN000000001"
-                  icon="🔍"
-                  onIconClick={() => {
-                    setSearchResults(
-                      getTableData("entertainment_wishlist") || [],
-                    );
-                    setShowSearchModal(true);
-                  }}
-                />
+                <div style={{ width: "330px" }}>
+                  <Autocomplete
+                    label="Item ID"
+                    value={itemId}
+                    onChange={setItemId}
+                    placeholder="e.g., MO000000001, AN000000001"
+                    icon="🔍"
+                    data={getTableData("entertainment_wishlist") || []}
+                    searchFields={[
+                      "itemNumber",
+                      "title",
+                      "description",
+                      "tags",
+                    ]}
+                    getSuggestionValue={(item) => item.itemNumber}
+                    onSelect={(item) => {
+                      setItemId(item.itemNumber);
+                      setFormData(item);
+                      setIsLoaded(true);
+
+                      updateStatus(
+                        `Item ${item.itemNumber} loaded successfully`,
+                        "success",
+                      );
+                    }}
+                    renderSuggestion={(item) => (
+                      <div>
+                        <div>
+                          <strong>{item.itemNumber}</strong>
+                        </div>
+
+                        <div>{item.title}</div>
+
+                        <small style={{ color: "#666" }}>
+                          {item.description?.slice(0,100)}...
+                        </small>
+                      </div>
+                    )}
+                  />
+                </div>
                 <SapButton onClick={loadItem} type="neo" icon="📂">
                   Load
                 </SapButton>
@@ -1644,7 +1939,9 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
         title="🔍 Search Entertainment Wishlist"
         width="900px"
         footer={
-          <SapButton type="close" onClick={() => setShowSearchModal(false)}>Close</SapButton>
+          <SapButton type="close" onClick={() => setShowSearchModal(false)}>
+            Close
+          </SapButton>
         }
       >
         {/* Filters */}
@@ -1781,10 +2078,11 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 </tr>
               ) : (
                 searchResults.map((item, index) => (
-                  <tr key={index}
+                  <tr
+                    key={index}
                     onDoubleClick={(e) => {
                       e.stopPropagation();
-                      handleSelectItem(item)
+                      handleSelectItem(item);
                     }}
                     style={{ cursor: "pointer" }}
                   >
@@ -1874,17 +2172,22 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     </td>
                     <td>
                       <span
-                        className={`sap-badge ${item.status === "completed"
-                          ? "success"
-                          : item.status === "in_progress"
-                            ? "info"
-                            : item.status === "dropped"
-                              ? "error"
-                              : item.status === "on_hold"
-                                ? "warning"
-                                : ""
-                          }`}
-                        style={{ fontSize: "10px" }}
+                        className={`sap-badge ${
+                          item.status === "completed"
+                            ? "success"
+                            : item.status === "in_progress"
+                              ? "info"
+                              : item.status === "dropped"
+                                ? "error"
+                                : item.status === "on_hold"
+                                  ? "warning"
+                                  : ""
+                        }`}
+                        style={{
+                          fontSize: isDisplayMode ? "15px" : "11px",
+
+                          padding: isDisplayMode ? "6px 14px" : "2px 8px",
+                        }}
                       >
                         {getStatusInfo(item.status).label}
                       </span>
@@ -1904,7 +2207,12 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     </td>
                     <td>
                       {item.rating ? (
-                        <span style={{ color: "#ffc107" }}>
+                        <span
+                          style={{
+                            color: "#ffc107",
+                            fontSize: isDisplayMode ? "18px" : "12px",
+                          }}
+                        >
                           ⭐ {item.rating}/10
                         </span>
                       ) : (
@@ -1915,7 +2223,13 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     </td>
                     {currentTransaction === "WS02" && (
                       <td>
-                        <span style={{ marginLeft: "8px", width: "4rem", display: "inline-block" }}>
+                        <span
+                          style={{
+                            marginLeft: "8px",
+                            width: "4rem",
+                            display: "inline-block",
+                          }}
+                        >
                           <SapButton
                             onClick={() => DeleteInSearchModal(item.id)}
                             type="danger"
@@ -1992,10 +2306,17 @@ const generateMediaReport = (mediaItems) => {
 
   // Calculate stats
   const totalItems = mediaItems.length;
-  const categoryCount = [...new Set(mediaItems.map(item => item.category))].length;
-  const watchedCount = mediaItems.filter(item => item.status === "completed").length;
-  const plannedCount = mediaItems.filter(item => item.status === "planned").length;
-  const watchingCount = mediaItems.filter(item => item.status === "watching").length;
+  const categoryCount = [...new Set(mediaItems.map((item) => item.category))]
+    .length;
+  const watchedCount = mediaItems.filter(
+    (item) => item.status === "completed",
+  ).length;
+  const plannedCount = mediaItems.filter(
+    (item) => item.status === "planned",
+  ).length;
+  const watchingCount = mediaItems.filter(
+    (item) => item.status === "watching",
+  ).length;
   const totalDuration = mediaItems.reduce((sum, item) => {
     const duration = item.duration || "0h 0m";
     const match = duration.match(/(\d+)h?\s*(\d*)m?/);
@@ -2016,7 +2337,7 @@ const generateMediaReport = (mediaItems) => {
       watching: { bg: "#dbeafe", color: "#1e40af" },
       planned: { bg: "#fef3c7", color: "#92400e" },
       dropped: { bg: "#fee2e2", color: "#991b1b" },
-      default: { bg: "#f3f4f6", color: "#374151" }
+      default: { bg: "#f3f4f6", color: "#374151" },
     };
     return colors[status] || colors.default;
   };
@@ -2026,7 +2347,7 @@ const generateMediaReport = (mediaItems) => {
     const badges = {
       high: { bg: "#fee2e2", color: "#991b1b" },
       medium: { bg: "#fef3c7", color: "#92400e" },
-      low: { bg: "#f3f4f6", color: "#374151" }
+      low: { bg: "#f3f4f6", color: "#374151" },
     };
     const style = badges[priority] || badges.low;
     return `<span class="priority-badge" style="background:${style.bg}; color:${style.color};">
@@ -2045,14 +2366,18 @@ const generateMediaReport = (mediaItems) => {
 
     return `
     ${'<span style="color: gold;font-size: 1rem;">★</span>'.repeat(fullStars)}
-    ${halfStar ? `
+    ${
+      halfStar
+        ? `
       <span style="
         background: linear-gradient(90deg, gold 50%, #ccc 50%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-size: 1rem;
       ">★</span>
-    ` : ''}
+    `
+        : ""
+    }
     ${'<span style="color: #ccc;font-size: 1rem;">★</span>'.repeat(emptyStars)}
   `;
   };
@@ -2066,7 +2391,7 @@ const generateMediaReport = (mediaItems) => {
       GA: "🎮",
       BO: "📚",
       MU: "🎵",
-      default: "🎬"
+      default: "🎬",
     };
     return icons[category] || icons.default;
   };
@@ -2076,7 +2401,9 @@ const generateMediaReport = (mediaItems) => {
     .sort((a, b) => (b.rating || 0) - (a.rating || 0))
     .map((item, index) => {
       const statusStyle = getStatusColor(item.status || "planned");
-      const imageUrl = item.imageUrl || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI3NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=";
+      const imageUrl =
+        item.imageUrl ||
+        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iI2Y1ZjVmNSIvPjx0ZXh0IHg9IjUwIiB5PSI3NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=";
 
       return `
         <div class="media-card">
@@ -2105,30 +2432,42 @@ const generateMediaReport = (mediaItems) => {
               <span class="meta-item"><strong>Platform:</strong> ${item.platform || "—"}</span>
             </div>
             
-            ${item.genres && item.genres.length > 0 ? `
+            ${
+              item.genres && item.genres.length > 0
+                ? `
               <div class="genres">
-                ${item.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join("")}
+                ${item.genres.map((genre) => `<span class="genre-tag">${genre}</span>`).join("")}
               </div>
-            ` : ''}
+            `
+                : ""
+            }
             
             <div class="info-row">
-              ${item.cast ? `<div class="info-item"><strong>Cast:</strong> ${item.cast}</div>` : ''}
-              ${item.director ? `<div class="info-item"><strong>Director:</strong> ${item.director}</div>` : ''}
-              ${item.studio ? `<div class="info-item"><strong>Studio:</strong> ${item.studio}</div>` : ''}
+              ${item.cast ? `<div class="info-item"><strong>Cast:</strong> ${item.cast}</div>` : ""}
+              ${item.director ? `<div class="info-item"><strong>Director:</strong> ${item.director}</div>` : ""}
+              ${item.studio ? `<div class="info-item"><strong>Studio:</strong> ${item.studio}</div>` : ""}
             </div>
             
-            ${item.description ? `
+            ${
+              item.description
+                ? `
               <div class="description">
                 <p>${item.description}</p>
               </div>
-            ` : ''}
+            `
+                : ""
+            }
             
-            ${item.notes ? `
+            ${
+              item.notes
+                ? `
               <div class="notes">
                 <strong>Notes:</strong>
                 <p>${item.notes}</p>
               </div>
-            ` : ''}
+            `
+                : ""
+            }
             
             <div class="media-footer">
               <span class="item-number">${item.itemNumber || `#${index + 1}`}</span>
@@ -2481,14 +2820,17 @@ const generateMediaReport = (mediaItems) => {
         <div class="report-header">
           <h1>🎬 My Media Collection</h1>
           <p class="subtitle">Movies • TV Shows • Anime • Games • Books</p>
-          <p class="generated">Generated on ${new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })}</p>
+          <p class="generated">Generated on ${new Date().toLocaleDateString(
+            "en-US",
+            {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            },
+          )}</p>
         </div>
 
         <div class="stats-grid">

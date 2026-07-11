@@ -10,16 +10,19 @@ const SapSelect = ({
   disabled = false,
   placeholder = "Select...",
   error = "",
+  labelWidth,
   ...rest
 }) => {
-
   return (
-    <div className={styles.sapFormGroup}>
+    <div
+      className={styles.sapFormGroup}
+    >
       {label && (
         <label
           className={`${styles.sapSelectLabel} ${
             required ? styles.sapSelectLabelRequired : ""
           }`}
+          style={{ "--label-width": labelWidth }}
         >
           {label}
         </label>
@@ -43,11 +46,7 @@ const SapSelect = ({
           ))}
         </select>
 
-        {error && (
-          <div className={styles.sapErrorText}>
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.sapErrorText}>{error}</div>}
       </div>
     </div>
   );

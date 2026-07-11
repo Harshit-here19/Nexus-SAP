@@ -197,9 +197,6 @@
   .tabsContainer {
     background: white;
     border-bottom: 1px solid var(--sap-border, #e0e0e0);
-    position: sticky;
-    top: 0;
-    z-index: 100;
   }
   
   .tabs {

@@ -121,14 +121,18 @@
    4. Grid & Cards (Neobrutalism Retro Style)
    ========================================================================== */
 .collection-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  columns: 4;
+  column-gap: 16px;
   width: 100%;
   margin-top: 24px;
 }
 
 .collection-card {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  display: inline-block;
+  width: 100%;
+
   position: relative;
   min-height: 90px;
   padding: 16px;
@@ -195,6 +199,26 @@
   animation: dangerPulse 1s infinite;
 }
 
+/* Card States: Success / Completed */
+.collection-card.completed {
+  background: repeating-linear-gradient(
+    45deg,
+    /* 45deg gives a beautiful tech/achievement stripe look, change to 0deg if you prefer flat horizontal stripes */
+    #dcfce7,
+    #dcfce7 6px,
+    #bbf7d0 6px,
+    #bbf7d0 12px
+  );
+  border-color: #15803d;
+  box-shadow: 4px 4px 0 #15803d; /* Matches the heavy structural Neo-brutalism shadow */
+  animation: dangerpulse 2s infinite ease-in-out;
+}
+
+.collection-card.completed .collection-card-text {
+  color: #14532d; /* Slightly darker green for perfect readability against stripes */
+  font-weight: bold;
+}
+
 .collection-empty {
   padding: 24px;
   color: #9ca3af;
@@ -234,12 +258,25 @@
   }
 }
 
+/* Success Subtle Pulse Animation */
+@keyframes successPulse {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    box-shadow: 4px 4px 0 #15803d;
+  }
+  50% {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 #15803d; /* Makes it gently breathe like an accomplished state */
+  }
+}
+
 /* ==========================================================================
    6. Media Queries (Responsive Adjustments)
    ========================================================================== */
 @media (max-width: 1024px) {
   .collection-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    columns: 2;
   }
 }
 
@@ -257,7 +294,7 @@
   }
 
   .collection-grid {
-    grid-template-columns: 1fr;
+    columns: 1;
   }
 
   .collection-title-wrapper {
