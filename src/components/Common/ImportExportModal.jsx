@@ -370,6 +370,85 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
 
         const existingRecords = new Set(existingData.map(makeDuplicateKey));
 
+        if (selectedTable === "collections") {
+          const mergedCollections = [...existingData];
+
+          let newCollections = 0;
+          let newItems = 0;
+
+          newData.forEach((incoming) => {
+            const existing = mergedCollections.find(
+              (c) =>
+                c.title.trim().toLowerCase() ===
+                incoming.title.trim().toLowerCase(),
+            );
+
+            // Collection doesn't exist → add it
+            if (!existing) {
+              mergedCollections.push({
+                ...incoming,
+                importedAt: new Date().toISOString(),
+              });
+
+              newCollections++;
+              return;
+            }
+
+            // Collection exists → merge items
+            existing.items ??= [];
+
+            incoming.items?.forEach((item) => {
+              const alreadyExists = existing.items.some(
+                (i) => JSON.stringify(i) === JSON.stringify(item),
+              );
+
+              if (!alreadyExists) {
+                existing.items.push(item);
+                newItems++;
+              }
+            });
+
+            existing.updatedAt = new Date().toISOString();
+            existing.importedAt = new Date().toISOString();
+          });
+
+          saveTableData(selectedTable, mergedCollections);
+
+          // Build status message
+          let message = "";
+
+          if (newCollections === 0 && newItems === 0) {
+            message = "No new collections or items were imported.";
+          } else {
+            const parts = [];
+
+            if (newCollections > 0) {
+              parts.push(
+                `${newCollections} new collection${newCollections > 1 ? "s" : ""}`,
+              );
+            }
+
+            if (newItems > 0) {
+              parts.push(`${newItems} new item${newItems > 1 ? "s" : ""}`);
+            }
+
+            message = `Imported ${parts.join(" and ")} successfully.`;
+          }
+
+          onStatusMessage(message, "success");
+
+          // Reset import state
+          setSelectedFile(null);
+          setImportPreview(null);
+
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+
+          onClose();
+          return;
+        }
+
         const processedData = [];
         let nextNumber = maxNumber;
 

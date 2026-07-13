@@ -620,7 +620,9 @@ const DashboardScreen = () => {
             className="dashboard-card-value"
             style={{ textTransform: "capitalize" }}
           >
-            {topCategoryDetails?.label?.[lang] || topCategory.name || "-"}
+            {topCategoryDetails?.label?.[lang] ||
+              stats?.topCategory?.name ||
+              "-"}
           </div>
 
           <div className="dashboard-card-change">
@@ -1092,6 +1094,7 @@ const DashboardScreen = () => {
         title="Spending Trend"
         range={lineRange}
         setRange={setLineRange}
+        height={window.innerWidth < 600 ? 360 : 300}
       />
 
       {/* Admin Section */}

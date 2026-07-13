@@ -1,185 +1,6 @@
 // src/utils/storage.js
 
-// ========== INDEXEDDB SETUP ==========
-
-const DB_NAME = "nexus_db";
-const DB_VERSION = 1;
-const STORE_NAME = "keyvalue";
-
-// In-memory cache to allow synchronous reads after initial load
-let dbInstance = null;
-let memoryCache = {};
-let dbReady = false;
-let dbReadyCallbacks = [];
-
-// Open (or create) the IndexedDB database
-const openDB = () => {
-  return new Promise((resolve, reject) => {
-    if (dbInstance) {
-      resolve(dbInstance);
-      return;
-    }
-
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-
-    request.onsuccess = (event) => {
-      dbInstance = event.target.result;
-      resolve(dbInstance);
-    };
-
-    request.onerror = (event) => {
-      console.error("IndexedDB open error:", event.target.error);
-      reject(event.target.error);
-    };
-  });
-};
-
-// Write a key-value pair to IndexedDB and update cache
-const idbSetItem = async (key, value) => {
-  memoryCache[key] = value;
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, "readwrite");
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.put(value, key);
-      request.onsuccess = () => resolve(true);
-      request.onerror = (e) => reject(e.target.error);
-    });
-  } catch (error) {
-    console.error("idbSetItem error:", error);
-    return false;
-  }
-};
-
-// Read a value from IndexedDB (falls back to cache if available)
-const idbGetItem = async (key) => {
-  if (memoryCache.hasOwnProperty(key)) {
-    return memoryCache[key];
-  }
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, "readonly");
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.get(key);
-      request.onsuccess = (e) => {
-        const val = e.target.result !== undefined ? e.target.result : null;
-        memoryCache[key] = val;
-        resolve(val);
-      };
-      request.onerror = (e) => reject(e.target.error);
-    });
-  } catch (error) {
-    console.error("idbGetItem error:", error);
-    return null;
-  }
-};
-
-// Delete a key from IndexedDB and cache
-const idbRemoveItem = async (key) => {
-  delete memoryCache[key];
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, "readwrite");
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.delete(key);
-      request.onsuccess = () => resolve(true);
-      request.onerror = (e) => reject(e.target.error);
-    });
-  } catch (error) {
-    console.error("idbRemoveItem error:", error);
-    return false;
-  }
-};
-
-// Load ALL keys from IndexedDB into memory cache (called once on startup)
-const loadAllKeysIntoCache = async () => {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, "readonly");
-      const store = tx.objectStore(STORE_NAME);
-      const keys = [];
-      const values = [];
-
-      // Collect all keys
-      const keyRequest = store.getAllKeys();
-      keyRequest.onsuccess = (e) => {
-        const allKeys = e.target.result;
-
-        // Collect all values
-        const valueRequest = store.getAll();
-        valueRequest.onsuccess = (ev) => {
-          const allValues = ev.target.result;
-          allKeys.forEach((key, index) => {
-            memoryCache[key] = allValues[index];
-          });
-          dbReady = true;
-          dbReadyCallbacks.forEach((cb) => cb());
-          dbReadyCallbacks = [];
-          resolve();
-        };
-        valueRequest.onerror = (e) => reject(e.target.error);
-      };
-      keyRequest.onerror = (e) => reject(e.target.error);
-    });
-  } catch (error) {
-    console.error("loadAllKeysIntoCache error:", error);
-    dbReady = true; // still mark ready so app doesn't hang
-  }
-};
-
-// Synchronous-style read from memory cache only
-// Returns null if key is not in cache
-const cacheGetItem = (key) => {
-  const val = memoryCache[key];
-  return val !== undefined ? val : null;
-};
-
-// Synchronous-style write to both cache and schedules async IDB write
-const cacheSetItem = (key, value) => {
-  memoryCache[key] = value;
-
-  idbSetItem(key, value).catch((err) => {
-    console.error(err);
-
-    // rollback
-    delete memoryCache[key];
-  });
-};
-
-// Synchronous-style delete from cache + schedules async IDB delete
-const cacheRemoveItem = (key) => {
-  delete memoryCache[key];
-  idbRemoveItem(key).catch((e) =>
-    console.error("Background IDB delete failed:", e),
-  );
-};
-
-// ========== PUBLIC INIT ==========
-
-/**
- * Must be called once at app startup (before anything else).
- * Loads all IndexedDB data into memory cache so the rest of
- * the module can work synchronously (just like localStorage).
- */
-export const initializeDB = async () => {
-  await loadAllKeysIntoCache();
-  // Initialize users and default data after DB is ready
-  initializeUsers();
-};
-
-// ========== STORAGE KEYS ==========
-
+const STORAGE_KEY = "sap_gui_data";
 const USERS_KEY = "sap_users";
 const SESSION_KEY = "sap_session";
 const FAVORITES_KEY = "sap_favorites";
@@ -202,14 +23,16 @@ const getCurrentUserId = () => {
 export const getAllData = (userId = null) => {
   try {
     const uid = userId || getCurrentUserId();
+
     if (!uid) {
       return getDefaultData();
     }
 
     const key = getUserStorageKey(uid);
-    const data = cacheGetItem(key);
-    return data ? data : getDefaultData();
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : getDefaultData();
   } catch (error) {
+    // console.error("Error reading from localStorage:", error);
     return getDefaultData();
   }
 };
@@ -218,14 +41,17 @@ export const getAllData = (userId = null) => {
 export const saveAllData = (data, userId = null) => {
   try {
     const uid = userId || getCurrentUserId();
+
     if (!uid) {
+      // console.error("No user ID provided for saving data");
       return false;
     }
 
     const key = getUserStorageKey(uid);
-    cacheSetItem(key, data);
+    localStorage.setItem(key, JSON.stringify(data));
     return true;
   } catch (error) {
+    // console.error("Error saving to localStorage:", error);
     return false;
   }
 };
@@ -233,6 +59,8 @@ export const saveAllData = (data, userId = null) => {
 // Get specific table data for current user
 export const getTableData = (tableName, userId = null) => {
   const allData = getAllData(userId);
+  // return allData[tableName] || [];
+
   const data = allData[tableName] || [];
 
   if (data.length === 0) return data;
@@ -314,6 +142,7 @@ export const findRecord = (tableName, field, value, userId = null) => {
 };
 
 // Generate next number for current user
+
 export const generateNextNumber = (
   tableName,
   field,
@@ -328,13 +157,16 @@ export const generateNextNumber = (
   const numbers = tableData
     .map((r) => {
       const value = r[field] || "";
+
       // Remove any letters at the beginning
       const numericPart = value.replace(/^\D+/, "");
+
       return parseInt(numericPart, 10);
     })
     .filter((n) => !isNaN(n));
 
   const maxNumber = numbers.length ? Math.max(...numbers) : 100000000;
+
   return `${prefix}${maxNumber + 1}`;
 };
 
@@ -442,8 +274,8 @@ const getDefaultData = () => ({
 // Initialize data for a user
 export const initializeUserData = (userId) => {
   const key = getUserStorageKey(userId);
-  if (cacheGetItem(key) === null) {
-    cacheSetItem(key, getDefaultData());
+  if (!localStorage.getItem(key)) {
+    localStorage.setItem(key, JSON.stringify(getDefaultData()));
   }
 };
 
@@ -452,13 +284,14 @@ export const initializeUserData = (userId) => {
 // Get all users (global, not user-specific)
 export const getUsers = () => {
   try {
-    const users = cacheGetItem(USERS_KEY);
+    const users = localStorage.getItem(USERS_KEY);
     if (!users) {
       const defaultUsers = createDefaultUsers();
       return defaultUsers;
     }
-    return users;
+    return JSON.parse(users);
   } catch (error) {
+    // console.error("Error reading users:", error);
     return createDefaultUsers();
   }
 };
@@ -466,9 +299,10 @@ export const getUsers = () => {
 // Save users (global)
 export const saveUsers = (users) => {
   try {
-    cacheSetItem(USERS_KEY, users);
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
     return true;
   } catch (error) {
+    // console.error("Error saving users:", error);
     return false;
   }
 };
@@ -540,43 +374,41 @@ const createDefaultUsers = () => {
 
 // Initialize users - FORCE reset to ensure admin exists
 export const initializeUsers = () => {
-  const users = cacheGetItem(USERS_KEY);
+  const users = localStorage.getItem(USERS_KEY);
   if (!users) {
     createDefaultUsers();
   } else {
     // Check if admin exists, if not add it
-    const adminExists = users.some((u) => u.username === "ADMIN");
+    const parsedUsers = JSON.parse(users);
+    const adminExists = parsedUsers.some((u) => u.username === "ADMIN");
     if (!adminExists) {
-      const updatedUsers = [
-        {
-          id: "admin_001",
-          username: "ADMIN",
-          password: "admin123",
-          firstName: "System",
-          lastName: "Administrator",
-          email: "admin@sapclone.com",
-          role: "Admin",
-          department: "IT",
-          client: "001",
-          language: "EN",
-          dateFormat: "MM/DD/YYYY",
-          decimalNotation: "1,234,567.89",
-          createdAt: new Date().toISOString(),
-          lastLogin: null,
-          isActive: true,
-          isLocked: false,
-          failedAttempts: 0,
-        },
-        ...users,
-      ];
-      saveUsers(updatedUsers);
+      parsedUsers.unshift({
+        id: "admin_001",
+        username: "ADMIN",
+        password: "admin123",
+        firstName: "System",
+        lastName: "Administrator",
+        email: "admin@sapclone.com",
+        role: "Admin",
+        department: "IT",
+        client: "001",
+        language: "EN",
+        dateFormat: "MM/DD/YYYY",
+        decimalNotation: "1,234,567.89",
+        createdAt: new Date().toISOString(),
+        lastLogin: null,
+        isActive: true,
+        isLocked: false,
+        failedAttempts: 0,
+      });
+      saveUsers(parsedUsers);
     }
   }
 };
 
 // Reset users to default (utility function for debugging)
 export const resetUsersToDefault = () => {
-  cacheRemoveItem(USERS_KEY);
+  localStorage.removeItem(USERS_KEY);
   return createDefaultUsers();
 };
 
@@ -584,11 +416,18 @@ export const resetUsersToDefault = () => {
 export const authenticateUser = (username, password) => {
   const users = getUsers();
 
+  // console.log("Authenticating:", username); // Debug log
+  // console.log(
+  //   "Available users:",
+  //   users.map((u) => u.username),
+  // ); // Debug log
+
   const user = users.find(
     (u) => u.username.toUpperCase() === username.toUpperCase(),
   );
 
   if (!user) {
+    // console.log("User not found"); // Debug log
     return { success: false, message: "User does not exist" };
   }
 
@@ -602,6 +441,8 @@ export const authenticateUser = (username, password) => {
       message: "User account is locked. Contact administrator.",
     };
   }
+
+  // console.log("Checking password:", password, "vs", user.password); // Debug log
 
   if (user.password !== password) {
     // Increment failed attempts
@@ -630,6 +471,7 @@ export const authenticateUser = (username, password) => {
   initializeUserData(user.id);
 
   // Create session (without password)
+  // IMPORTANT: Check role to set isAdmin
   const isAdmin = user.role === "Admin";
 
   const session = {
@@ -643,8 +485,10 @@ export const authenticateUser = (username, password) => {
     department: user.department,
     client: user.client,
     loginTime: new Date().toISOString(),
-    isAdmin: isAdmin,
+    isAdmin: isAdmin, // This is critical!
   };
+
+  // console.log("Login successful, isAdmin:", isAdmin); // Debug log
 
   return { success: true, user: session };
 };
@@ -676,7 +520,7 @@ export const registerUser = (userData) => {
     firstName: userData.firstName,
     lastName: userData.lastName,
     email: userData.email,
-    role: userData.role || "User",
+    role: userData.role || "User", // Allow setting role if provided
     department: userData.department || "General",
     client: "001",
     language: "EN",
@@ -737,7 +581,7 @@ export const deleteUser = (userId) => {
 
   // Also delete user's data
   const userDataKey = getUserStorageKey(userId);
-  cacheRemoveItem(userDataKey);
+  localStorage.removeItem(userDataKey);
 
   return { success: true, message: "User deleted successfully" };
 };
@@ -780,7 +624,7 @@ export const unlockUser = (userId) => {
 // Save session
 export const saveSession = (session) => {
   try {
-    cacheSetItem(SESSION_KEY, session);
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     return true;
   } catch (error) {
     return false;
@@ -790,8 +634,8 @@ export const saveSession = (session) => {
 // Get current session
 export const getSession = () => {
   try {
-    const session = cacheGetItem(SESSION_KEY);
-    return session ? session : null;
+    const session = localStorage.getItem(SESSION_KEY);
+    return session ? JSON.parse(session) : null;
   } catch (error) {
     return null;
   }
@@ -799,7 +643,7 @@ export const getSession = () => {
 
 // Clear session (logout)
 export const clearSession = () => {
-  cacheRemoveItem(SESSION_KEY);
+  localStorage.removeItem(SESSION_KEY);
 };
 
 // Update user profile
@@ -850,8 +694,8 @@ export const getFavorites = (userId = null) => {
     if (!uid) return [];
 
     const key = `${FAVORITES_KEY}_${uid}`;
-    const favorites = cacheGetItem(key);
-    return favorites ? favorites : [];
+    const favorites = localStorage.getItem(key);
+    return favorites ? JSON.parse(favorites) : [];
   } catch (error) {
     return [];
   }
@@ -864,7 +708,7 @@ export const saveFavorites = (favorites, userId = null) => {
     if (!uid) return false;
 
     const key = `${FAVORITES_KEY}_${uid}`;
-    cacheSetItem(key, favorites);
+    localStorage.setItem(key, JSON.stringify(favorites));
     return true;
   } catch (error) {
     return false;
@@ -912,8 +756,8 @@ export const getTransactionHistory = (userId = null) => {
     if (!uid) return [];
 
     const key = `${HISTORY_KEY}_${uid}`;
-    const history = cacheGetItem(key);
-    return history ? history : [];
+    const history = localStorage.getItem(key);
+    return history ? JSON.parse(history) : [];
   } catch (error) {
     return [];
   }
@@ -926,7 +770,7 @@ export const saveTransactionHistory = (history, userId = null) => {
     if (!uid) return false;
 
     const key = `${HISTORY_KEY}_${uid}`;
-    cacheSetItem(key, history);
+    localStorage.setItem(key, JSON.stringify(history));
     return true;
   } catch (error) {
     return false;
@@ -950,13 +794,13 @@ export const addToHistory = (tcode, description = "", userId = null) => {
     ...filtered,
   ];
 
-  // Keep only last 5
+  // Keep only last 20
   const trimmed = updated.slice(0, 5);
 
   // Save updated history
   saveTransactionHistory(trimmed, userId);
 
-  return trimmed;
+  return trimmed; // return updated history for convenience
 };
 
 // Clear transaction history
@@ -965,14 +809,13 @@ export const clearTransactionHistory = (userId = null) => {
   if (!uid) return false;
 
   const key = `${HISTORY_KEY}_${uid}`;
-  cacheRemoveItem(key);
+  localStorage.removeItem(key);
   return true;
 };
 
 // ========== INITIALIZE ==========
 
-// Initialize data (called on app start) - NOW ASYNC
-// Use initializeDB() instead for IndexedDB startup
+// Initialize data (called on app start)
 export const initializeData = () => {
   initializeUsers();
 };
@@ -983,73 +826,115 @@ export const initializeData = () => {
 export const getExpenseCategories = () => [
   {
     value: "food",
-    label: { en: "🍔 Food & Dining", hi: "🍔 भोजन एवं रेस्तरां" },
-    color: "#E57373",
+    label: {
+      en: "🍔 Food & Dining",
+      hi: "🍔 भोजन एवं रेस्तरां",
+    },
+    color: "#E57373", // Soft Coral Red
   },
   {
     value: "travel",
-    label: { en: "✈️ Travel & Transport", hi: "✈️ यात्रा एवं परिवहन" },
-    color: "#4DB6AC",
+    label: {
+      en: "✈️ Travel & Transport",
+      hi: "✈️ यात्रा एवं परिवहन",
+    },
+    color: "#4DB6AC", // Muted Teal
   },
   {
     value: "shopping",
-    label: { en: "🛍️ Shopping", hi: "🛍️ खरीदारी" },
-    color: "#7986CB",
+    label: {
+      en: "🛍️ Shopping",
+      hi: "🛍️ खरीदारी",
+    },
+    color: "#7986CB", // Slate Blue
   },
   {
     value: "bills",
-    label: { en: "📄 Bills & Utilities", hi: "📄 बिल और उपयोगिताएँ" },
-    color: "#4DD0E1",
+    label: {
+      en: "📄 Bills & Utilities",
+      hi: "📄 बिल और उपयोगिताएँ",
+    },
+    color: "#4DD0E1", // Soft Cyan
   },
   {
     value: "entertainment",
-    label: { en: "🎬 Entertainment", hi: "🎬 मनोरंजन" },
-    color: "#FFB74D",
+    label: {
+      en: "🎬 Entertainment",
+      hi: "🎬 मनोरंजन",
+    },
+    color: "#FFB74D", // Pastel Orange
   },
   {
     value: "healthcare",
-    label: { en: "🏥 Healthcare", hi: "🏥 स्वास्थ्य सेवा" },
-    color: "#81C784",
+    label: {
+      en: "🏥 Healthcare",
+      hi: "🏥 स्वास्थ्य सेवा",
+    },
+    color: "#81C784", // Light Sage Green
   },
   {
     value: "education",
-    label: { en: "📚 Education", hi: "📚 शिक्षा" },
-    color: "#A1887F",
+    label: {
+      en: "📚 Education",
+      hi: "📚 शिक्षा",
+    },
+    color: "#A1887F", // Vintage Light Brown
   },
   {
     value: "groceries",
-    label: { en: "🛒 Groceries", hi: "🛒 किराना" },
-    color: "#DCE775",
+    label: {
+      en: "🛒 Groceries",
+      hi: "🛒 किराना",
+    },
+    color: "#DCE775", // Muted Lime Green
   },
   {
     value: "rent",
-    label: { en: "🏠 Rent & Housing", hi: "🏠 किराया और आवास" },
-    color: "#EF5350",
+    label: {
+      en: "🏠 Rent & Housing",
+      hi: "🏠 किराया और आवास",
+    },
+    color: "#EF5350", // Soft Brick Red
   },
   {
     value: "insurance",
-    label: { en: "🛡️ Insurance", hi: "🛡️ बीमा" },
-    color: "#9575CD",
+    label: {
+      en: "🛡️ Insurance",
+      hi: "🛡️ बीमा",
+    },
+    color: "#9575CD", // Soft Muted Purple
   },
   {
     value: "personal",
-    label: { en: "💄 Personal Care", hi: "💄 व्यक्तिगत देखभाल" },
-    color: "#F06292",
+    label: {
+      en: "💄 Personal Care",
+      hi: "💄 व्यक्तिगत देखभाल",
+    },
+    color: "#F06292", // Dusty Rose Pink
   },
   {
     value: "gifts",
-    label: { en: "🎁 Gifts & Donations", hi: "🎁 उपहार और दान" },
-    color: "#FF8A65",
+    label: {
+      en: "🎁 Gifts & Donations",
+      hi: "🎁 उपहार और दान",
+    },
+    color: "#FF8A65", // Deep Peach / Salmon
   },
   {
     value: "investment",
-    label: { en: "📈 Investment", hi: "📈 निवेश" },
-    color: "#64B5F6",
+    label: {
+      en: "📈 Investment",
+      hi: "📈 निवेश",
+    },
+    color: "#64B5F6", // Soft Sky Blue
   },
   {
     value: "other",
-    label: { en: "📦 Other", hi: "📦 अन्य" },
-    color: "#B0BEC5",
+    label: {
+      en: "📦 Other",
+      hi: "📦 अन्य",
+    },
+    color: "#B0BEC5", // Cool Slate Grey
   },
   {
     value: "alcohol",
@@ -1057,32 +942,62 @@ export const getExpenseCategories = () => [
       en: "🍺 Alcohol & Beverages",
       hi: "🍺 शराब और पेय पदार्थ",
     },
-    color: "#AED581",
+    color: "#AED581", // Soft Olive Green
   },
   {
     value: "cigarette",
-    label: { en: "🚬 Cigarette 🌿", hi: "🚬 सिगरेट 🌿" },
-    color: "#8D6E63",
+    label: {
+      en: "🚬 Cigarette 🌿",
+      hi: "🚬 सिगरेट 🌿",
+    },
+    color: "#8D6E63", // Muted Earthy Brown
   },
 ];
 
 // Get payment methods
 export const getPaymentMethods = () => [
-  { value: "cash", label: { en: "💵 Cash", hi: "💵 नकद" } },
+  {
+    value: "cash",
+    label: {
+      en: "💵 Cash",
+      hi: "💵 नकद",
+    },
+  },
   {
     value: "credit_card",
-    label: { en: "💳 Credit Card", hi: "💳 क्रेडिट कार्ड" },
+    label: {
+      en: "💳 Credit Card",
+      hi: "💳 क्रेडिट कार्ड",
+    },
   },
   {
     value: "debit_card",
-    label: { en: "💳 Debit Card", hi: "💳 डेबिट कार्ड" },
+    label: {
+      en: "💳 Debit Card",
+      hi: "💳 डेबिट कार्ड",
+    },
   },
-  { value: "upi", label: { en: "📱 UPI", hi: "📱 यूपीआई" } },
+  {
+    value: "upi",
+    label: {
+      en: "📱 UPI",
+      hi: "📱 यूपीआई",
+    },
+  },
   {
     value: "bank_transfer",
-    label: { en: "🏦 Bank Transfer", hi: "🏦 बैंक ट्रांसफर" },
+    label: {
+      en: "🏦 Bank Transfer",
+      hi: "🏦 बैंक ट्रांसफर",
+    },
   },
-  { value: "cheque", label: { en: "📝 Cheque", hi: "📝 चेक" } },
+  {
+    value: "cheque",
+    label: {
+      en: "📝 Cheque",
+      hi: "📝 चेक",
+    },
+  },
 ];
 
 // Get expense statistics
@@ -1134,42 +1049,58 @@ export const getExpenseStats = (userId = null) => {
     0,
   );
 
-  // Budget forecast / run-rate
+  // -----------------------------
+  // 🚨 BUDGET FORECAST / RUN-RATE (NEW)
+  // -----------------------------
   let projectedMonthEnd = 0;
+
   if (totalThisMonth > 0) {
-    const currentDay = now.getDate();
+    const currentDay = now.getDate(); // e.g., 7 if it's the 7th of the month
+
+    // Dynamically get total days in the current month (handles leap years too!)
     const totalDaysInMonth = new Date(
       now.getFullYear(),
       now.getMonth() + 1,
       0,
     ).getDate();
+
+    // Calculate the projected total
     projectedMonthEnd = Math.round(
       (totalThisMonth / currentDay) * totalDaysInMonth,
     );
   }
 
-  // Top category
+  // -----------------------------
+  // 💳 TOP CATEGORY (NEW)
+  // -----------------------------
   const categoryMap = {};
+
   thisMonthExpenses.forEach((e) => {
     const cat = e.category || "Unknown";
     categoryMap[cat] = (categoryMap[cat] || 0) + parseFloat(e.amount || 0);
   });
 
   let topCategory = { name: null, amount: 0 };
+
   Object.entries(categoryMap).forEach(([name, amount]) => {
     if (amount > topCategory.amount) {
       topCategory = { name, amount };
     }
   });
 
-  // Average daily spend
+  // -----------------------------
+  // 🧾 AVERAGE DAILY SPEND (NEW)
+  // -----------------------------
   let averageDailySpend = 0;
+
   if (expenses.length > 0) {
+    // Extract just the 'YYYY-MM-DD' part of the date to grouping unique days
     const uniqueDays = new Set(
       expenses
         .filter((e) => e.date)
         .map((e) => new Date(e.date).toISOString().split("T")[0]),
     );
+
     const totalUniqueDays = Math.max(1, uniqueDays.size);
     averageDailySpend = totalAllTime / totalUniqueDays;
   }
@@ -1214,18 +1145,30 @@ export const getExpenseStats = (userId = null) => {
       0,
     );
 
-    // Top category for this month
+    // -----------------------------
+    // 🏷️ TOP CATEGORY FOR THIS MONTH
+    // -----------------------------
+
     const monthCategoryMap = {};
+
     monthExpenses.forEach((e) => {
       const category = e.category || "Unknown";
+
       monthCategoryMap[category] =
         (monthCategoryMap[category] || 0) + parseFloat(e.amount || 0);
     });
 
-    let monthTopCategory = { name: null, amount: 0 };
+    let monthTopCategory = {
+      name: null,
+      amount: 0,
+    };
+
     Object.entries(monthCategoryMap).forEach(([name, amount]) => {
       if (amount > monthTopCategory.amount) {
-        monthTopCategory = { name, amount };
+        monthTopCategory = {
+          name,
+          amount,
+        };
       }
     });
 

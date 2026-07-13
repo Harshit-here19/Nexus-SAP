@@ -25,6 +25,7 @@ import "./CollectionStyles.css";
 
 export const CollectionScreen = ({ mode = "create" }) => {
   const { registerAction, clearAction } = useAction();
+  const isMobile = window.innerWidth <= 768;
 
   const {
     updateStatus,
@@ -742,7 +743,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
       <div className="sap-panel-content">
         {needsLoad ? (
           <div className="collection-load-box">
-            <div style={{ width: "330px" }}>
+            <div style={{ width: isMobile ? "100%" : "330px" }}>
               <Autocomplete
                 label="Collec. ID / Search"
                 value={collectionId}

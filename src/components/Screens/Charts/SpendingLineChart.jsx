@@ -3,7 +3,7 @@ import styles from "./SpendingLineChart.module.css";
 
 const SpendingLineChart = ({
   data = [],
-  height = 300,
+  height = 360,
   currencyFormatter,
   title = "Spending Overview",
   range,
@@ -72,11 +72,13 @@ const SpendingLineChart = ({
     return () => cancelAnimationFrame(id);
   }, [data, isVisible]);
 
+  const isMobile = window.innerWidth < 600;
+
   const padding = {
-    top: 35,
-    right: 25,
-    bottom: 45,
-    left: 65,
+    top: isMobile ? 45 : 35,
+    right: isMobile ? 20 : 25,
+    bottom: isMobile ? 55 : 45,
+    left: isMobile ? 75 : 65,
   };
 
   const chartWidth = width - padding.left - padding.right;
@@ -118,7 +120,7 @@ const SpendingLineChart = ({
           className={styles.filterSelect}
           value={range}
           onChange={(e) => setRange(e.target.value)}
-          style={{height:"40px"}}
+          style={{ height: "40px" }}
         >
           <option value="7days">Last 7 Days</option>
 
@@ -128,7 +130,11 @@ const SpendingLineChart = ({
         </select>
       </div>
 
-      <svg viewBox={`0 0 ${width} ${height}`} className={styles.chart}>
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="xMidYMid meet"
+        className={styles.chart}
+      >
         <defs>
           <linearGradient id="spendGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#6366f1" stopOpacity=".35" />

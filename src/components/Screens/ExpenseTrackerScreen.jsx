@@ -27,8 +27,6 @@ import useTranslation from "../../hooks/useTranslation";
 // =========================================================
 //                📌📌📌 CONSTANTS 📌📌📌
 // =========================================================
-const isMobile = window.innerWidth <= 768;
-
 const getInitialFormState = (user) => ({
   expenseNumber: "",
   date: new Date().toISOString().split("T")[0],
@@ -72,6 +70,8 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     registerBackHandler,
     clearBackHandler,
   } = useTransaction();
+  const isMobile = window.innerWidth <= 768;
+
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
   const { confirm } = useConfirm();
@@ -979,9 +979,9 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
 
               <div
                 className="sap-form-row"
-                style={{ display: "flex", alignItems: "flex-end", gap: "10px" }}
+                style={{ display: "flex", gap: "10px" }}
               >
-                <div style={{ width: "330px" }}>
+                <div style={{ width: isMobile ? "100%" : "330px" }}>
                   <Autocomplete
                     label="Expense ID"
                     value={expenseId}
@@ -1008,7 +1008,7 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
                         </div>
                       </>
                     )}
-                    getSuggestionValue={(expense)=>expense.expenseNumber}
+                    getSuggestionValue={(expense) => expense.expenseNumber}
                   />
                 </div>
                 <SapButton onClick={loadExpense} type="neo" icon="📂">

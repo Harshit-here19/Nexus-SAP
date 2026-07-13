@@ -90,7 +90,7 @@ const HomeScreen = () => {
                 style={{
                   display: "grid",
                   gridTemplateColumns: isMobile
-                    ? "1fr"
+                    ? "1fr 1fr"
                     : "repeat(3, minmax(120px, 1fr))",
                   gap: "8px",
                 }}
@@ -249,7 +249,6 @@ const HomeScreen = () => {
 
             {/* Quick Tables Card */}
             <div
-              className="QuickTable"
               style={{
                 fontFamily: `'JetBrains Mono','Arial', 'Verdana', sans-serif`,
                 background: "linear-gradient(145deg, #fffaf0, #fff3d6)",
@@ -257,7 +256,7 @@ const HomeScreen = () => {
                 borderRadius: "14px",
                 padding: "16px",
                 width: "100%",
-                maxWidth: "300px",
+                maxWidth: isMobile ? "" : "300px",
                 boxShadow: "0 6px 16px rgba(255,170,0,0.18)",
               }}
             >

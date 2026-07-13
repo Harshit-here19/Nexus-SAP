@@ -184,19 +184,19 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const [errors, setErrors] = useState({});
 
   // Generate next ID based on category
-  const generateNextId = (category) => {
+  const generateNextId = () => {
     const data = getTableData("entertainment_wishlist") || [];
-    const categoryItems = data.filter((item) =>
-      item.itemNumber?.startsWith(category),
-    );
 
     let maxNum = 0;
-    categoryItems.forEach((item) => {
-      const num = parseInt(item.itemNumber.replace(category, ""), 10);
-      if (num > maxNum) maxNum = num;
+
+    data.forEach((item) => {
+      const num = parseInt(item.itemNumber.replace("WS", ""), 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+      }
     });
 
-    return `${category}${String(maxNum + 1).padStart(9, "0")}`;
+    return `WS${String(maxNum + 1).padStart(9, "0")}`;
   };
 
   const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
@@ -251,9 +251,13 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   // Handle category change (updates ID prefix)
   const handleCategoryChange = (category) => {
     handleChange("category", category);
+
     if (mode === "create") {
-      const newId = generateNextId(category);
-      setFormData((prev) => ({ ...prev, category, itemNumber: newId }));
+      setFormData((prev) => ({
+        ...prev,
+        category,
+        itemNumber: generateNextId(),
+      }));
     }
   };
 
@@ -371,8 +375,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       }
 
       if (mode === "create") {
-        const itemNumber =
-          formData.itemNumber || generateNextId(formData.category);
+        const itemNumber = formData.itemNumber || generateNextId();
         const newItem = {
           ...formData,
           id: Date.now(),
@@ -1427,14 +1430,18 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 key={genre.value}
                 onClick={() => !isReadOnly && handleGenreToggle(genre.value)}
                 disabled={isReadOnly}
-                type={(formData.genres || []).includes(genre.value)? "glass-active" : "glass"}
+                type={
+                  (formData.genres || []).includes(genre.value)
+                    ? "glass-active"
+                    : "glass"
+                }
                 style={{
                   padding: "6px 12px",
                   borderRadius: "16px",
                   cursor: isReadOnly ? "default" : "pointer",
-                  fontSize: isMobile ? "11px" :"12px",
+                  fontSize: isMobile ? "11px" : "12px",
                   transition: "all 0.2s",
-                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
+                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
                 }}
               >
                 {genre.label}
@@ -1791,7 +1798,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 className="sap-badge error"
                 style={{
                   marginLeft: "8px",
-                  fontSize:"11px",
+                  fontSize: "11px",
                   padding: "2px 8px",
                 }}
               >
@@ -1816,9 +1823,9 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
 
               <div
                 className="sap-form-row"
-                style={{ display: "flex", alignItems: "flex-end", gap: "10px" }}
+                style={{ display: "flex", gap: "10px" }}
               >
-                <div style={{ width: "330px" }}>
+                <div style={{ width: isMobile ? "100%" : "330px" }}>
                   <Autocomplete
                     label="Item ID"
                     value={itemId}
@@ -1852,7 +1859,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                         <div>{item.title}</div>
 
                         <small style={{ color: "#666" }}>
-                          {item.description?.slice(0,100)}...
+                          {item.description?.slice(0, 100)}...
                         </small>
                       </div>
                     )}

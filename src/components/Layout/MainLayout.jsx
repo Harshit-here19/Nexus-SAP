@@ -20,14 +20,19 @@ const MainLayout = ({ children }) => {
   const [sidebarVisible, setSidebarVisible] = useState(() => {
     return window.innerWidth >= 768;
   });
-  const [ImportExport, setImportExport] = useState({show:false, tab:""});
+  const [ImportExport, setImportExport] = useState({ show: false, tab: "" });
 
-  const {confirm} = useConfirm();
-  const isMobile = window.innerWidth <= 768
+  const { confirm } = useConfirm();
+  const isMobile = window.innerWidth <= 768;
 
   const handlers = useSwipeable({
     onSwipedLeft: () => setSidebarVisible(false), // swipe left → close
-    onSwipedRight: () => setSidebarVisible(true), // swipe right → open
+    onSwipedRight: (eventData) => {
+      if (eventData.initial[0] <= 30) {
+        // Swipe started within 30px from left edge
+        setSidebarVisible(true);
+      }
+    }, // swipe right → open
     delta: 50, // minimum swipe distance
     preventDefaultTouchmoveEvent: true,
     swipeDuration: 250,
@@ -75,12 +80,12 @@ const MainLayout = ({ children }) => {
       };
       input.click();
     } else {
-      setImportExport({show:true, tab:action});
+      setImportExport({ show: true, tab: action });
     }
   };
 
   return (
-    <div {...handlers} className="sap-window" >
+    <div {...handlers} className="sap-window">
       {/* Title Bar */}
       <div className="sap-title-bar">
         <div className="title">
@@ -137,7 +142,7 @@ const MainLayout = ({ children }) => {
       </Toolbar>
 
       {/* Main Content */}
-      <div className="sap-main-container" style={{ marginBottom: '2rem' }}>
+      <div className="sap-main-container" style={{ marginBottom: "2rem" }}>
         {sidebarVisible && (
           <div
             className="sap-sidebar-overlay"
@@ -163,7 +168,7 @@ const MainLayout = ({ children }) => {
       {/* Import/Export Modal */}
       <ImportExportModal
         isOpen={ImportExport.show}
-        onClose={() => setImportExport(prev => ({...prev, show:false}))}
+        onClose={() => setImportExport((prev) => ({ ...prev, show: false }))}
         onStatusMessage={updateStatus}
         tab={ImportExport.tab}
       />

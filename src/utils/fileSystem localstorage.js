@@ -1,123 +1,5 @@
 // src/utils/fileSystem.js
 
-import { initializeDB } from "./storage";
-
-// ========== INDEXEDDB HELPERS (local to this file) ==========
-
-const DB_NAME = "nexus_db";
-const DB_VERSION = 1;
-const STORE_NAME = "keyvalue";
-
-// Reuse the same DB connection used by storage.js
-let _db = null;
-
-const getDB = () => {
-  return new Promise((resolve, reject) => {
-    if (_db) {
-      resolve(_db);
-      return;
-    }
-
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-
-    request.onsuccess = (event) => {
-      _db = event.target.result;
-      resolve(_db);
-    };
-
-    request.onerror = (event) => {
-      reject(event.target.error);
-    };
-  });
-};
-
-/**
- * Get ALL key-value pairs from IndexedDB that start with "sap_"
- * Returns a plain object: { [key]: value, ... }
- */
-const getAllSapEntries = async () => {
-  const db = await getDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-
-    const entries = {};
-
-    // Collect all keys first
-    const keyRequest = store.getAllKeys();
-
-    keyRequest.onsuccess = (e) => {
-      const allKeys = e.target.result.filter((k) =>
-        String(k).startsWith("sap_"),
-      );
-
-      if (allKeys.length === 0) {
-        resolve(entries);
-        return;
-      }
-
-      let pending = allKeys.length;
-
-      allKeys.forEach((key) => {
-        const getRequest = store.get(key);
-
-        getRequest.onsuccess = (ev) => {
-          entries[key] = ev.target.result;
-          pending--;
-          if (pending === 0) resolve(entries);
-        };
-
-        getRequest.onerror = (ev) => {
-          // Skip failed keys rather than rejecting everything
-          pending--;
-          if (pending === 0) resolve(entries);
-        };
-      });
-    };
-
-    keyRequest.onerror = (e) => reject(e.target.error);
-  });
-};
-
-/**
- * Write a single key-value pair into IndexedDB.
- */
-const idbSetItem = async (key, value) => {
-  const db = await getDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.put(value, key);
-    request.onsuccess = () => resolve(true);
-    request.onerror = (e) => reject(e.target.error);
-  });
-};
-
-/**
- * Read a single key from IndexedDB.
- */
-const idbGetItem = async (key) => {
-  const db = await getDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.get(key);
-    request.onsuccess = (e) => {
-      resolve(e.target.result !== undefined ? e.target.result : null);
-    };
-    request.onerror = (e) => reject(e.target.error);
-  });
-};
-
-// ========== EXPORT / IMPORT ==========
-
 /**
  * Export data to JSON file and download
  */
@@ -316,34 +198,33 @@ const parseCSVLine = (line) => {
   return result;
 };
 
-// ========== BACKUP & RESTORE (NOW ASYNC / IDB-BASED) ==========
-
 /**
- * Create a backup of all IndexedDB data that belongs to this app.
- *
- * Previously read from localStorage synchronously.
- * Now reads asynchronously from IndexedDB and then triggers download.
- *
- * @returns {Promise<{success: boolean, message: string}>}
+ * Create a backup of all localStorage data
  */
-export const createBackup = async () => {
+export const createBackup = () => {
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `sap-backup-${timestamp}.json`;
-
-    // Fetch every sap_ key from IndexedDB
-    const sapEntries = await getAllSapEntries();
 
     const backupData = {
       version: "1.0",
       createdAt: new Date().toISOString(),
       application: "SAP GUI Clone",
-      // Values are already plain JS objects (IDB structured-clone),
-      // so no JSON.parse needed here unlike the old localStorage version.
-      data: sapEntries,
+      data: {},
     };
 
-    // exportToJSON is still synchronous (just triggers a download)
+    // Get all localStorage keys that belong to our app
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith("sap_")) {
+        try {
+          backupData.data[key] = JSON.parse(localStorage.getItem(key));
+        } catch {
+          backupData.data[key] = localStorage.getItem(key);
+        }
+      }
+    }
+
     return exportToJSON(backupData, filename);
   } catch (error) {
     return { success: false, message: `Backup failed: ${error.message}` };
@@ -351,20 +232,12 @@ export const createBackup = async () => {
 };
 
 /**
- * Restore data from a backup file into IndexedDB.
- *
- * Previously wrote to localStorage synchronously.
- * Now merges/overwrites each key asynchronously in IndexedDB AND
- * updates the in-memory cache in storage.js by calling initializeDB()
- * at the end so the rest of the app sees fresh data immediately.
- *
- * @param {File} file - The .json backup file selected by the user
- * @returns {Promise<{success: boolean, message: string}>}
+ * Restore data from backup file
  */
 export const restoreBackup = (file) => {
   return new Promise((resolve, reject) => {
     importFromJSON(file)
-      .then(async (result) => {
+      .then((result) => {
         const backupData = result.data;
 
         // Validate backup structure
@@ -373,51 +246,34 @@ export const restoreBackup = (file) => {
           return;
         }
 
-        try {
-          // Process each key from the backup
-          for (const [key, value] of Object.entries(backupData.data)) {
-            // Read what is already in IDB for this key
-            const existing = await idbGetItem(key);
+        // Restore each key to localStorage
+        Object.entries(backupData.data).forEach(([key, value]) => {
+          const existing = JSON.parse(localStorage.getItem(key) || "[]");
 
-            let merged;
+          // If both are arrays → merge
+          if (Array.isArray(existing) && Array.isArray(value)) {
+            const merged = [
+              ...existing,
+              ...value.filter((v) => !existing.some((e) => e.id === v.id)),
+            ];
 
-            if (Array.isArray(existing) && Array.isArray(value)) {
-              // Merge arrays: keep existing rows, append new ones by id
-              merged = [
-                ...existing,
-                ...value.filter((v) => !existing.some((e) => e.id === v.id)),
-              ];
-            } else {
-              // For non-array data (objects, primitives) → overwrite
-              merged = value;
-            }
-
-            // Persist merged result back to IndexedDB
-            await idbSetItem(key, merged);
+            localStorage.setItem(key, JSON.stringify(merged));
+          } else {
+            // fallback: overwrite for non-array data
+            localStorage.setItem(key, JSON.stringify(value));
           }
+        });
 
-          // Re-hydrate the in-memory cache in storage.js so the running
-          // app immediately reflects the restored data without a page reload.
-          await initializeDB();
-
-          resolve({
-            success: true,
-            message: `Backup restored successfully (Created: ${backupData.createdAt})`,
-          });
-        } catch (writeError) {
-          reject({
-            success: false,
-            message: `Restore failed while writing to IndexedDB: ${writeError.message}`,
-          });
-        }
+        resolve({
+          success: true,
+          message: `Backup restored successfully (Created: ${backupData.createdAt})`,
+        });
       })
       .catch((error) => {
         reject(error);
       });
   });
 };
-
-// ========== UTILITIES (unchanged) ==========
 
 /**
  * Get file size in human readable format
