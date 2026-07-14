@@ -3,7 +3,7 @@ import React from "react";
 import styles from "./SapButton.module.css";
 
 /**
- * @typedef {"default"|"primary"|"success"|"danger"|"warning"|"search"|"close"|"login"|"signup"|"glass"|"glass-active"|"gold"|"korean-save"|"korean-close"|"korean-delete"|"outline"|"neo"|"neo-danger"|"neo-active"|"neo-dashed"} ButtonType
+ * @typedef {"default"|"primary"|"success"|"danger"|"warning"|"search"|"close"|"login"|"signup"|"glass"|"glass-active"|"gold"|"korean-save"|"korean-close"|"korean-delete"|"outline"|"neo"|"neo-danger"|"neo-active"|"neo-dashed"|"neo-close"} ButtonType
  */
 
 /**
@@ -23,7 +23,7 @@ import styles from "./SapButton.module.css";
 const SapButton = ({
   children,
   onClick,
-  type = "default", // 'default', 'primary', 'success', 'danger','warning', 'search', 'close', 'login', 'signup', 'glass', 'glass-active', 'gold', 'korean-save' , 'korean-close', 'korean-delete', 'outline', 'neo','neo-danger','neo-active', 'neo-dashed'
+  type = "default", // 'default', 'primary', 'success', 'danger','warning', 'search', 'close', 'login', 'signup', 'glass', 'glass-active', 'gold', 'korean-save' , 'korean-close', 'korean-delete', 'outline', 'neo','neo-danger','neo-active', 'neo-dashed', 'neo-close'
   disabled = false,
   icon,
   loading = false,

@@ -12,6 +12,8 @@ import {
   restoreBackup,
   formatFileSize,
   validateFileType,
+  createSelectionBackup,
+  restoreSelectionBackup,
 } from "../../utils/fileSystem";
 import {
   getAllData,
@@ -26,6 +28,7 @@ import { useAuth } from "../../context/AuthContext";
 const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
   const [activeTab, setActiveTab] = useState("");
   const [selectedTable, setSelectedTable] = useState("");
+  const [selectedTables, setSelectedTables] = useState([]);
   const [exportFormat, setExportFormat] = useState("json");
   const [selectedFile, setSelectedFile] = useState(null);
   const [importPreview, setImportPreview] = useState(null);
@@ -194,7 +197,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
   };
 
   // Handle Export
-  const handleExport = () => {
+  const handleExport = async () => {
     setIsProcessing(true);
 
     try {
@@ -202,18 +205,36 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
       const timestamp = new Date().toISOString().split("T")[0];
 
       if (selectedTable === "all") {
-        // Full backup
-        result = createBackup();
+        if (selectedTables.length === 0) {
+          onStatusMessage("Please select at least one table.", "warning");
+          return;
+        }
+
+        result = await createSelectionBackup(selectedTables);
       } else if (exportFormat === "json") {
-        // Export single table as JSON
         const data = getTableData(selectedTable);
-        result = exportToJSON(data, `${selectedTable}-${timestamp}.json`);
+
+        result = exportToJSON(
+          {
+            version: "1.0",
+            type: "table",
+            table: selectedTable,
+            createdAt: new Date().toISOString(),
+            application: "SAP GUI Clone",
+            data: data,
+          },
+          `${selectedTable}-${timestamp}.json`,
+        );
       } else {
-        // Export as CSV
         const data = getTableData(selectedTable);
+
         const columns =
           tableColumns[selectedTable] ||
-          Object.keys(data[0] || {}).map((key) => ({ key, label: key }));
+          Object.keys(data[0] || {}).map((key) => ({
+            key,
+            label: key,
+          }));
+
         result = exportToCSV(
           data,
           columns,
@@ -237,6 +258,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
   // Handle file selection
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
+
     if (!file) return;
 
     setSelectedFile(file);
@@ -247,16 +269,61 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
     try {
       if (extension === "json") {
         const result = await importFromJSON(file);
+
+        const json = result.data;
+
+        // New single table export
+        if (json.type === "table" && json.table && Array.isArray(json.data)) {
+          setSelectedTable(json.table);
+
+          setImportPreview({
+            type: "json",
+            filename: file.name,
+            size: formatFileSize(file.size),
+            data: json.data,
+            detectedTable: json.table,
+            recordCount: json.data.length,
+          });
+
+          return;
+        }
+
+        // Selection backup
+        if (json.type === "selection") {
+          setImportPreview({
+            type: "json",
+            filename: file.name,
+            size: formatFileSize(file.size),
+            backupType: "selection",
+            tables: json.tables || [],
+            data: json.data,
+          });
+
+          return;
+        }
+
+        // Full backup
+        if (json.version && json.data && !Array.isArray(json)) {
+          setImportPreview({
+            type: "json",
+            filename: file.name,
+            size: formatFileSize(file.size),
+            data: json,
+            recordCount: "Full Backup",
+          });
+
+          return;
+        }
+
+        // Old JSON export without metadata
+
+        const data = Array.isArray(json) ? json : json.data;
         setImportPreview({
           type: "json",
           filename: file.name,
           size: formatFileSize(file.size),
-          data: result.data,
-          recordCount: Array.isArray(result.data)
-            ? result.data.length
-            : result.data.data
-              ? "Full Backup"
-              : Object.keys(result.data).length,
+          data: data,
+          recordCount: Array.isArray(data) ? data.length : 0,
         });
       } else if (extension === "csv") {
         const columns = tableColumns[selectedTable] || [];
@@ -283,14 +350,9 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
 
   // Handle Import
   const handleImport = async () => {
-    // 1️⃣ Check if a file is selected and preview exists
     if (!selectedFile || !importPreview) {
       onStatusMessage("Please select a file first", "warning");
-      return;
-    }
 
-    if (!validateFileType(selectedFile, ["json"])) {
-      onStatusMessage("Please select a JSON file", "warning");
       return;
     }
 
@@ -299,216 +361,108 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
     try {
       const importData = importPreview.data;
 
-      // 2️⃣ Full backup file
-      if (importData.version && importData.data) {
+      // Full backup
+
+      if (importData.version && importData.data && !Array.isArray(importData)) {
         await restoreBackup(selectedFile);
+
         onStatusMessage(
           "Full backup restored successfully. Please refresh the page.",
           "success",
         );
+
         return;
       }
 
-      // 3️⃣ Ensure a target table is selected
+      // Selection backup
+
+      if (importPreview.backupType === "selection") {
+        await restoreSelectionBackup(selectedFile);
+
+        onStatusMessage("Selected tables restored successfully.", "success");
+
+        return;
+      }
+
+      // Require table only when detection failed
+
       if (!selectedTable || selectedTable === "all") {
-        onStatusMessage("Please select a target table for import", "warning");
+        onStatusMessage(
+          "Could not detect table. Please select a target table.",
+          "warning",
+        );
+
         return;
       }
 
       const existingData = getTableData(selectedTable) || [];
+
       const newData = importData;
 
-      if (!newData.length) {
+      if (!Array.isArray(newData) || !newData.length) {
         throw new Error("Imported file is empty.");
       }
 
-      const existingKey = tableConfig[selectedTable]?.existingKey;
+      const config = tableConfig[selectedTable];
 
-      // 4️⃣ If table has existing data, validate structure
-      if (existingData.length > 0) {
-        const newKey = Object.keys(newData[0])[0];
+      if (!config) {
+        throw new Error("Import configuration missing for this table.");
+      }
 
-        if (existingKey !== newKey) {
-          throw new Error(
-            "The imported file structure does not match the table.",
-          );
+      const existingKey = config.existingKey;
+
+      const duplicateField = config.duplicateField;
+
+      const makeDuplicateKey = (record) => {
+        if (Array.isArray(duplicateField)) {
+          return duplicateField
+            .map((field) => String(record[field] ?? "").trim())
+            .join("||");
         }
 
-        // 5️⃣ Prepare ID sequence and find missing numbers
-        const numbers = existingData
-          .map((row) => {
-            const value = Object.values(row)[0] || "";
-            const prefix = value.slice(0, value.length - 9);
-            const numericPart = value.replace(/^\D+/, "");
-            return { prefix, number: parseInt(numericPart, 10) };
-          })
-          .filter((n) => !isNaN(n.number));
+        return String(record[duplicateField] ?? "").trim();
+      };
 
-        const existingNumbers = numbers.map((n) => n.number);
-        const prefix = numbers[0]?.prefix || "";
+      const existingRecords = new Set(existingData.map(makeDuplicateKey));
 
-        // Find missing numbers in sequence
-        const minNumber = Math.min(...existingNumbers);
-        const maxNumber = Math.max(...existingNumbers);
-        const missingNumbers = [];
-        for (let i = minNumber; i <= maxNumber; i++) {
-          if (!existingNumbers.includes(i)) missingNumbers.push(i);
-        }
+      const processedData = [];
 
-        const duplicateField = tableConfig[selectedTable]?.duplicateField;
+      let counter = existingData.length + 100000000;
 
-        // Create a unique key for duplicate checking
-        const makeDuplicateKey = (record) => {
-          if (Array.isArray(duplicateField)) {
-            return duplicateField
-              .map((field) => String(record[field] ?? "").trim())
-              .join("||");
-          }
-
-          return String(record[duplicateField] ?? "").trim();
-        };
-
-        const existingRecords = new Set(existingData.map(makeDuplicateKey));
-
-        if (selectedTable === "collections") {
-          const mergedCollections = [...existingData];
-
-          let newCollections = 0;
-          let newItems = 0;
-
-          newData.forEach((incoming) => {
-            const existing = mergedCollections.find(
-              (c) =>
-                c.title.trim().toLowerCase() ===
-                incoming.title.trim().toLowerCase(),
-            );
-
-            // Collection doesn't exist → add it
-            if (!existing) {
-              mergedCollections.push({
-                ...incoming,
-                importedAt: new Date().toISOString(),
-              });
-
-              newCollections++;
-              return;
-            }
-
-            // Collection exists → merge items
-            existing.items ??= [];
-
-            incoming.items?.forEach((item) => {
-              const alreadyExists = existing.items.some(
-                (i) => JSON.stringify(i) === JSON.stringify(item),
-              );
-
-              if (!alreadyExists) {
-                existing.items.push(item);
-                newItems++;
-              }
-            });
-
-            existing.updatedAt = new Date().toISOString();
-            existing.importedAt = new Date().toISOString();
-          });
-
-          saveTableData(selectedTable, mergedCollections);
-
-          // Build status message
-          let message = "";
-
-          if (newCollections === 0 && newItems === 0) {
-            message = "No new collections or items were imported.";
-          } else {
-            const parts = [];
-
-            if (newCollections > 0) {
-              parts.push(
-                `${newCollections} new collection${newCollections > 1 ? "s" : ""}`,
-              );
-            }
-
-            if (newItems > 0) {
-              parts.push(`${newItems} new item${newItems > 1 ? "s" : ""}`);
-            }
-
-            message = `Imported ${parts.join(" and ")} successfully.`;
-          }
-
-          onStatusMessage(message, "success");
-
-          // Reset import state
-          setSelectedFile(null);
-          setImportPreview(null);
-
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
-
-          onClose();
+      newData.forEach((record) => {
+        if (existingRecords.has(makeDuplicateKey(record))) {
           return;
         }
 
-        const processedData = [];
-        let nextNumber = maxNumber;
+        counter++;
 
-        newData
-          .filter((record) => !existingRecords.has(makeDuplicateKey(record)))
-          .forEach((record) => {
-            // Use a missing number first if available
-            const numberToUse = missingNumbers.length
-              ? missingNumbers.shift()
-              : ++nextNumber;
+        processedData.push({
+          ...record,
 
-            const numberPart = String(numberToUse).padStart(9, "0");
+          [existingKey]: `${selectedTable.toUpperCase()}${counter}`,
 
-            processedData.push({
-              ...record,
-              [existingKey]: prefix + numberPart,
-              importedAt: new Date().toISOString(),
-            });
-          });
-
-        // 7️⃣ Merge new data
-        const mergedData = [...existingData, ...processedData];
-        saveTableData(selectedTable, mergedData);
-
-        onStatusMessage(
-          `Imported ${processedData.length} new records to ${selectedTable}. Skipped ${
-            newData.length - processedData.length
-          } duplicates.`,
-          "success",
-        );
-      } else {
-        // 8️⃣ If table is empty, just save new data
-        let nextNumber = 100000000;
-        const value = newData[0][existingKey];
-        const prefix = value.slice(0, value.length - 9);
-        const processedData = newData.map((record) => {
-          nextNumber += 1;
-          // const numberPart = String(nextNumber).padStart(9, "0");
-          const numberPart = nextNumber;
-          let ID = `${prefix}${numberPart}`;
-          // console.log(newData[0][existingKey], newData, existingKey)
-          // console.log(ID);
-          return {
-            ...record,
-            [existingKey]: ID,
-            importedAt: new Date().toISOString(),
-          };
+          importedAt: new Date().toISOString(),
         });
+      });
 
-        saveTableData(selectedTable, processedData);
-        onStatusMessage(
-          `Imported ${processedData.length} records to ${selectedTable}`,
-          "success",
-        );
+      saveTableData(selectedTable, [...existingData, ...processedData]);
+
+      onStatusMessage(
+        `Imported ${processedData.length} new records to ${selectedTable}. Skipped ${
+          newData.length - processedData.length
+        } duplicates.`,
+
+        "success",
+      );
+
+      setSelectedFile(null);
+
+      setImportPreview(null);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
 
-      // 9️⃣ Reset state and clear file input
-      setSelectedFile(null);
-      setImportPreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
       onClose();
     } catch (error) {
       onStatusMessage(`Import failed: ${error.message}`, "error");
@@ -683,12 +637,46 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
               placeholder="Choose what to export..."
               width="100%"
             />
+            {selectedTable === "all" && (
+              <div style={{ marginTop: 20 }}>
+                <strong>Select tables</strong>
+
+                {tables
+                  .filter((t) => t.value !== "all")
+                  .map((table) => (
+                    <label
+                      key={table.value}
+                      style={{
+                        display: "flex",
+                        gap: 10,
+                        marginTop: 8,
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedTables.includes(table.value)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedTables((prev) => [...prev, table.value]);
+                          } else {
+                            setSelectedTables((prev) =>
+                              prev.filter((x) => x !== table.value),
+                            );
+                          }
+                        }}
+                      />
+
+                      {table.label}
+                    </label>
+                  ))}
+              </div>
+            )}
 
             {selectedTable && selectedTable !== "all" && (
               <div className="sap-form-group">
                 <label className="sap-form-label">Format</label>
                 <div className="sap-form-field">
-                  <div style={{ display: "flex", gap: "16px" }}>
+                  <div style={{ display: "flex", gap: "16px", width:"450px" }}>
                     <label
                       style={{
                         display: "flex",
@@ -780,7 +768,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
             </SapButton>
             <SapButton
               onClick={handleExport}
-              type="primary"
+              type="neo-close"
               disabled={!selectedTable || isProcessing}
               icon={isProcessing ? "⏳" : "📤"}
             >
@@ -799,42 +787,124 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
           >
             <span className="sap-message-strip-icon">⚠️</span>
             <span>
-              Importing data will add records to existing data. Duplicates may
-              occur.
+              Importing data will automatically detect the target table when
+              possible. For older files, you can manually select the target
+              table.
             </span>
           </div>
 
           <div className="sap-form">
-            <SapSelect
-              label="Target Table"
-              value={selectedTable}
-              onChange={(val) => {
-                setSelectedTable(val);
-                setSelectedFile(null);
-                setImportPreview(null);
-              }}
-              options={tables.filter((t) => t.value !== "all")}
-              placeholder="Select where to import..."
-              width="100%"
-            />
+            {importPreview &&
+              !importPreview.detectedTable &&
+              importPreview.backupType !== "selection" &&
+              importPreview.recordCount !== "Full Backup" && (
+                <SapSelect
+                  label="Target Table"
+                  value={selectedTable}
+                  onChange={(val) => {
+                    setSelectedTable(val);
+                  }}
+                  options={tables.filter((t) => t.value !== "all")}
+                  placeholder="Select where to import..."
+                  width="100%"
+                />
+              )}
 
-            <div className="sap-form-group">
-              <label className="sap-form-label">Select File</label>
-              <div className="sap-form-field">
+            <div className="sap-form-field" style={{ alignSelf: "center" }}>
+              <label
+                style={{
+                  display: "flex",
+                  flexDirection: importPreview ? "row" : "column",
+                  alignItems: "center",
+                  justifyContent: importPreview ? "flex-start" : "center",
+                  gap: importPreview ? "12px" : "0",
+                  padding: importPreview ? "12px 16px" : "24px 16px",
+                  border: "2px dashed var(--sap-border-dark)",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  color: "#000",
+                  fontFamily: "system-ui, -apple-system, sans-serif",
+                  backgroundColor: "transparent",
+                  transition: "all 0.2s ease",
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    const mockEvent = {
+                      target: { files: e.dataTransfer.files },
+                    };
+                    handleFileSelect(mockEvent);
+                  }
+                }}
+              >
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".json,.csv"
+                  accept=".json"
                   onChange={handleFileSelect}
                   style={{
-                    padding: "8px",
-                    border: "1px dashed var(--sap-border-dark)",
-                    borderRadius: "4px",
-                    width: "100%",
-                    cursor: "pointer",
+                    position: "absolute",
+                    width: "1px",
+                    height: "1px",
+                    overflow: "hidden",
+                    clip: "rect(0,0,0,0)",
                   }}
+                  // onLoad={console.log(importPreview)}
                 />
-              </div>
+
+                <div
+                  style={{
+                    fontSize: importPreview ? "24px" : "36px",
+                    filter: "grayscale(1)",
+                  }}
+                >
+                  📄
+                </div>
+
+                <div style={{ textAlign: "center" }}>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "700",
+                      letterSpacing: "1px",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {importPreview ? "Change file" : "Click to upload"}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: "500",
+                      color: "#64748b",
+                      marginTop: "4px",
+                    }}
+                  >
+                    {importPreview
+                      ? importPreview.filename
+                      : "or drag & drop a file"}
+                  </div>
+                </div>
+
+                {importPreview && (
+                  <div
+                    style={{
+                      marginLeft: "auto",
+                      fontSize: "12px",
+                      color: "var(--sap-text-secondary)",
+                      textAlign: "right",
+                    }}
+                  >
+                    <div>{importPreview.size}</div>
+                    {importPreview.record && (
+                      <div>{importPreview.recordCount} records</div>
+                    )}
+                  </div>
+                )}
+              </label>
             </div>
 
             {importPreview && (
@@ -875,18 +945,42 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                     fontSize: "13px",
                   }}
                 >
-                  <div>
-                    <span style={{ color: "var(--sap-text-secondary)" }}>
-                      Type:{" "}
-                    </span>
-                    <strong>{importPreview.type.toUpperCase()}</strong>
-                  </div>
-                  <div>
-                    <span style={{ color: "var(--sap-text-secondary)" }}>
-                      Records:{" "}
-                    </span>
-                    <strong>{importPreview.recordCount}</strong>
-                  </div>
+                  {importPreview.detectedTable && (
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        padding: "8px",
+                        background: "var(--sap-success-background)",
+                        borderRadius: "4px",
+                        fontSize: "13px",
+                      }}
+                    >
+                      ✅ Detected Table:
+                      <strong style={{ marginLeft: "5px" }}>
+                        {tables.find(
+                          (t) => t.value === importPreview.detectedTable,
+                        )?.label || importPreview.detectedTable}
+                      </strong>
+                    </div>
+                  )}
+
+                  {importPreview.recordCount && (
+                    <div>
+                      <span style={{ color: "var(--sap-text-secondary)" }}>
+                        Records:{" "}
+                      </span>
+                      <strong>{importPreview.recordCount}</strong>
+                    </div>
+                  )}
+
+                  {importPreview.tables && (
+                    <div>
+                      <span style={{ color: "var(--sap-text-secondary)" }}>
+                        Tables:{" "}
+                      </span>
+                      <strong>{importPreview.tables?.join(", ")}</strong>
+                    </div>
+                  )}
                 </div>
 
                 {importPreview.type === "csv" && importPreview.headers && (
@@ -918,8 +1012,13 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
             </SapButton>
             <SapButton
               onClick={handleImport}
-              type="primary"
-              disabled={!importPreview || !selectedTable || isProcessing}
+              type="neo-close"
+              // disabled={!importPreview || !selectedTable || isProcessing}
+              disabled={
+                !importPreview ||
+                isProcessing ||
+                (!selectedTable && importPreview?.backupType !== "selection")
+              }
               icon={isProcessing ? "⏳" : "📥"}
             >
               {isProcessing ? "Importing..." : "Import"}
@@ -968,7 +1067,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                   marginBottom: "16px",
                 }}
               >
-                Download a complete backup of all your data
+                Download a complete backup of your data
               </p>
               <SapButton
                 onClick={() => {
@@ -979,7 +1078,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                     onStatusMessage(result.message, "error");
                   }
                 }}
-                type="primary"
+                type="neo-active"
                 icon="📥"
               >
                 Create Backup
@@ -1038,6 +1137,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                   document.getElementById("restore-backup-input").click()
                 }
                 icon="📤"
+                type="neo-active"
               >
                 Select Backup File
               </SapButton>
@@ -1108,7 +1208,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
             </SapButton>
             <SapButton
               onClick={() => handleErase(selectedTable)}
-              type="primary"
+              type="neo-danger"
               disabled={!selectedTable || isProcessing}
               icon={isProcessing ? "⏳" : "🧹"}
             >

@@ -443,6 +443,7 @@
 .sapButton.neo,
 .sapButton.neo-danger,
 .sapButton.neo-active,
+.sapButton.neo-close,
 .sapButton.neo-dashed {
   padding: 0.5rem 1.5rem;
   border: 2px solid #111827;
@@ -454,6 +455,7 @@
 .sapButton.neo:hover,
 .sapButton.neo-danger:hover,
 .sapButton.neo-active:hover,
+.sapButton.neo-close:hover,
 .sapButton.neo-dashed:hover {
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0px #111827;
@@ -462,6 +464,7 @@
 .sapButton.neo:active,
 .sapButton.neo-danger:active,
 .sapButton.neo-active:active,
+.sapButton.neo-close:active,
 .sapButton.neo-dashed:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0px #111827;
@@ -501,6 +504,28 @@
 
 .sapButton.neo-danger:active {
   background: linear-gradient(135deg, #991b1b, #7f1d1d);
+}
+
+/* Retro Neobrutalism - Blue Close Variant */
+.sapButton.neo-close {
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  ); /* Vibrant Royal Blue to Deep Blue Mix */
+  color: #ffffff;
+}
+
+.sapButton.neo-close:hover {
+  background: linear-gradient(
+    135deg,
+    #3b82f6,
+    #2563eb
+  ); /* Lighter, glowing blue */
+}
+
+.sapButton.neo-close:active {
+  background: linear-gradient(135deg, #1e40af, #1e3a8a); /* Deep navy blue */
 }
 
 /* Retro Neobrutalism - Active Variant */

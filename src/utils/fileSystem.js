@@ -1,6 +1,6 @@
 // src/utils/fileSystem.js
 
-import { initializeDB } from "./storage";
+import { initializeDB, getAllData, saveAllData } from "./storage";
 
 // ========== INDEXEDDB HELPERS (local to this file) ==========
 
@@ -54,6 +54,7 @@ const getAllSapEntries = async () => {
     const keyRequest = store.getAllKeys();
 
     keyRequest.onsuccess = (e) => {
+      // console.log(e.target.result);
       const allKeys = e.target.result.filter((k) =>
         String(k).startsWith("sap_"),
       );
@@ -341,6 +342,7 @@ export const createBackup = async () => {
       // Values are already plain JS objects (IDB structured-clone),
       // so no JSON.parse needed here unlike the old localStorage version.
       data: sapEntries,
+      success: true,
     };
 
     // exportToJSON is still synchronous (just triggers a download)
@@ -369,35 +371,20 @@ export const restoreBackup = (file) => {
 
         // Validate backup structure
         if (!backupData.version || !backupData.data) {
-          reject({ success: false, message: "Invalid backup file format" });
+          reject({
+            success: false,
+            message: "Invalid backup file format",
+          });
           return;
         }
 
         try {
-          // Process each key from the backup
+          // Replace all existing data with backup data
           for (const [key, value] of Object.entries(backupData.data)) {
-            // Read what is already in IDB for this key
-            const existing = await idbGetItem(key);
-
-            let merged;
-
-            if (Array.isArray(existing) && Array.isArray(value)) {
-              // Merge arrays: keep existing rows, append new ones by id
-              merged = [
-                ...existing,
-                ...value.filter((v) => !existing.some((e) => e.id === v.id)),
-              ];
-            } else {
-              // For non-array data (objects, primitives) → overwrite
-              merged = value;
-            }
-
-            // Persist merged result back to IndexedDB
-            await idbSetItem(key, merged);
+            await idbSetItem(key, value);
           }
 
-          // Re-hydrate the in-memory cache in storage.js so the running
-          // app immediately reflects the restored data without a page reload.
+          // Refresh in-memory cache
           await initializeDB();
 
           resolve({
@@ -415,6 +402,68 @@ export const restoreBackup = (file) => {
         reject(error);
       });
   });
+};
+
+export const createSelectionBackup = async (selectedTables) => {
+  try {
+    // Get all current user's data
+    const allData = getAllData();
+
+    const selectedData = {};
+
+    selectedTables.forEach((table) => {
+      if (allData.hasOwnProperty(table)) {
+        selectedData[table] = allData[table];
+      }
+    });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+
+    return exportToJSON(
+      {
+        version: "1.0",
+        type: "selection",
+        createdAt: new Date().toISOString(),
+        application: "SAP GUI Clone",
+        tables: selectedTables,
+        data: selectedData,
+      },
+      `sap-selection-backup-${timestamp}.json`,
+    );
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+export const restoreSelectionBackup = async (file) => {
+  const result = await importFromJSON(file);
+
+  const backup = result.data;
+
+  if (!backup.version || !backup.data) {
+    throw new Error("Invalid backup file.");
+  }
+
+  // Get existing data
+  const currentData = getAllData();
+
+  // Replace only the selected tables
+  Object.entries(backup.data).forEach(([table, value]) => {
+    currentData[table] = value;
+  });
+
+  // Save everything back
+  saveAllData(currentData);
+
+  await initializeDB();
+
+  return {
+    success: true,
+    message: `${backup.tables.length} table(s) restored successfully.`,
+  };
 };
 
 // ========== UTILITIES (unchanged) ==========
