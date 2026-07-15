@@ -79,13 +79,9 @@ export const CollectionScreen = ({ mode = "create" }) => {
 
   const handleSelectCollection = (collection) => {
     setCollectionId(collection.collectionNumber);
-
     setFormData(collection);
-
     setIsLoaded(true);
-
     setShowSearchModal(false);
-
     setTransactionHistory((prev) => [
       ...prev,
       `COLLECTION_${collection.collectionNumber}`,
@@ -136,9 +132,30 @@ export const CollectionScreen = ({ mode = "create" }) => {
     }));
   };
 
-  /*
-   * SAVE
-   */
+  const DeleteInSearchModal = async (id) => {
+      if (!id) return;
+  
+      const confirmed = await confirm(
+        "Are you sure you want to delete this Expense?",
+        "danger",
+      );
+      if (confirmed) {
+        const collections = getTableData("collections");
+        const filtered = collections.filter((e) => e.id !== id);
+        const allData = getAllData();
+
+        allData.collections = filtered;
+        saveAllData(allData);
+
+        clearRef.current?.();
+
+        updateStatus("Collection deleted successfully", "success");
+        setSearchResults(filtered);
+      }
+      markAsSaved();
+    };
+
+  /*   * SAVE   */
 
   saveRef.current = () => {
     const allData = getAllData();
@@ -196,9 +213,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
     }
   };
 
-  /*
-   * CLEAR
-   */
+  /*   * CLEAR   */
 
   clearRef.current = () => {
     setFormData(INITIAL_COLLECTION);
@@ -206,9 +221,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
     setIsLoaded(false);
   };
 
-  /*
-   * DELETE
-   */
+  /*   * DELETE   */
 
   deleteRef.current = async () => {
     const allData = getAllData();
@@ -237,9 +250,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
     }
   };
 
-  /*
-   * PRINT
-   */
+  /*   * PRINT   */
 
   printRef.current = () => {
     let collections = [];
@@ -615,17 +626,12 @@ export const CollectionScreen = ({ mode = "create" }) => {
     // URL.revokeObjectURL(url);
   };
 
-  /*
-   * ACTIONS
-   */
+  /*   * ACTIONS   */
 
   useEffect(() => {
     registerAction("SAVE", () => saveRef.current?.());
-
     registerAction("CLEAR", () => clearRef.current?.());
-
     registerAction("DELETE", () => deleteRef.current?.());
-
     registerAction("PRINT", () => printRef.current?.());
 
     return () => {
@@ -689,7 +695,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
     }
 
     const exists = allData.collections.some(
-      (collection) => collection.collectionNumber === "LC00000000",
+      (collection) => collection.collectionNumber === "LC100000000",
     );
 
     if (!exists) {
@@ -699,9 +705,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
     }
   }, []);
 
-  /*
-   * LOAD SCREEN
-   */
+  /*   * LOAD SCREEN   */
 
   const needsLoad = (mode === "change" || mode === "display") && !isLoaded;
 
@@ -816,6 +820,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
         searchResults={searchResults}
         onSearch={handleSearch}
         onSelectCollection={handleSelectCollection}
+        DeleteInSearchModal={DeleteInSearchModal}
       />
     </div>
   );

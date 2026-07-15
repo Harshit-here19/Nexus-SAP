@@ -304,10 +304,10 @@ const HomeScreen = () => {
                   },
                   {
                     icon: "📅",
-                    name: "Calendar",
-                    desc: "System Schedule & Events",
+                    name: "List Collection",
+                    desc: "List of Collections",
                     color: "linear-gradient(135deg, #4f46e5, #1e3a8a)", // Sleek Indigo to Deep Navy ERP Gradient
-                    action: "calendar_events",
+                    action: "collections",
                   },
                 ].map((item) => (
                   <div

@@ -1,6 +1,7 @@
 import React from "react";
 import SapModal from "../../Common/SapModal";
 import SapButton from "../../Common/SapButton";
+import { useTransaction } from "../../../context/TransactionContext";
 
 const CollectionSearchModal = ({
   isOpen,
@@ -10,7 +11,10 @@ const CollectionSearchModal = ({
   searchResults,
   onSearch,
   onSelectCollection,
+  DeleteInSearchModal,
 }) => {
+  const {currentTransaction} = useTransaction();
+  
   return (
     <SapModal
       isOpen={isOpen}
@@ -54,6 +58,7 @@ const CollectionSearchModal = ({
             <tr>
               <th>ID</th>
               <th>Title</th>
+              {currentTransaction === "LC02" && <th>Action</th>}
             </tr>
           </thead>
 
@@ -71,9 +76,9 @@ const CollectionSearchModal = ({
                 </td>
               </tr>
             ) : (
-              searchResults.map((collection) => (
+              searchResults.map((collection,index) => (
                 <tr
-                  key={collection.id}
+                  key={index}
                   onDoubleClick={() => onSelectCollection(collection)}
                   style={{
                     cursor: "pointer",
@@ -82,6 +87,25 @@ const CollectionSearchModal = ({
                   <td>{collection.collectionNumber}</td>
 
                   <td>{collection.title || "Unnamed"}</td>
+
+                  {currentTransaction === "LC02" && (
+                    <td>
+                      <span
+                        style={{
+                          marginLeft: "8px",
+                          width: "4rem",
+                          display: "inline-block",
+                        }}
+                      >
+                        <SapButton
+                          onClick={() => DeleteInSearchModal(collection.id)}
+                          type="danger"
+                        >
+                          🗑️
+                        </SapButton>
+                      </span>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

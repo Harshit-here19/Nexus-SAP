@@ -1,6 +1,6 @@
 export const DEFAULT_COLLECTION = {
   id: "SYSTEM_COLLECTION",
-  collectionNumber: "LC00000000",
+  collectionNumber: "LC100000000",
 
   title: "Collection Manager Guide",
 

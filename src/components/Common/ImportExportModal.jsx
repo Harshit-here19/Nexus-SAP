@@ -20,6 +20,8 @@ import {
   saveAllData,
   getTableData,
   saveTableData,
+  idbGetItem,
+  idbSetItem,
 } from "../../utils/storage";
 
 import { useConfirm } from "../../context/ConfirmContext";
@@ -30,8 +32,8 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
   const [selectedTable, setSelectedTable] = useState("");
   const [selectedTables, setSelectedTables] = useState([]);
   const [exportFormat, setExportFormat] = useState("json");
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [importPreview, setImportPreview] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [importPreviews, setImportPreviews] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
@@ -47,7 +49,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
 
   const tables = [
     { value: "all", label: "All Data (Full Backup)" },
-    { value: "entertainment_wishlist", label: "Wishlist Items" },
+    { value: "entertainment_wishlist", label: "Entertainment Wishlist" },
     { value: "expenses", label: "Expenses (KONV)" },
     { value: "materials", label: "Materials (MARA)" },
     { value: "notes", label: "Notes (NT)" },
@@ -173,26 +175,32 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
     notes: {
       duplicateField: "title",
       existingKey: "noteNumber",
+      prefix: "NT",
     },
     expenses: {
       duplicateField: ["description", "amount", "date"],
       existingKey: "expenseNumber",
+      prefix: "EXP",
     },
     entertainment_wishlist: {
       duplicateField: "title",
       existingKey: "itemNumber",
+      prefix: "WS",
     },
     materials: {
       duplicateField: "description",
       existingKey: "materialNumber",
+      prefix: "MM",
     },
     collections: {
       duplicateField: "title",
       existingKey: "collectionNumber",
+      prefix: "LC",
     },
     calendar_events: {
       duplicateField: ["title", "date"],
       existingKey: "calendarNumber",
+      prefix: "CA",
     },
   };
 
@@ -210,9 +218,50 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
           return;
         }
 
-        result = await createSelectionBackup(selectedTables);
+        for (const table of selectedTables) {
+          let data = getTableData(table);
+
+          if (table === "collection") {
+            data = data.filter((item) => item.id !== "system_collection");
+          }
+
+          const columns =
+            tableColumns[table] ||
+            Object.keys(data[0] || {}).map((key) => ({
+              key,
+              label: key,
+            }));
+
+          if (exportFormat === "json") {
+            exportToJSON(
+              {
+                version: "1.0",
+                type: "table",
+                table,
+                createdAt: new Date().toISOString(),
+                application: "SAP GUI Clone",
+                data,
+              },
+              `${table}-${timestamp}.json`,
+            );
+          } else {
+            exportToCSV(data, columns, `${table}-${timestamp}.csv`);
+          }
+        }
+
+        onStatusMessage(
+          `${selectedTables.length} table(s) exported successfully.`,
+          "success",
+        );
+
+        onClose();
+        return;
       } else if (exportFormat === "json") {
-        const data = getTableData(selectedTable);
+        let data = getTableData(selectedTable);
+
+        if (selectedTable === "collection") {
+          data = data.filter((item) => item.id !== "system_collection");
+        }
 
         result = exportToJSON(
           {
@@ -226,7 +275,11 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
           `${selectedTable}-${timestamp}.json`,
         );
       } else {
-        const data = getTableData(selectedTable);
+        let data = getTableData(selectedTable);
+
+        if (selectedTable === "collection") {
+          data = data.filter((item) => item.id !== "system_collection");
+        }
 
         const columns =
           tableColumns[selectedTable] ||
@@ -257,100 +310,103 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
 
   // Handle file selection
   const handleFileSelect = async (e) => {
-    const file = e.target.files[0];
+    const files = [...e.target.files];
 
-    if (!file) return;
+    if (!files.length) return;
 
-    setSelectedFile(file);
-    setImportPreview(null);
+    setSelectedFiles(files);
 
-    const extension = file.name.split(".").pop().toLowerCase();
+    const previews = [];
 
     try {
-      if (extension === "json") {
-        const result = await importFromJSON(file);
+      for (const file of files) {
+        const extension = file.name.split(".").pop().toLowerCase();
 
-        const json = result.data;
+        if (extension === "json") {
+          const result = await importFromJSON(file);
 
-        // New single table export
-        if (json.type === "table" && json.table && Array.isArray(json.data)) {
-          setSelectedTable(json.table);
+          const json = result.data;
 
-          setImportPreview({
+          // Table Export
+          if (json.type === "table" && json.table && Array.isArray(json.data)) {
+            previews.push({
+              file,
+              type: "json",
+              filename: file.name,
+              size: formatFileSize(file.size),
+              data: json.data,
+              detectedTable: json.table,
+              recordCount: json.data.length,
+            });
+
+            continue;
+          }
+
+          // Selection Backup
+          if (json.type === "selection") {
+            previews.push({
+              file,
+              type: "json",
+              filename: file.name,
+              size: formatFileSize(file.size),
+              backupType: "selection",
+              tables: json.tables || [],
+              data: json.data,
+            });
+
+            continue;
+          }
+
+          // Full Backup
+          if (json.version && json.data && !Array.isArray(json)) {
+            previews.push({
+              file,
+              type: "json",
+              filename: file.name,
+              size: formatFileSize(file.size),
+              data: json,
+              recordCount: "Full Backup",
+            });
+
+            continue;
+          }
+
+          const data = Array.isArray(json) ? json : json.data;
+
+          previews.push({
+            file,
             type: "json",
             filename: file.name,
             size: formatFileSize(file.size),
-            data: json.data,
-            detectedTable: json.table,
-            recordCount: json.data.length,
+            data,
+            recordCount: data.length,
           });
+        } else if (extension === "csv") {
+          const columns = tableColumns[selectedTable] || [];
 
-          return;
-        }
+          const result = await importFromCSV(file, columns);
 
-        // Selection backup
-        if (json.type === "selection") {
-          setImportPreview({
-            type: "json",
+          previews.push({
+            file,
+            type: "csv",
             filename: file.name,
             size: formatFileSize(file.size),
-            backupType: "selection",
-            tables: json.tables || [],
-            data: json.data,
+            data: result.data,
+            headers: result.headers,
+            recordCount: result.data.length,
           });
-
-          return;
         }
-
-        // Full backup
-        if (json.version && json.data && !Array.isArray(json)) {
-          setImportPreview({
-            type: "json",
-            filename: file.name,
-            size: formatFileSize(file.size),
-            data: json,
-            recordCount: "Full Backup",
-          });
-
-          return;
-        }
-
-        // Old JSON export without metadata
-
-        const data = Array.isArray(json) ? json : json.data;
-        setImportPreview({
-          type: "json",
-          filename: file.name,
-          size: formatFileSize(file.size),
-          data: data,
-          recordCount: Array.isArray(data) ? data.length : 0,
-        });
-      } else if (extension === "csv") {
-        const columns = tableColumns[selectedTable] || [];
-        const result = await importFromCSV(file, columns);
-        setImportPreview({
-          type: "csv",
-          filename: file.name,
-          size: formatFileSize(file.size),
-          data: result.data,
-          headers: result.headers,
-          recordCount: result.data.length,
-        });
-      } else {
-        onStatusMessage(
-          "Unsupported file type. Please use JSON or CSV.",
-          "error",
-        );
       }
-    } catch (error) {
-      onStatusMessage(error.message, "error");
-      setSelectedFile(null);
+
+      setImportPreviews(previews);
+    } catch (err) {
+      onStatusMessage(err.message, "error");
     }
   };
 
   // Handle Import
   const handleImport = async () => {
-    if (!selectedFile || !importPreview) {
+    if (!selectedFiles.length || !importPreviews.length) {
       onStatusMessage("Please select a file first", "warning");
 
       return;
@@ -359,111 +415,117 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
     setIsProcessing(true);
 
     try {
-      const importData = importPreview.data;
+      for (const preview of importPreviews) {
+        const tableName = preview.detectedTable || selectedTable;
+        const importData = preview.data;
 
-      // Full backup
-
-      if (importData.version && importData.data && !Array.isArray(importData)) {
-        await restoreBackup(selectedFile);
-
-        onStatusMessage(
-          "Full backup restored successfully. Please refresh the page.",
-          "success",
-        );
-
-        return;
-      }
-
-      // Selection backup
-
-      if (importPreview.backupType === "selection") {
-        await restoreSelectionBackup(selectedFile);
-
-        onStatusMessage("Selected tables restored successfully.", "success");
-
-        return;
-      }
-
-      // Require table only when detection failed
-
-      if (!selectedTable || selectedTable === "all") {
-        onStatusMessage(
-          "Could not detect table. Please select a target table.",
-          "warning",
-        );
-
-        return;
-      }
-
-      const existingData = getTableData(selectedTable) || [];
-
-      const newData = importData;
-
-      if (!Array.isArray(newData) || !newData.length) {
-        throw new Error("Imported file is empty.");
-      }
-
-      const config = tableConfig[selectedTable];
-
-      if (!config) {
-        throw new Error("Import configuration missing for this table.");
-      }
-
-      const existingKey = config.existingKey;
-
-      const duplicateField = config.duplicateField;
-
-      const makeDuplicateKey = (record) => {
-        if (Array.isArray(duplicateField)) {
-          return duplicateField
-            .map((field) => String(record[field] ?? "").trim())
-            .join("||");
-        }
-
-        return String(record[duplicateField] ?? "").trim();
-      };
-
-      const existingRecords = new Set(existingData.map(makeDuplicateKey));
-
-      const processedData = [];
-
-      let counter = existingData.length + 100000000;
-
-      newData.forEach((record) => {
-        if (existingRecords.has(makeDuplicateKey(record))) {
+        // Full backup
+        if (
+          importData.version &&
+          importData.data &&
+          !Array.isArray(importData)
+        ) {
+          await restoreBackup(preview.file);
+          onStatusMessage(
+            "Full backup restored successfully. Please refresh the page.",
+            "success",
+          );
           return;
         }
 
-        counter++;
+        // Selection backup
 
-        processedData.push({
-          ...record,
+        if (preview.backupType === "selection") {
+          await restoreSelectionBackup(selectedFiles);
+          onStatusMessage("Selected tables restored successfully.", "success");
+          return;
+        }
 
-          [existingKey]: `${selectedTable.toUpperCase()}${counter}`,
+        // Require table only when detection failed
 
-          importedAt: new Date().toISOString(),
+        if (!tableName || tableName === "all") {
+          onStatusMessage(
+            "Could not detect table. Please select a target table.",
+            "warning",
+          );
+          return;
+        }
+
+        const existingData = getTableData(tableName) || [];
+        const newData = importData;
+
+        if (!Array.isArray(newData) || !newData.length) {
+          throw new Error("Imported file is empty.");
+        }
+
+        const config = tableConfig[tableName];
+
+        if (!config) {
+          throw new Error("Import configuration missing for this table.");
+        }
+
+        // const existingKey = config.existingKey;
+        // const duplicateField = config.duplicateField;
+        const { existingKey, duplicateField, prefix } = config;
+        // console.log(existingKey, duplicateField, prefix);
+
+        const makeDuplicateKey = (record) => {
+          if (Array.isArray(duplicateField)) {
+            return duplicateField
+              .map((field) => String(record[field] ?? "").trim())
+              .join("||");
+          }
+          return String(record[duplicateField] ?? "").trim();
+        };
+
+        const existingRecords = new Set(existingData.map(makeDuplicateKey));
+        const processedData = [];
+
+        // Find the highest existing number for this prefix
+        const maxExistingNumber = existingData.reduce((max, item) => {
+          const id = item[existingKey];
+
+          if (!id || typeof id !== "string") return max;
+
+          // Remove prefix and convert remaining part to number
+          const number = parseInt(id.replace(prefix.toUpperCase(), ""), 10);
+
+          return !isNaN(number) && number > max ? number : max;
+        }, 100000000); // Starts from 100000001 if no records exist
+
+        let counter = maxExistingNumber;
+
+        newData.forEach((record) => {
+          if (existingRecords.has(makeDuplicateKey(record))) {
+            return;
+          }
+          counter++;
+
+          processedData.push({
+            ...record,
+            [existingKey]: `${prefix.toUpperCase()}${counter}`,
+            importedAt: new Date().toISOString(),
+          });
         });
-      });
 
-      saveTableData(selectedTable, [...existingData, ...processedData]);
+        saveTableData(tableName, [...existingData, ...processedData]);
 
-      onStatusMessage(
-        `Imported ${processedData.length} new records to ${selectedTable}. Skipped ${
-          newData.length - processedData.length
-        } duplicates.`,
+        onStatusMessage(
+          `Imported ${processedData.length} new records to ${tableName}. Skipped ${
+            newData.length - processedData.length
+          } duplicates.`,
+          "success",
+        );
 
-        "success",
-      );
+        setSelectedFiles([]);
+        setImportPreviews([]);
 
-      setSelectedFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
 
-      setImportPreview(null);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        onClose();
       }
-
-      onClose();
     } catch (error) {
       onStatusMessage(`Import failed: ${error.message}`, "error");
     } finally {
@@ -473,8 +535,8 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
 
   // Reset state when modal closes
   const handleClose = () => {
-    setSelectedFile(null);
-    setImportPreview(null);
+    setSelectedFiles([]);
+    setImportPreviews([]);
     setSelectedTable("");
     setExportFormat("json");
     if (fileInputRef.current) {
@@ -489,37 +551,34 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
     // 1. Read the stored data
     try {
       const userKey = `sap_user_data_${user.userId}`;
-      const rawData = localStorage.getItem(userKey);
+      const rawData = await idbGetItem(userKey);
 
       const confirmed = await confirm(
         "Do you want to proceed with the Erase ?",
         "danger",
       );
 
-      if (rawData && confirmed) {
-        // 2. Parse it into an object
-        const userData = JSON.parse(rawData);
+      // console.log(rawData)
 
-        const tableLength = userData[tableName].length;
-
+      if (rawData[tableName] && confirmed) {
+        const tableLength = rawData[tableName].length;
         // 3. Delete the 'Selected' key
-        delete userData[tableName];
-
+        delete rawData[tableName];
         // 4. Save it back to localStorage
-        localStorage.setItem(userKey, JSON.stringify(userData));
+        idbSetItem(userKey, rawData);
 
         onStatusMessage(
           `Erased ${tableLength} records of ${selectedTable}`,
           "success",
         );
       } else {
-        onStatusMessage("The Selected Table is Empty", "warning");
+        onStatusMessage(`The ${tableName} Table is Empty`, "warning");
         setIsProcessing(false);
         return;
       }
       onClose();
     } catch (error) {
-      onStatusMessage(`Import failed: ${error.message}`, "error");
+      onStatusMessage(`Erase failed: ${error.message}`, "error");
     } finally {
       setIsProcessing(false);
     }
@@ -676,7 +735,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
               <div className="sap-form-group">
                 <label className="sap-form-label">Format</label>
                 <div className="sap-form-field">
-                  <div style={{ display: "flex", gap: "16px", width:"450px" }}>
+                  <div style={{ display: "flex", gap: "16px", width: "450px" }}>
                     <label
                       style={{
                         display: "flex",
@@ -794,31 +853,62 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
           </div>
 
           <div className="sap-form">
-            {importPreview &&
-              !importPreview.detectedTable &&
-              importPreview.backupType !== "selection" &&
-              importPreview.recordCount !== "Full Backup" && (
-                <SapSelect
-                  label="Target Table"
-                  value={selectedTable}
-                  onChange={(val) => {
-                    setSelectedTable(val);
+            {importPreviews.length > 0 &&
+              importPreviews.map((preview, index) => (
+                <div
+                  key={index}
+                  style={{
+                    background: "var(--sap-content-bg)",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    marginTop: "12px",
                   }}
-                  options={tables.filter((t) => t.value !== "all")}
-                  placeholder="Select where to import..."
-                  width="100%"
-                />
-              )}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <strong>📄 {preview.filename}</strong>
+
+                    <span>{preview.size}</span>
+                  </div>
+
+                  {preview.detectedTable && (
+                    <div style={{ marginTop: 10 }}>
+                      Table :
+                      <strong>
+                        {" "}
+                        {
+                          tables.find((t) => t.value === preview.detectedTable)
+                            ?.label
+                        }
+                      </strong>
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: 5 }}>
+                    Records : {preview.recordCount}
+                  </div>
+
+                  {preview.type === "csv" && preview.headers && (
+                    <div style={{ marginTop: 5 }}>
+                      Columns : {preview.headers.join(", ")}
+                    </div>
+                  )}
+                </div>
+              ))}
 
             <div className="sap-form-field" style={{ alignSelf: "center" }}>
               <label
                 style={{
                   display: "flex",
-                  flexDirection: importPreview ? "row" : "column",
+                  flexDirection: importPreviews ? "row" : "column",
                   alignItems: "center",
-                  justifyContent: importPreview ? "flex-start" : "center",
-                  gap: importPreview ? "12px" : "0",
-                  padding: importPreview ? "12px 16px" : "24px 16px",
+                  justifyContent: importPreviews ? "flex-start" : "center",
+                  gap: importPreviews ? "12px" : "0",
+                  padding: importPreviews ? "12px 16px" : "24px 16px",
                   border: "2px dashed var(--sap-border-dark)",
                   borderRadius: "8px",
                   cursor: "pointer",
@@ -851,12 +941,13 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                     overflow: "hidden",
                     clip: "rect(0,0,0,0)",
                   }}
-                  // onLoad={console.log(importPreview)}
+                  // onLoad={console.log(importPreviews)}
+                  multiple
                 />
 
                 <div
                   style={{
-                    fontSize: importPreview ? "24px" : "36px",
+                    fontSize: importPreviews.length ? "24px" : "36px",
                     filter: "grayscale(1)",
                   }}
                 >
@@ -872,7 +963,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                       textTransform: "uppercase",
                     }}
                   >
-                    {importPreview ? "Change file" : "Click to upload"}
+                    {importPreviews ? "Change file" : "Click to upload"}
                   </div>
 
                   <div
@@ -883,13 +974,13 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                       marginTop: "4px",
                     }}
                   >
-                    {importPreview
-                      ? importPreview.filename
-                      : "or drag & drop a file"}
+                    {importPreviews.length
+                      ? `${importPreviews.length} file(s) selected`
+                      : "or drag & drop files"}
                   </div>
                 </div>
 
-                {importPreview && (
+                {importPreviews && (
                   <div
                     style={{
                       marginLeft: "auto",
@@ -898,16 +989,16 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                       textAlign: "right",
                     }}
                   >
-                    <div>{importPreview.size}</div>
-                    {importPreview.record && (
-                      <div>{importPreview.recordCount} records</div>
+                    <div>{importPreviews.size}</div>
+                    {importPreviews.record && (
+                      <div>{importPreviews.recordCount} records</div>
                     )}
                   </div>
                 )}
               </label>
             </div>
 
-            {importPreview && (
+            {importPreviews && (
               <div
                 style={{
                   background: "var(--sap-content-bg)",
@@ -925,7 +1016,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                   }}
                 >
                   <span style={{ fontWeight: "600" }}>
-                    📄 {importPreview.filename}
+                    📄 {importPreviews.filename}
                   </span>
                   <span
                     style={{
@@ -933,7 +1024,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                       color: "var(--sap-text-secondary)",
                     }}
                   >
-                    {importPreview.size}
+                    {importPreviews.size}
                   </span>
                 </div>
 
@@ -945,7 +1036,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                     fontSize: "13px",
                   }}
                 >
-                  {importPreview.detectedTable && (
+                  {importPreviews.detectedTable && (
                     <div
                       style={{
                         marginTop: "12px",
@@ -958,32 +1049,32 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                       ✅ Detected Table:
                       <strong style={{ marginLeft: "5px" }}>
                         {tables.find(
-                          (t) => t.value === importPreview.detectedTable,
-                        )?.label || importPreview.detectedTable}
+                          (t) => t.value === importPreviews.detectedTable,
+                        )?.label || importPreviews.detectedTable}
                       </strong>
                     </div>
                   )}
 
-                  {importPreview.recordCount && (
+                  {importPreviews.recordCount && (
                     <div>
                       <span style={{ color: "var(--sap-text-secondary)" }}>
                         Records:{" "}
                       </span>
-                      <strong>{importPreview.recordCount}</strong>
+                      <strong>{importPreviews.recordCount}</strong>
                     </div>
                   )}
 
-                  {importPreview.tables && (
+                  {importPreviews.tables && (
                     <div>
                       <span style={{ color: "var(--sap-text-secondary)" }}>
                         Tables:{" "}
                       </span>
-                      <strong>{importPreview.tables?.join(", ")}</strong>
+                      <strong>{importPreviews.tables?.join(", ")}</strong>
                     </div>
                   )}
                 </div>
 
-                {importPreview.type === "csv" && importPreview.headers && (
+                {importPreviews.type === "csv" && importPreviews.headers && (
                   <div style={{ marginTop: "12px" }}>
                     <span
                       style={{
@@ -991,7 +1082,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                         fontSize: "12px",
                       }}
                     >
-                      Columns: {importPreview.headers.join(", ")}
+                      Columns: {importPreviews.headers.join(", ")}
                     </span>
                   </div>
                 )}
@@ -1013,12 +1104,8 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
             <SapButton
               onClick={handleImport}
               type="neo-close"
-              // disabled={!importPreview || !selectedTable || isProcessing}
-              disabled={
-                !importPreview ||
-                isProcessing ||
-                (!selectedTable && importPreview?.backupType !== "selection")
-              }
+              // disabled={!importPreviews || !selectedTable || isProcessing}
+              disabled={importPreviews.length === 0 || isProcessing}
               icon={isProcessing ? "⏳" : "📥"}
             >
               {isProcessing ? "Importing..." : "Import"}
@@ -1113,7 +1200,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
                   const file = e.target.files[0];
                   if (file) {
                     try {
-                      const result = await restoreBackup(file);
+                      await restoreBackup(preview.file);
                       onStatusMessage(result.message, "success");
                       onClose();
                       // Suggest page refresh
@@ -1186,8 +1273,8 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
               value={selectedTable}
               onChange={(val) => {
                 setSelectedTable(val);
-                setSelectedFile(null);
-                setImportPreview(null);
+                setSelectedFiles([]);
+                setImportPreviews([]);
               }}
               options={tables.filter((t) => t.value !== "all")}
               placeholder="Select the Table you want to Erase..."

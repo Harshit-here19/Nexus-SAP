@@ -37,11 +37,15 @@ import {
 
 import { generateNextNumber } from "../../../utils/storage";
 
-import "./NotesStyles.css";
 import SapModal from "../../Common/SapModal";
+import Autocomplete from "../../Common/Autocomplete";
+
+import "./NotesStyles.css";
 
 const NotesScreen = ({ mode = "create" }) => {
   const { settings } = useSettings();
+
+  const isMobile = window.innerWidth <= 768;
 
   const {
     updateStatus,
@@ -51,7 +55,7 @@ const NotesScreen = ({ mode = "create" }) => {
     transactionHistory,
     setTransactionHistory,
     registerBackHandler,
-    clearBackHandler
+    clearBackHandler,
   } = useTransaction();
   const { user } = useAuth();
   const { registerAction, clearAction } = useAction();
@@ -77,8 +81,6 @@ const NotesScreen = ({ mode = "create" }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [summary, setSummary] = useState("");
   const [tableTheme, setTableTheme] = useState(formData.tableTheme);
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSearch, setActiveSearch] = useState("");
 
   // Modals
@@ -106,7 +108,7 @@ const NotesScreen = ({ mode = "create" }) => {
 
   // Handle Table Theme Change
   const handleTableThemeChange = (theme) => {
-    handleChange('tableTheme', theme)
+    handleChange("tableTheme", theme);
   };
 
   // Handle form field change
@@ -128,63 +130,12 @@ const NotesScreen = ({ mode = "create" }) => {
     }
   };
 
-  const handleAutoSearch = (value) => {
-    setActiveSearch(value);
-
-    if (!value.trim()) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    const notes = getTableData("notes") || [];
-
-    const search = value.toLowerCase().trim();
-
-    // wildcard support
-    const regex = new RegExp(
-      search
-        .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
-        .replace(/\*/g, ".*"),
-      "i"
-    );
-
-    const results = notes.filter((note) => {
-      const fields = [
-        note.noteNumber,
-        note.title,
-        note.summary,
-        note.content,
-        note.tags,
-      ];
-
-      return fields.some((field) => {
-        if (!field) return false;
-
-        const text = String(field);
-
-        return search.includes("*")
-          ? regex.test(text)
-          : text.toLowerCase().includes(search);
-      });
-    });
-
-    setSuggestions(results.slice(0, 10));
-    setShowSuggestions(results.length > 0);
-  };
-
   const selectSuggestion = (note) => {
     setNoteId(note.noteNumber);
     setFormData(note);
     setIsLoaded(true);
 
-    setSuggestions([]);
-    setShowSuggestions(false);
-
-    updateStatus(
-      `Note ${note.noteNumber} loaded`,
-      "success"
-    );
+    updateStatus(`Note ${note.noteNumber} loaded`, "success");
   };
 
   // Insert text at cursor position
@@ -325,7 +276,7 @@ const NotesScreen = ({ mode = "create" }) => {
   };
 
   // Search notes
-  const handleSearch = () => {
+  const handleSearch = (filter = filterCategory) => {
     let notes = getTableData("notes") || [];
 
     if (searchTerm) {
@@ -335,12 +286,12 @@ const NotesScreen = ({ mode = "create" }) => {
           n.noteNumber?.toLowerCase().includes(term) ||
           n.title?.toLowerCase().includes(term) ||
           n.content?.toLowerCase().includes(term) ||
-          n.tags?.toLowerCase().includes(term)
+          n.tags?.toLowerCase().includes(term),
       );
     }
 
-    if (filterCategory !== "all") {
-      notes = notes.filter((n) => n.category === filterCategory);
+    if (filter !== "all") {
+      notes = notes.filter((n) => n.category === filter);
     }
 
     if (filterStatus !== "all") {
@@ -360,8 +311,9 @@ const NotesScreen = ({ mode = "create" }) => {
   // Select note from search
   const handleSelectNote = async (note) => {
     if (note.isLocked) {
-      const enteredPassword = await prompt("This note is locked. Enter password:",
-        { type: 'warning', placeholder: 'Enter Password...' }
+      const enteredPassword = await prompt(
+        "This note is locked. Enter password:",
+        { type: "warning", placeholder: "Enter Password..." },
       );
 
       // Replace this with your real password validation logic
@@ -394,15 +346,21 @@ const NotesScreen = ({ mode = "create" }) => {
 
   // Handle Summary
   const handleSummaryChange = (value) => {
-    setFormData(prev => ({ ...prev, summary: value }));
+    setFormData((prev) => ({ ...prev, summary: value }));
 
     // Validation
     if (!value || value.trim().length < 10) {
-      setErrors(prev => ({ ...prev, summary: 'Summary must be at least 10 characters' }));
+      setErrors((prev) => ({
+        ...prev,
+        summary: "Summary must be at least 10 characters",
+      }));
     } else if (value.length > 300) {
-      setErrors(prev => ({ ...prev, summary: 'Summary cannot exceed 300 characters' }));
+      setErrors((prev) => ({
+        ...prev,
+        summary: "Summary cannot exceed 300 characters",
+      }));
     } else {
-      setErrors(prev => ({ ...prev, summary: '' }));
+      setErrors((prev) => ({ ...prev, summary: "" }));
     }
   };
 
@@ -523,7 +481,7 @@ const NotesScreen = ({ mode = "create" }) => {
     updateStatus("Demo note loaded! Explore all the features.", "success");
   };
 
-  // Print Function 
+  // Print Function
   printRef.current = () => {
     let notes = [];
 
@@ -549,7 +507,7 @@ const NotesScreen = ({ mode = "create" }) => {
           <td class="col-title">${note.title || "Untitled"}</td>
           <td class="col-date">${note.importedAt ? new Date(note.importedAt).toLocaleDateString() : new Date(note.createdAt).toLocaleDateString()}</td>
         </tr>
-      `
+      `,
       )
       .join("");
 
@@ -570,7 +528,7 @@ const NotesScreen = ({ mode = "create" }) => {
             ${parseMarkdown(note.content, settings.codeTheme)}
           </div>
         </div>
-      `
+      `,
       )
       .join("");
 
@@ -693,12 +651,10 @@ const NotesScreen = ({ mode = "create" }) => {
           }
       </script>
 
-      </body>`
+      </body>`,
     );
 
-
-    const printWindow =
-      window.open("", "_blank", "width=900,height=700");
+    const printWindow = window.open("", "_blank", "width=900,height=700");
 
     printWindow.document.write(previewHtml);
 
@@ -809,12 +765,12 @@ const NotesScreen = ({ mode = "create" }) => {
     },
     ...(formData.id
       ? [
-        {
-          label: "History",
-          icon: "🕐",
-          content: <NotesHistory formData={formData} />,
-        },
-      ]
+          {
+            label: "History",
+            icon: "🕐",
+            content: <NotesHistory formData={formData} />,
+          },
+        ]
       : []),
   ];
 
@@ -869,85 +825,44 @@ const NotesScreen = ({ mode = "create" }) => {
                 className="sap-form-row"
                 style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
-                <div style={{ position: "relative", width: "300px" }}>
-
-                  <SapInput
+                <div style={{ width: isMobile ? "100%" : "330px" }}>
+                  <Autocomplete
                     label="Note ID / Search"
                     value={noteId}
-                    onChange={(value) => {
-                      setNoteId(value);
-                      handleAutoSearch(value);
-                    }}
+                    onChange={setNoteId}
                     placeholder="NT100000001"
                     icon="🔍"
-                    onIconClick={() => {
-                      handleSearch();
-                      setShowSearchModal(true);
+                    data={getTableData("notes") || []}
+                    searchFields={["noteNumber", "title", "summary", "content"]}
+                    onSelect={(note) => {
+                      setNoteId(note.noteNumber);
+                      selectSuggestion(note);
                     }}
-                  />
-
-
-                  {showSuggestions && suggestions.length > 0 && (
-
-                    <div
-                      style={{
-                        width: '18rem',
-                        position: 'absolute',
-                        top: '33px',
-                        left: '137px',
-                        background: 'white',
-                        border: "1px solid #ddd",
-                        borderRadius: "8px",
-                        zIndex: 1000,
-                        boxShadow: "0 5px 15px rgba(0,0,0,.2)",
-                        maxHeight: "250px",
-                        overflowY: "auto"
-                      }}
-                    >
-
-
-                      {suggestions.map(note => (
-
+                    getSuggestionValue={(note) => note.noteNumber}
+                    renderSuggestion={(note) => (
+                      <>
                         <div
-                          key={note.id}
-                          onClick={() => selectSuggestion(note)}
                           style={{
-                            padding: "10px",
-                            cursor: "pointer",
-                            borderBottom: "1px solid #eee"
+                            fontWeight: "bold",
+                            color: "#2563eb",
                           }}
                         >
-
-
-                          <div style={{
-                            fontWeight: "bold",
-                            color: "#2563eb"
-                          }}>
-                            {note.noteNumber}
-                          </div>
-
-
-                          <div>
-                            {note.title || "Untitled"}
-                          </div>
-
-
-                          <div style={{
-                            fontSize: "12px",
-                            color: "#777"
-                          }}>
-                            {note.summary}
-                          </div>
-
-
+                          {note.noteNumber}
                         </div>
 
-                      ))}
+                        <div>{note.title || "Untitled"}</div>
 
-                    </div>
-
-                  )}
-
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "#777",
+                          }}
+                        >
+                          {note.summary}
+                        </div>
+                      </>
+                    )}
+                  />
                 </div>
                 <SapButton onClick={loadNote} type="neo" icon="📂">
                   Load
@@ -982,7 +897,7 @@ const NotesScreen = ({ mode = "create" }) => {
                       key={cat.value}
                       onClick={() => {
                         setFilterCategory(cat.value);
-                        handleSearch();
+                        handleSearch(cat.value);
                       }}
                       style={{
                         padding: "8px 16px",
@@ -1006,8 +921,6 @@ const NotesScreen = ({ mode = "create" }) => {
             </div>
           ) : (
             <>
-
-
               <SapTabs tabs={tabs} />
             </>
           )}
@@ -1068,18 +981,24 @@ const NotesScreen = ({ mode = "create" }) => {
         title="🔍 Search Entertainment Wishlist"
         width="900px"
         footer={
-          <SapButton type="close" onClick={() => setShowPrintModal(false)}>Close</SapButton>
+          <SapButton type="close" onClick={() => setShowPrintModal(false)}>
+            Close
+          </SapButton>
         }
       >
         <div style={{ padding: "20px" }}>
           <h2>Print Note</h2>
-          <p>This feature is coming soon! In the meantime, you can copy the content and paste it into your preferred text editor for printing.</p>
-          <button onClick={() => navigator.clipboard.writeText(formData.content)}>
+          <p>
+            This feature is coming soon! In the meantime, you can copy the
+            content and paste it into your preferred text editor for printing.
+          </p>
+          <button
+            onClick={() => navigator.clipboard.writeText(formData.content)}
+          >
             Copy Content
           </button>
         </div>
       </SapModal>
-
     </div>
   );
 };

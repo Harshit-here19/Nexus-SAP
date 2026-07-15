@@ -1,35 +1,39 @@
 // src/components/Screens/Notes/NotesTableModal.jsx
-import React, { useState, useEffect } from 'react';
-import styles from './NotesTableModal.module.css';
-import SapModal from '../../Common/SapModal';
+import React, { useState, useEffect } from "react";
+import styles from "./NotesTableModal.module.css";
+import SapModal from "../../Common/SapModal";
 
 const NotesTableModal = ({
   isOpen,
   onClose,
   onInsert,
   onThemeChange,
-  selectedTheme
+  selectedTheme,
 }) => {
   const [tableRows, setTableRows] = useState(3);
   const [tableCols, setTableCols] = useState(3);
-  const [headers, setHeaders] = useState(Array(3).fill(''));
+  const [headers, setHeaders] = useState(Array(3).fill(""));
   const [cells, setCells] = useState(
-    Array(3).fill(null).map(() => Array(3).fill(''))
+    Array(3)
+      .fill(null)
+      .map(() => Array(3).fill("")),
   );
-  const [activeTab, setActiveTab] = useState('size'); // 'size', 'headers', 'data', 'theme'
+  const [activeTab, setActiveTab] = useState("size");
 
-  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setTableRows(3);
       setTableCols(3);
-      setHeaders(Array(3).fill(''));
-      setCells(Array(3).fill(null).map(() => Array(3).fill('')));
-      setActiveTab('size');
+      setHeaders(Array(3).fill(""));
+      setCells(
+        Array(3)
+          .fill(null)
+          .map(() => Array(3).fill("")),
+      );
+      setActiveTab("size");
     }
   }, [isOpen]);
 
-  // Update headers and cell widths when number of columns changes
   const handleColsChange = (val) => {
     const cols = Math.max(1, Math.min(10, parseInt(val) || 1));
     setTableCols(cols);
@@ -37,7 +41,7 @@ const NotesTableModal = ({
     setHeaders((prev) => {
       const newHeaders = [...prev];
       newHeaders.length = cols;
-      return Array.from(newHeaders, (h) => h || '');
+      return Array.from(newHeaders, (h) => h || "");
     });
 
     setCells((prev) =>
@@ -45,50 +49,41 @@ const NotesTableModal = ({
         const safeRow = row || [];
         const newRow = [...safeRow];
         newRow.length = cols;
-        return Array.from(newRow, (c) => c || '');
-      })
+        return Array.from(newRow, (c) => c || "");
+      }),
     );
   };
 
-  // Update rows when number of rows changes
   const handleRowsChange = (val) => {
     const rows = Math.max(1, Math.min(20, parseInt(val) || 1));
     setTableRows(rows);
 
     setCells((prev) => {
       const newCells = [...prev];
-
       if (rows > newCells.length) {
         while (newCells.length < rows) {
-          newCells.push(Array(tableCols).fill(''));
+          newCells.push(Array(tableCols).fill(""));
         }
       } else {
         newCells.length = rows;
       }
-
       return newCells;
     });
   };
 
   const handleInsert = () => {
-    let tableStr = '@table\n\n';
-
-    tableStr += '@head\n';
-    tableStr += headers
-      .map(h => h || 'Header')
-      .join(' || ');
-    tableStr += '\n@/head\n\n';
+    let tableStr = "@table\n\n";
+    tableStr += "@head\n";
+    tableStr += headers.map((h) => h || "Header").join(" || ");
+    tableStr += "\n@/head\n\n";
 
     cells.forEach((row) => {
-      tableStr += '@data\n';
-      tableStr += row
-        .map(c => c || '')
-        .join(' || ');
-      tableStr += '\n@/data\n';
+      tableStr += "@data\n";
+      tableStr += row.map((c) => c || "").join(" || ");
+      tableStr += "\n@/data\n";
     });
 
-    tableStr += '\n@/table\n';
-
+    tableStr += "\n@/table\n";
     onInsert(tableStr);
     onClose();
   };
@@ -96,8 +91,12 @@ const NotesTableModal = ({
   const handleQuickSize = (rows, cols) => {
     setTableRows(rows);
     setTableCols(cols);
-    setHeaders(Array(cols).fill(''));
-    setCells(Array(rows).fill(null).map(() => Array(cols).fill('')));
+    setHeaders(Array(cols).fill(""));
+    setCells(
+      Array(rows)
+        .fill(null)
+        .map(() => Array(cols).fill("")),
+    );
   };
 
   return (
@@ -105,11 +104,11 @@ const NotesTableModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title=""
-      width="600px"
+      width="540px" // Slightly slimmer standard footprint
       footer={null}
     >
       <div className={styles.container}>
-        {/* Header */}
+        {/* Header Section */}
         <div className={styles.header}>
           <div className={styles.headerIcon}>▦</div>
           <div className={styles.headerContent}>
@@ -122,57 +121,42 @@ const NotesTableModal = ({
 
         {/* Tab Navigation */}
         <div className={styles.tabs}>
-          <button
-            className={`${styles.tab} ${activeTab === 'size' ? styles.active : ''}`}
-            onClick={() => setActiveTab('size')}
-          >
-            <span className={styles.tabIcon}>📐</span>
-            <span className={styles.tabLabel}>Size</span>
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'headers' ? styles.active : ''}`}
-            onClick={() => setActiveTab('headers')}
-          >
-            <span className={styles.tabIcon}>📝</span>
-            <span className={styles.tabLabel}>Headers</span>
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'data' ? styles.active : ''}`}
-            onClick={() => setActiveTab('data')}
-          >
-            <span className={styles.tabIcon}>📊</span>
-            <span className={styles.tabLabel}>Data</span>
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'theme' ? styles.active : ''}`}
-            onClick={() => setActiveTab('theme')}
-          >
-            <span className={styles.tabIcon}>🎨</span>
-            <span className={styles.tabLabel}>Theme</span>
-          </button>
+          {[
+            { id: "size", label: "Size", icon: "📐" },
+            { id: "headers", label: "Headers", icon: "📝" },
+            { id: "data", label: "Data", icon: "📊" },
+            { id: "theme", label: "Theme", icon: "🎨" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              className={`${styles.tab} ${activeTab === tab.id ? styles.active : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <span className={styles.tabIcon}>{tab.icon}</span>
+              <span className={styles.tabLabel}>{tab.label}</span>
+            </button>
+          ))}
         </div>
 
-        {/* Tab Content */}
+        {/* Dynamic Tab Body */}
         <div className={styles.tabContent}>
-          {/* Size Tab */}
-          {activeTab === 'size' && (
+          {/* Layout Configuration Panel */}
+          {activeTab === "size" && (
             <div className={styles.sizeTab}>
-              {/* Quick Size Selection */}
               <div className={styles.section}>
                 <label className={styles.sectionLabel}>Quick Select</label>
                 <div className={styles.quickSizes}>
                   {[
-                    { rows: 2, cols: 2, label: '2×2' },
-                    { rows: 3, cols: 3, label: '3×3' },
-                    { rows: 4, cols: 4, label: '4×4' },
-                    { rows: 5, cols: 3, label: '5×3' },
-                    { rows: 3, cols: 5, label: '3×5' },
-                    { rows: 6, cols: 4, label: '6×4' },
+                    { rows: 2, cols: 2, label: "2×2" },
+                    { rows: 3, cols: 3, label: "3×3" },
+                    { rows: 4, cols: 4, label: "4×4" },
+                    { rows: 5, cols: 3, label: "5×3" },
+                    { rows: 3, cols: 5, label: "3×5" },
+                    { rows: 6, cols: 4, label: "6×4" },
                   ].map((size) => (
                     <button
                       key={size.label}
-                      className={`${styles.quickSizeBtn} ${tableRows === size.rows && tableCols === size.cols ? styles.selected : ''
-                        }`}
+                      className={`${styles.quickSizeBtn} ${tableRows === size.rows && tableCols === size.cols ? styles.selected : ""}`}
                       onClick={() => handleQuickSize(size.rows, size.cols)}
                     >
                       {size.label}
@@ -181,12 +165,11 @@ const NotesTableModal = ({
                 </div>
               </div>
 
-              {/* Custom Size */}
               <div className={styles.section}>
-                <label className={styles.sectionLabel}>Custom Size</label>
+                <label className={styles.sectionLabel}>Custom Matrix</label>
                 <div className={styles.sizeInputs}>
                   <div className={styles.sizeInputGroup}>
-                    <label className={styles.inputLabel}>Rows</label>
+                    <span className={styles.inputLabel}>Rows</span>
                     <div className={styles.numberInput}>
                       <button
                         className={styles.numberBtn}
@@ -216,7 +199,7 @@ const NotesTableModal = ({
                   <div className={styles.sizeDivider}>×</div>
 
                   <div className={styles.sizeInputGroup}>
-                    <label className={styles.inputLabel}>Columns</label>
+                    <span className={styles.inputLabel}>Columns</span>
                     <div className={styles.numberInput}>
                       <button
                         className={styles.numberBtn}
@@ -245,36 +228,47 @@ const NotesTableModal = ({
                 </div>
               </div>
 
-              {/* Visual Grid Preview */}
-              <div className={styles.section}>
-                <label className={styles.sectionLabel}>Preview</label>
+              <div className={`${styles.section} ${styles.previewSection}`}>
+                <label className={styles.sectionLabel}>Blueprint Preview</label>
                 <div className={styles.gridPreview}>
-                  {Array(Math.min(tableRows, 6)).fill(null).map((_, rowIdx) => (
-                    <div key={rowIdx} className={styles.gridRow}>
-                      {Array(Math.min(tableCols, 8)).fill(null).map((_, colIdx) => (
-                        <div
-                          key={colIdx}
-                          className={`${styles.gridCell} ${rowIdx === 0 ? styles.headerCell : ''}`}
-                        />
-                      ))}
-                      {tableCols > 8 && <div className={styles.gridMore}>+{tableCols - 8}</div>}
+                  {Array(Math.min(tableRows, 5))
+                    .fill(null)
+                    .map((_, rowIdx) => (
+                      <div key={rowIdx} className={styles.gridRow}>
+                        {Array(Math.min(tableCols, 6))
+                          .fill(null)
+                          .map((_, colIdx) => (
+                            <div
+                              key={colIdx}
+                              className={`${styles.gridCell} ${rowIdx === 0 ? styles.headerCell : ""}`}
+                            />
+                          ))}
+                        {tableCols > 6 && (
+                          <div className={styles.gridMore}>
+                            +{tableCols - 6}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  {tableRows > 5 && (
+                    <div className={styles.gridMoreRows}>
+                      +{tableRows - 5} more rows
                     </div>
-                  ))}
-                  {tableRows > 6 && (
-                    <div className={styles.gridMoreRows}>+{tableRows - 6} more rows</div>
                   )}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Headers Tab */}
-          {activeTab === 'headers' && (
+          {/* Header Assignment Panel */}
+          {activeTab === "headers" && (
             <div className={styles.headersTab}>
               <div className={styles.section}>
                 <label className={styles.sectionLabel}>
-                  Column Headers
-                  <span className={styles.sectionHint}>{tableCols} columns</span>
+                  Labels{" "}
+                  <span className={styles.sectionHint}>
+                    {tableCols} Columns
+                  </span>
                 </label>
                 <div className={styles.headerInputs}>
                   {headers.map((h, idx) => (
@@ -284,55 +278,61 @@ const NotesTableModal = ({
                         type="text"
                         className={styles.headerInput}
                         value={h}
-                        placeholder={`Header ${idx + 1}`}
-                        onChange={(e) => setHeaders((prev) => {
-                          const newH = [...prev];
-                          newH[idx] = e.target.value;
-                          return newH;
-                        })}
+                        placeholder={`Column ${idx + 1}`}
+                        onChange={(e) =>
+                          setHeaders((prev) => {
+                            const newH = [...prev];
+                            newH[idx] = e.target.value;
+                            return newH;
+                          })
+                        }
                       />
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Quick Fill */}
               <div className={styles.quickFill}>
-                <span className={styles.quickFillLabel}>Quick Fill:</span>
                 <button
                   className={styles.quickFillBtn}
-                  onClick={() => setHeaders(Array(tableCols).fill('').map((_, i) => `Column ${i + 1}`))}
+                  onClick={() =>
+                    setHeaders(
+                      Array(tableCols)
+                        .fill("")
+                        .map((_, i) => `Col ${i + 1}`),
+                    )
+                  }
                 >
-                  Column 1, 2, 3...
+                  1, 2, 3...
                 </button>
                 <button
                   className={styles.quickFillBtn}
-                  onClick={() => setHeaders(Array(tableCols).fill('').map((_, i) => String.fromCharCode(65 + i)))}
+                  onClick={() =>
+                    setHeaders(
+                      Array(tableCols)
+                        .fill("")
+                        .map((_, i) => String.fromCharCode(65 + i)),
+                    )
+                  }
                 >
                   A, B, C...
                 </button>
                 <button
-                  className={styles.quickFillBtn}
-                  onClick={() => setHeaders(Array(tableCols).fill(''))}
+                  className={`${styles.quickFillBtn} ${styles.clear}`}
+                  onClick={() => setHeaders(Array(tableCols).fill(""))}
                 >
-                  Clear All
+                  Reset
                 </button>
               </div>
             </div>
           )}
 
-          {/* Data Tab */}
-          {activeTab === 'data' && (
+          {/* Data Inputs Panel */}
+          {activeTab === "data" && (
             <div className={styles.dataTab}>
               <div className={styles.section}>
-                <label className={styles.sectionLabel}>
-                  Cell Values
-                  <span className={styles.sectionHint}>{tableRows} rows × {tableCols} columns</span>
-                </label>
-
                 <div className={styles.dataTableWrapper}>
                   <div className={styles.dataTable}>
-                    {/* Header Row */}
                     <div className={styles.dataRow}>
                       <div className={styles.rowIndex}>#</div>
                       {headers.map((h, idx) => (
@@ -342,7 +342,6 @@ const NotesTableModal = ({
                       ))}
                     </div>
 
-                    {/* Data Rows */}
                     {cells.map((row, rIdx) => (
                       <div key={rIdx} className={styles.dataRow}>
                         <div className={styles.rowIndex}>{rIdx + 1}</div>
@@ -352,12 +351,14 @@ const NotesTableModal = ({
                             type="text"
                             className={styles.dataCell}
                             value={cell}
-                            placeholder={`R${rIdx + 1}C${cIdx + 1}`}
-                            onChange={(e) => setCells((prev) => {
-                              const newCells = prev.map(r => [...r]);
-                              newCells[rIdx][cIdx] = e.target.value;
-                              return newCells;
-                            })}
+                            placeholder={`R${rIdx + 1} C${cIdx + 1}`}
+                            onChange={(e) =>
+                              setCells((prev) => {
+                                const newCells = prev.map((r) => [...r]);
+                                newCells[rIdx][cIdx] = e.target.value;
+                                return newCells;
+                              })
+                            }
                           />
                         ))}
                       </div>
@@ -366,94 +367,65 @@ const NotesTableModal = ({
                 </div>
               </div>
 
-              {/* Data Actions */}
               <div className={styles.dataActions}>
                 <button
                   className={styles.dataActionBtn}
-                  onClick={() => setCells(Array(tableRows).fill(null).map(() => Array(tableCols).fill('')))}
+                  onClick={() =>
+                    setCells((prev) =>
+                      prev.map((row, rIdx) =>
+                        row.map((_, cIdx) => `R${rIdx + 1}C${cIdx + 1}`),
+                      ),
+                    )
+                  }
                 >
-                  <span>🗑️</span>
-                  Clear All
+                  📋 Auto Fill
                 </button>
                 <button
-                  className={styles.dataActionBtn}
-                  onClick={() => {
-                    setCells(prev => prev.map((row, rIdx) =>
-                      row.map((_, cIdx) => `R${rIdx + 1}C${cIdx + 1}`)
-                    ));
-                  }}
+                  className={`${styles.dataActionBtn} ${styles.clear}`}
+                  onClick={() =>
+                    setCells(
+                      Array(tableRows)
+                        .fill(null)
+                        .map(() => Array(tableCols).fill("")),
+                    )
+                  }
                 >
-                  <span>📋</span>
-                  Fill Sample
+                  🗑️ Clear
                 </button>
               </div>
             </div>
           )}
 
-          {/* Theme Tab */}
-          {activeTab === 'theme' && (
+          {/* Theme Setup Panel */}
+          {activeTab === "theme" && (
             <div className={styles.themeTab}>
               <div className={styles.section}>
-                <label className={styles.sectionLabel}>Select Theme</label>
+                <label className={styles.sectionLabel}>Selected Preset</label>
                 <div className={styles.themeOptions}>
-                  {['Nord Theme', 'Material', 'CyberPunk', 'ElevatedCard'].map((theme) => (
-                    <button
-                      key={theme}
-                      className={`${styles.themeBtn} ${selectedTheme === theme ? styles.active : ''}`}
-                      onClick={() => onThemeChange(theme)}
-                    >
-                      {theme}
-                    </button>
-                  ))}
+                  {["Nord", "Material", "CyberPunk", "ElevatedCard"].map(
+                    (theme) => (
+                      <button
+                        key={theme}
+                        className={`${styles.themeBtn} ${selectedTheme === theme ? styles.active : ""}`}
+                        onClick={() => onThemeChange(theme)}
+                      >
+                        {theme}
+                      </button>
+                    ),
+                  )}
                 </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Live Preview */}
-        <div className={styles.livePreview}>
-          <div className={styles.previewLabel}>
-            <span className={styles.previewIcon}>👁️</span>
-            Live Preview
-          </div>
-          <div className={styles.previewTable}>
-            <table>
-              <thead>
-                <tr>
-                  {headers.map((h, idx) => (
-                    <th key={idx}>{h || `Header ${idx + 1}`}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {cells.slice(0, 3).map((row, rIdx) => (
-                  <tr key={rIdx}>
-                    {row.map((cell, cIdx) => (
-                      <td key={cIdx}>{cell || '—'}</td>
-                    ))}
-                  </tr>
-                ))}
-                {cells.length > 3 && (
-                  <tr className={styles.moreRow}>
-                    <td colSpan={tableCols}>
-                      +{cells.length - 3} more row{cells.length - 3 > 1 ? 's' : ''}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Footer */}
+        {/* Action Controls */}
         <div className={styles.footer}>
           <button className={styles.cancelBtn} onClick={onClose}>
             Cancel
           </button>
           <button className={styles.insertBtn} onClick={handleInsert}>
-            <span className={styles.insertIcon}>▦</span>
-            Insert Table
+            <span>▦</span> Insert
           </button>
         </div>
       </div>

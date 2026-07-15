@@ -16,6 +16,29 @@ import MarkdownPreview from "../Common/MarkdownPreview";
 
 const isMobile = window.innerWidth <= 768;
 
+const FILTER_OPTIONS_MAP = {
+  expenses: {
+    category: getExpenseCategories().map((cat) => ({
+      value: cat.value,
+      label: cat.label?.en || cat.label,
+    })),
+  },
+
+  entertainment_wishlist: {
+    category: ENTERTAINMENT_CATEGORIES.map((cat) => ({
+      value: cat.value,
+      label: cat.label,
+    })),
+  },
+
+  notes: {
+    category: NOTE_CATEGORIES.map((cat) => ({
+      value: cat.value,
+      label: cat.label,
+    })),
+  },
+};
+
 const CATEGORY_MAP_ENTERTAINMENT = Object.fromEntries(
   ENTERTAINMENT_CATEGORIES.map((cat) => [cat.value, cat]),
 );
@@ -43,6 +66,11 @@ const availableTables = [
     label: "CAL - Calendar Events",
     icon: "📅",
   },
+  {
+    value: "collections",
+    label: "LC - List Collection",
+    icon: "📚",
+  },
   { value: "vendors", label: "LFA1 - Vendor Master", icon: "🏭" },
   { value: "plants", label: "T001W - Plants", icon: "🏢" },
   { value: "storageLocations", label: "T001L - Storage Locations", icon: "📍" },
@@ -63,10 +91,10 @@ const tableColumns = {
   entertainment_wishlist: [
     { key: "itemNumber", label: "Item ID", width: "120px" },
     { key: "title", label: "Title", width: "220px" },
-    { key: "category", label: "Category", width: "120px" },
-    { key: "priority", label: "Priority", width: "100px" },
-    { key: "seasons", label: "Season", width: "120px" },
-    { key: "platform", label: "Platform", width: "140px" },
+    { key: "category", label: "Category", width: "150px" },
+    // { key: "priority", label: "Priority", width: "100px" },
+    // { key: "seasons", label: "Season", width: "120px" },
+    // { key: "platform", label: "Platform", width: "140px" },
     { key: "year", label: "Year", width: "80px" },
     { key: "genres", label: "Genres", width: "100px" },
   ],
@@ -77,6 +105,22 @@ const tableColumns = {
     { key: "summary", label: "Summary", width: "300px" },
     { key: "wordCount", label: "Words", width: "100px" },
     { key: "createdAt", label: "Created On", width: "150px" },
+  ],
+  collections: [
+    { key: "collectionNumber", label: "Collection ID", width: "140px" },
+    { key: "title", label: "Title", width: "280px" },
+    // { key: "description", label: "Description", width: "250px" },
+    {
+      key: "items",
+      label: "Items",
+      width: "240px",
+      formatter: (text) => {
+        // const text = value?.map((item) => item.name).join(", ") || "";
+        return text.length > 40 ? text.slice(0, 40) + "..." : text;
+      },
+    },
+    { key: "createdAt", label: "Created On", width: "160px" },
+    { key: "updatedAt", label: "Updated On", width: "160px" },
   ],
   calendar_events: [
     { key: "calendarNumber", label: "Calendar ID", width: "140px" },
@@ -187,6 +231,10 @@ const DataBrowserScreen = () => {
     return () => clearBackHandler();
   }, [isTableLoaded]);
 
+  const getFilterOptions = () => {
+    return FILTER_OPTIONS_MAP[selectedTable]?.[activeFilterColumn] || null;
+  };
+
   // Sort state
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
@@ -277,6 +325,30 @@ const DataBrowserScreen = () => {
           category: categoryObj?.label || item.category,
         };
       });
+    }
+
+    if (selectedTable === "collections") {
+      data = data.map((item) => ({
+        ...item,
+
+        createdAt: item.createdAt
+          ? new Date(item.createdAt).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
+          : "",
+
+        updatedAt: item.updatedAt
+          ? new Date(item.updatedAt).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })
+          : "",
+
+        items: item.items?.map((x) => x.name).join(", ") || "",
+      }));
     }
 
     if (selectedTable === "calendar_events") {
@@ -599,7 +671,7 @@ const DataBrowserScreen = () => {
                 <div style={{ flex: "0 0 auto" }}>
                   <SapButton
                     onClick={handleLoadTable}
-                    type="primary"
+                    type="neo-close"
                     icon="▶️"
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
@@ -758,6 +830,7 @@ const DataBrowserScreen = () => {
                   ))}
                   <SapButton
                     onClick={() => setFilters({})}
+                    type="korean-delete"
                     style={{
                       height: "24px",
                       padding: "0 8px",
@@ -852,7 +925,9 @@ const DataBrowserScreen = () => {
                                 key={colIndex}
                                 style={{ textAlign: col.align || "left" }}
                               >
-                                {formatCellValue(row[col.key], col)}
+                                {col.formatter
+                                  ? col.formatter(row[col.key], row)
+                                  : formatCellValue(row[col.key], col)}
                               </td>
                             ))}
                           </tr>
@@ -952,10 +1027,16 @@ const DataBrowserScreen = () => {
         width="400px"
         footer={
           <>
-            <SapButton onClick={() => setShowFilterModal(false)}>
+            <SapButton
+              onClick={() => setShowFilterModal(false)}
+              type="neo-danger"
+              style={{
+                background: "linear-gradient(135deg, #265edc, #1cb9b6)",
+              }}
+            >
               Cancel
             </SapButton>
-            <SapButton onClick={handleAddFilter} type="primary">
+            <SapButton onClick={handleAddFilter} type="neo-close">
               Apply Filter
             </SapButton>
           </>
@@ -965,19 +1046,32 @@ const DataBrowserScreen = () => {
           <SapSelect
             label="Column"
             value={activeFilterColumn}
-            onChange={setActiveFilterColumn}
+            onChange={(value) => {
+              setActiveFilterColumn(value);
+              setFilterValue("");
+            }}
             options={columns.map((col) => ({
               value: col.key,
               label: col.label,
             }))}
             placeholder="Select column..."
           />
-          <SapInput
-            label="Filter Value"
-            value={filterValue}
-            onChange={setFilterValue}
-            placeholder="Enter filter value..."
-          />
+          {getFilterOptions() ? (
+            <SapSelect
+              label="Filter Value"
+              value={filterValue}
+              onChange={setFilterValue}
+              options={getFilterOptions()}
+              placeholder="Select value..."
+            />
+          ) : (
+            <SapInput
+              label="Filter Value"
+              value={filterValue}
+              onChange={setFilterValue}
+              placeholder="Enter filter value..."
+            />
+          )}
         </div>
       </SapModal>
 

@@ -42,7 +42,7 @@ const openDB = () => {
 };
 
 // Write a key-value pair to IndexedDB and update cache
-const idbSetItem = async (key, value) => {
+export const idbSetItem = async (key, value) => {
   memoryCache[key] = value;
   try {
     const db = await openDB();
@@ -60,7 +60,7 @@ const idbSetItem = async (key, value) => {
 };
 
 // Read a value from IndexedDB (falls back to cache if available)
-const idbGetItem = async (key) => {
+export const idbGetItem = async (key) => {
   if (memoryCache.hasOwnProperty(key)) {
     return memoryCache[key];
   }

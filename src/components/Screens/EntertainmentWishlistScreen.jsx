@@ -294,7 +294,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   };
 
   // Search items
-  const handleSearch = () => {
+  const handleSearch = (filter = filterCategory) => {
     let items = getTableData("entertainment_wishlist") || [];
 
     // Apply filters
@@ -309,8 +309,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       );
     }
 
-    if (filterCategory !== "all") {
-      items = items.filter((i) => i.category === filterCategory);
+    if (filter !== "all") {
+      items = items.filter((i) => i.category === filter);
     }
 
     if (filterStatus !== "all") {
@@ -1899,7 +1899,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                       key={cat.value}
                       onClick={() => {
                         setFilterCategory(cat.value);
-                        handleSearch();
+                        handleSearch(cat.value);
                       }}
                       style={{
                         padding: "8px 16px",
