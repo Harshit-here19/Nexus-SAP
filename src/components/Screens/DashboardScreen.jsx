@@ -23,6 +23,7 @@ import SpendingBarChart from "./Charts/SpendingBarChart";
 import { exportExpenseSpreadsheet } from "../../utils/exportExcel";
 
 import { generateDashboardReport } from "./GenerateDashboardReport";
+import Screenshotable from "../Common/Screenshotable";
 
 const isMobile = window.innerWidth <= 786;
 
@@ -765,14 +766,16 @@ const DashboardScreen = () => {
                 </SapButton>
               </dialog>
 
-              <div className="pie-chart-container">
-                <SpendingPieChart
-                  data={pieData}
-                  total={pieTotal}
-                  formatCurrency={formatCurrency}
-                  lang={lang}
-                />
-              </div>
+              <Screenshotable filename="pie-chart.png">
+                <div className="pie-chart-container">
+                  <SpendingPieChart
+                    data={pieData}
+                    total={pieTotal}
+                    formatCurrency={formatCurrency}
+                    lang={lang}
+                  />
+                </div>
+              </Screenshotable>
             </>
           ) : (
             <div
