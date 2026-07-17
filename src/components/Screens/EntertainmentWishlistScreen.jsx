@@ -1020,7 +1020,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       </div>
 
       {/* Preview Card */}
-      <Screenshotable fliename={formdata?.title ? `${formdata?.title}.png` : "wishlist.png"}>
+      <Screenshotable fliename={formData?.title ? `${formData?.title}.png` : "wishlist.png"}>
         {formData.title && (
           <div
             style={{

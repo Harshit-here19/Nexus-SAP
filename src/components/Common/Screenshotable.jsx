@@ -4,6 +4,10 @@ import {
   copyScreenshot,
 } from "../../utils/screenshotUtils";
 
+const MENU_WIDTH = 180;
+const MENU_HEIGHT = 90;
+const LONG_PRESS_DURATION = 600;
+
 const Screenshotable = ({ children, filename = "capture.png" }) => {
   const captureRef = useRef(null);
   const longPressTimer = useRef(null);
@@ -17,26 +21,34 @@ const Screenshotable = ({ children, filename = "capture.png" }) => {
   const handleContextMenu = (e) => {
     e.preventDefault();
 
+    const x = Math.min(e.clientX, window.innerWidth - MENU_WIDTH - 10);
+
+    const y = Math.min(e.clientY, window.innerHeight - MENU_HEIGHT - 10);
+
     setMenu({
       visible: true,
-      x: e.pageX,
-      y: e.pageY,
+      x,
+      y,
     });
   };
-
-  const LONG_PRESS_DURATION = 600;
 
   const startLongPress = (e) => {
     const touch = e.touches[0];
 
+    const clientX = touch.clientX;
+    const clientY = touch.clientY;
+
     longPressTimer.current = setTimeout(() => {
-      if (navigator.vibrate) {
-        navigator.vibrate(30);
-      }
+      navigator.vibrate?.(30);
+
+      const x = Math.min(clientX, window.innerWidth - MENU_WIDTH - 10);
+
+      const y = Math.min(clientY, window.innerHeight - MENU_HEIGHT - 10);
+
       setMenu({
         visible: true,
-        x: touch.clientX,
-        y: touch.clientY,
+        x,
+        y,
       });
     }, LONG_PRESS_DURATION);
   };
@@ -55,6 +67,20 @@ const Screenshotable = ({ children, filename = "capture.png" }) => {
     window.addEventListener("click", hide);
 
     return () => window.removeEventListener("click", hide);
+  }, []);
+
+  useEffect(() => {
+    const hide = () => setMenu((m) => ({ ...m, visible: false }));
+
+    window.addEventListener("click", hide);
+    window.addEventListener("scroll", hide);
+    window.addEventListener("resize", hide);
+
+    return () => {
+      window.removeEventListener("click", hide);
+      window.removeEventListener("scroll", hide);
+      window.removeEventListener("resize", hide);
+    };
   }, []);
 
   return (
@@ -77,7 +103,7 @@ const Screenshotable = ({ children, filename = "capture.png" }) => {
       {menu.visible && (
         <div
           style={{
-            position: "absolute",
+            position: "fixed",
             top: menu.y,
             left: menu.x,
             width: 180,

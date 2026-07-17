@@ -327,7 +327,7 @@ const NotesEditor = forwardRef(
             <div className={styles["notes-editor-wrapper"]}>
               <div className={styles["notes-editor-inner"]}>
                 {showPreview || isReadOnly ? (
-                  <Screenshotable fliename={formdata?.title ? `${formdata?.title}.png` : "notes.png"}>
+                  <Screenshotable fliename={formData?.title ? `${formData?.title}.png` : "notes.png"}>
                     <div className={styles["notes-preview-wrapper"]}>
                       <MarkdownPreview
                         codeTheme={codeTheme}
