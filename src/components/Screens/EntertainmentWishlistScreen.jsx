@@ -22,6 +22,7 @@ import {
   getAllData,
   saveAllData,
 } from "../../utils/storage";
+import Screenshotable from "../Common/Screenshotable";
 
 // =======================================
 //          📌📌📌 CONSTANTS 📌📌📌
@@ -1019,208 +1020,210 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       </div>
 
       {/* Preview Card */}
-      {formData.title && (
-        <div
-          style={{
-            padding: isDisplayMode
-              ? isMobile
-                ? "10px"
-                : "20px"
-              : isMobile
-                ? "12px"
-                : "16px",
-            background: `linear-gradient(135deg, ${getCategoryInfo(formData.category).color}15 0%, ${getCategoryInfo(formData.category).color}05 100%)`,
-            borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
-            borderRadius: "6px",
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            gap: isDisplayMode
-              ? isMobile
-                ? "18px"
-                : "32px"
-              : isMobile
-                ? "12px"
-                : "16px",
-            minHeight: isDisplayMode ? "60vh" : "auto",
-            alignItems: isDisplayMode ? "flex-start" : "stretch",
-          }}
-        >
-          {formData.imageUrl && (
-            <img
-              src={formData.imageUrl}
-              alt={formData.title}
-              style={{
-                width: isDisplayMode
-                  ? isMobile
-                    ? "100%"
-                    : "260px"
-                  : isMobile
-                    ? "100%"
-                    : "80px",
-
-                height: isDisplayMode
-                  ? isMobile
-                    ? "420px"
-                    : "380px"
-                  : isMobile
-                    ? "180px"
-                    : "120px",
-                objectFit: "cover",
-                borderRadius: isDisplayMode ? "12px" : "4px",
-
-                boxShadow: isDisplayMode
-                  ? "0 10px 30px rgba(0,0,0,.25)"
-                  : "0 2px 8px rgba(0,0,0,.2)",
-              }}
-              onError={(e) => (e.target.style.display = "none")}
-            />
-          )}
+      <Screenshotable fliename={formdata?.title ? `${formdata?.title}.png` : "wishlist.png"}>
+        {formData.title && (
           <div
             style={{
-              flex: 1,
+              padding: isDisplayMode
+                ? isMobile
+                  ? "10px"
+                  : "20px"
+                : isMobile
+                  ? "12px"
+                  : "16px",
+              background: `linear-gradient(135deg, ${getCategoryInfo(formData.category).color}15 0%, ${getCategoryInfo(formData.category).color}05 100%)`,
+              borderLeft: `4px solid ${getCategoryInfo(formData.category).color}`,
+              borderRadius: "6px",
               display: "flex",
-              flexDirection: "column",
-              gap: isDisplayMode ? "14px" : "8px",
+              flexDirection: isMobile ? "column" : "row",
+              gap: isDisplayMode
+                ? isMobile
+                  ? "18px"
+                  : "32px"
+                : isMobile
+                  ? "12px"
+                  : "16px",
+              minHeight: isDisplayMode ? "60vh" : "auto",
+              alignItems: isDisplayMode ? "flex-start" : "stretch",
             }}
           >
+            {formData.imageUrl && (
+              <img
+                src={formData.imageUrl}
+                alt={formData.title}
+                style={{
+                  width: isDisplayMode
+                    ? isMobile
+                      ? "100%"
+                      : "260px"
+                    : isMobile
+                      ? "100%"
+                      : "80px",
+
+                  height: isDisplayMode
+                    ? isMobile
+                      ? "420px"
+                      : "380px"
+                    : isMobile
+                      ? "180px"
+                      : "120px",
+                  objectFit: "cover",
+                  borderRadius: isDisplayMode ? "12px" : "4px",
+
+                  boxShadow: isDisplayMode
+                    ? "0 10px 30px rgba(0,0,0,.25)"
+                    : "0 2px 8px rgba(0,0,0,.2)",
+                }}
+                onError={(e) => (e.target.style.display = "none")}
+              />
+            )}
             <div
               style={{
+                flex: 1,
                 display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                marginBottom: "4px",
+                flexDirection: "column",
+                gap: isDisplayMode ? "14px" : "8px",
               }}
             >
-              <span
+              <div
                 style={{
-                  fontSize: isDisplayMode ? "12px" : "11px",
-                  padding: "2px 8px",
-                  background: getCategoryInfo(formData.category).color,
-                  color: "white",
-                  borderRadius: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginBottom: "4px",
                 }}
               >
-                {formData.itemNumber ||
-                  getCategoryInfo(formData.category).value}
-              </span>
-              {formData.isNsfw && (
                 <span
                   style={{
                     fontSize: isDisplayMode ? "12px" : "11px",
-                    padding: "2px 6px",
-                    background: "#f44336",
+                    padding: "2px 8px",
+                    background: getCategoryInfo(formData.category).color,
                     color: "white",
                     borderRadius: "4px",
                   }}
                 >
-                  NSFW
+                  {formData.itemNumber ||
+                    getCategoryInfo(formData.category).value}
                 </span>
-              )}
-            </div>
-            <div
-              style={{
-                fontSize: isDisplayMode
-                  ? isMobile
-                    ? "28px"
-                    : "40px"
-                  : isMobile
-                    ? "15px"
-                    : "16px",
-
-                fontWeight: "800",
-
-                lineHeight: 1.2,
-              }}
-            >
-              {formData.title}
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                alignItems: "center",
-                flexWrap: "wrap",
-                rowGap: "6px",
-              }}
-            >
-              <span
-                className={`sap-badge ${
-                  formData.status === "completed"
-                    ? "success"
-                    : formData.status === "in_progress"
-                      ? "info"
-                      : formData.status === "dropped"
-                        ? "error"
-                        : formData.status === "on_hold"
-                          ? "warning"
-                          : ""
-                }`}
+                {formData.isNsfw && (
+                  <span
+                    style={{
+                      fontSize: isDisplayMode ? "12px" : "11px",
+                      padding: "2px 6px",
+                      background: "#f44336",
+                      color: "white",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    NSFW
+                  </span>
+                )}
+              </div>
+              <div
                 style={{
-                  fontSize: isDisplayMode ? "12px" : "11px",
+                  fontSize: isDisplayMode
+                    ? isMobile
+                      ? "28px"
+                      : "40px"
+                    : isMobile
+                      ? "15px"
+                      : "16px",
 
-                  padding: isDisplayMode ? "6px 14px" : "2px 8px",
+                  fontWeight: "800",
+
+                  lineHeight: 1.2,
                 }}
               >
-                {getStatusInfo(formData.status).label}
-              </span>
-              <span
-                style={{
-                  fontSize: isDisplayMode ? "12px" : "11px",
+                {formData.title}
+              </div>
 
-                  padding: isDisplayMode ? "6px 14px" : "2px 8px",
-                  background: getPriorityInfo(formData.priority).color,
-                  color: "white",
-                  borderRadius: "10px",
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  rowGap: "6px",
                 }}
               >
-                {formData.priority?.replace("_", " ").toUpperCase()}
-              </span>
-              {formData.year && (
                 <span
+                  className={`sap-badge ${
+                    formData.status === "completed"
+                      ? "success"
+                      : formData.status === "in_progress"
+                        ? "info"
+                        : formData.status === "dropped"
+                          ? "error"
+                          : formData.status === "on_hold"
+                            ? "warning"
+                            : ""
+                  }`}
                   style={{
-                    fontSize: "12px",
-                    color: "var(--sap-text-secondary)",
+                    fontSize: isDisplayMode ? "12px" : "11px",
+
+                    padding: isDisplayMode ? "6px 14px" : "2px 8px",
                   }}
                 >
-                  📅 {formData.year}
+                  {getStatusInfo(formData.status).label}
                 </span>
-              )}
-              {formData.rating && (
-                <span style={{ fontSize: "12px", color: "#ffc107" }}>
-                  ⭐ {formData.rating}/10
+                <span
+                  style={{
+                    fontSize: isDisplayMode ? "12px" : "11px",
+
+                    padding: isDisplayMode ? "6px 14px" : "2px 8px",
+                    background: getPriorityInfo(formData.priority).color,
+                    color: "white",
+                    borderRadius: "10px",
+                  }}
+                >
+                  {formData.priority?.replace("_", " ").toUpperCase()}
                 </span>
-              )}
-            </div>
-            <div
-              style={{
-                marginTop: isDisplayMode ? "2px" : "10px",
-                fontSize: isDisplayMode
-                  ? isMobile
-                    ? "16px"
-                    : "18px"
-                  : isMobile
-                    ? "13px"
-                    : "12px",
-                fontWeight: "500",
-                lineHeight: "1.6",
-                color: "#6b7280",
-                ...(isDisplayMode
-                  ? {}
-                  : {
-                      maxHeight: isMobile ? "none" : "90px",
-                      overflow: "hidden",
-                      display: "-webkit-box",
-                      WebkitLineClamp: isMobile ? 5 : 2,
-                      WebkitBoxOrient: "vertical",
-                    }),
-              }}
-            >
-              {formData.description}
+                {formData.year && (
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      color: "var(--sap-text-secondary)",
+                    }}
+                  >
+                    📅 {formData.year}
+                  </span>
+                )}
+                {formData.rating && (
+                  <span style={{ fontSize: "12px", color: "#ffc107" }}>
+                    ⭐ {formData.rating}/10
+                  </span>
+                )}
+              </div>
+              <div
+                style={{
+                  marginTop: isDisplayMode ? "2px" : "10px",
+                  fontSize: isDisplayMode
+                    ? isMobile
+                      ? "16px"
+                      : "18px"
+                    : isMobile
+                      ? "13px"
+                      : "12px",
+                  fontWeight: "500",
+                  lineHeight: "1.6",
+                  color: "#6b7280",
+                  ...(isDisplayMode
+                    ? {}
+                    : {
+                        maxHeight: isMobile ? "none" : "90px",
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: isMobile ? 5 : 2,
+                        WebkitBoxOrient: "vertical",
+                      }),
+                }}
+              >
+                {formData.description}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Screenshotable>
     </div>
   );
 
