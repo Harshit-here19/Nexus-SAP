@@ -14,8 +14,8 @@ import {
   getUsers,
   updateUserProfile,
   changePassword,
-  saveAvatarBlob,
-  getAvatarBlob,
+  saveImageBlob,
+  getImageBlob,
 } from "../../utils/storage";
 
 const UserProfileScreen = () => {
@@ -53,7 +53,7 @@ const UserProfileScreen = () => {
 
   const loadAvatar = async (avatar) => {
     if (avatar?.style === "custom" && avatar.imageId) {
-      const blob = await getAvatarBlob(avatar.imageId);
+      const blob = await getImageBlob(avatar.imageId);
 
       if (!blob) {
         return {
