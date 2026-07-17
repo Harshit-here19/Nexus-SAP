@@ -21,6 +21,8 @@ import {
   findRecord,
   getAllData,
   saveAllData,
+  saveImageBlob,
+  getImageBlob,
 } from "../../utils/storage";
 import Screenshotable from "../Common/Screenshotable";
 
@@ -216,9 +218,34 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     }
 
     try {
-      const base64 = await resizeImage(file, 1200, 1600, 0.82);
+      const processCoverImage = async (file) => {
+        if (!file) return;
 
-      handleChange("imageUrl", base64);
+        if (!file.type.startsWith("image/")) {
+          updateStatus("Please select an image file", "error");
+          return;
+        }
+
+        try {
+          const resized = await resizeImage(file, 1200, 1600, 0.82);
+
+          // convert base64 back to blob
+          const response = await fetch(resized);
+          const blob = await response.blob();
+
+          const imageId = crypto.randomUUID();
+
+          await saveImageBlob(imageId, blob);
+
+          handleChange("imageId", imageId);
+
+          handleChange("imageUrl", "");
+
+          updateStatus("Cover image processed successfully", "success");
+        } catch (error) {
+          updateStatus("Unable to process image", "error");
+        }
+      };
 
       updateStatus("Cover image processed successfully", "success");
     } catch (error) {
@@ -286,7 +313,17 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     const item = data.find((i) => i.itemNumber === itemId.trim());
 
     if (item) {
-      setFormData(item);
+      let loadedItem = { ...item };
+
+
+      if (item.imageId) {
+        const blob = await getImageBlob(item.imageId);
+
+        loadedItem.imageUrl =
+          URL.createObjectURL(blob);
+      }
+
+      setFormData(loadedItem);
       setIsLoaded(true);
       updateStatus(`Item ${itemId} loaded successfully`, "success");
     } else {
@@ -1020,7 +1057,9 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       </div>
 
       {/* Preview Card */}
-      <Screenshotable fliename={formData?.title ? `${formData?.title}.png` : "wishlist.png"}>
+      <Screenshotable
+        fliename={formData?.title ? `${formData?.title}.png` : "wishlist.png"}
+      >
         {formData.title && (
           <div
             style={{
@@ -1147,8 +1186,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 }}
               >
                 <span
-                  className={`sap-badge ${
-                    formData.status === "completed"
+                  className={`sap-badge ${formData.status === "completed"
                       ? "success"
                       : formData.status === "in_progress"
                         ? "info"
@@ -1157,7 +1195,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                           : formData.status === "on_hold"
                             ? "warning"
                             : ""
-                  }`}
+                    }`}
                   style={{
                     fontSize: isDisplayMode ? "12px" : "11px",
 
@@ -1210,12 +1248,12 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                   ...(isDisplayMode
                     ? {}
                     : {
-                        maxHeight: isMobile ? "none" : "90px",
-                        overflow: "hidden",
-                        display: "-webkit-box",
-                        WebkitLineClamp: isMobile ? 5 : 2,
-                        WebkitBoxOrient: "vertical",
-                      }),
+                      maxHeight: isMobile ? "none" : "90px",
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: isMobile ? 5 : 2,
+                      WebkitBoxOrient: "vertical",
+                    }),
                 }}
               >
                 {formData.description}
@@ -1707,8 +1745,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           </div>
           <div>
             <span
-              className={`sap-badge ${
-                formData.status === "completed"
+              className={`sap-badge ${formData.status === "completed"
                   ? "success"
                   : formData.status === "dropped"
                     ? "error"
@@ -1717,7 +1754,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                       : formData.status === "on_hold"
                         ? "warning"
                         : ""
-              }`}
+                }`}
               style={{
                 fontSize: "11px",
                 padding: "2px 8px",
@@ -2173,8 +2210,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     </td>
                     <td>
                       <span
-                        className={`sap-badge ${
-                          item.status === "completed"
+                        className={`sap-badge ${item.status === "completed"
                             ? "success"
                             : item.status === "in_progress"
                               ? "info"
@@ -2183,7 +2219,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                                 : item.status === "on_hold"
                                   ? "warning"
                                   : ""
-                        }`}
+                          }`}
                         style={{
                           fontSize: "11px",
                           padding: "2px 8px",
@@ -2366,8 +2402,7 @@ const generateMediaReport = (mediaItems) => {
 
     return `
     ${'<span style="color: gold;font-size: 1rem;">★</span>'.repeat(fullStars)}
-    ${
-      halfStar
+    ${halfStar
         ? `
       <span style="
         background: linear-gradient(90deg, gold 50%, #ccc 50%);
@@ -2377,7 +2412,7 @@ const generateMediaReport = (mediaItems) => {
       ">★</span>
     `
         : ""
-    }
+      }
     ${'<span style="color: #ccc;font-size: 1rem;">★</span>'.repeat(emptyStars)}
   `;
   };
@@ -2432,15 +2467,14 @@ const generateMediaReport = (mediaItems) => {
               <span class="meta-item"><strong>Platform:</strong> ${item.platform || "—"}</span>
             </div>
             
-            ${
-              item.genres && item.genres.length > 0
-                ? `
+            ${item.genres && item.genres.length > 0
+          ? `
               <div class="genres">
                 ${item.genres.map((genre) => `<span class="genre-tag">${genre}</span>`).join("")}
               </div>
             `
-                : ""
-            }
+          : ""
+        }
             
             <div class="info-row">
               ${item.cast ? `<div class="info-item"><strong>Cast:</strong> ${item.cast}</div>` : ""}
@@ -2448,26 +2482,24 @@ const generateMediaReport = (mediaItems) => {
               ${item.studio ? `<div class="info-item"><strong>Studio:</strong> ${item.studio}</div>` : ""}
             </div>
             
-            ${
-              item.description
-                ? `
+            ${item.description
+          ? `
               <div class="description">
                 <p>${item.description}</p>
               </div>
             `
-                : ""
-            }
+          : ""
+        }
             
-            ${
-              item.notes
-                ? `
+            ${item.notes
+          ? `
               <div class="notes">
                 <strong>Notes:</strong>
                 <p>${item.notes}</p>
               </div>
             `
-                : ""
-            }
+          : ""
+        }
             
             <div class="media-footer">
               <span class="item-number">${item.itemNumber || `#${index + 1}`}</span>
@@ -2821,16 +2853,16 @@ const generateMediaReport = (mediaItems) => {
           <h1>🎬 My Media Collection</h1>
           <p class="subtitle">Movies • TV Shows • Anime • Games • Books</p>
           <p class="generated">Generated on ${new Date().toLocaleDateString(
-            "en-US",
-            {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            },
-          )}</p>
+    "en-US",
+    {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  )}</p>
         </div>
 
         <div class="stats-grid">

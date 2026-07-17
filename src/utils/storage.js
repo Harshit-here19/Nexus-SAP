@@ -3,7 +3,7 @@
 // ========== INDEXEDDB SETUP ==========
 
 const DB_NAME = "nexus_db";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = "keyvalue";
 
 // In-memory cache to allow synchronous reads after initial load
@@ -26,6 +26,10 @@ const openDB = () => {
       const db = event.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME);
+      }
+
+      if (!db.objectStoreNames.contains("images")) {
+        db.createObjectStore("images");
       }
     };
 
@@ -847,6 +851,37 @@ export const saveAvatarBlob = async (id, blob) => {
 
 export const getAvatarBlob = async (id) => {
   return await idbGetItem(`avatar_blob_${id}`);
+};
+
+export const saveImageBlob = (id, blob) => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onsuccess = () => {
+      const db = request.result;
+      const tx = db.transaction("images", "readwrite");
+      tx.objectStore("images").put(blob, id);
+      tx.oncomplete = resolve;
+      tx.onerror = reject;
+    };
+  });
+};
+
+export const getImageBlob = (id) => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onsuccess = () => {
+      const db = request.result;
+      const tx = db.transaction("images", "readonly");
+      const req = tx.objectStore("images").get(id);
+
+      req.onsuccess = () => {
+        resolve(req.result);
+      };
+
+      req.onerror = reject;
+    };
+  });
 };
 
 export const loadUserAvatar = async (avatar) => {
