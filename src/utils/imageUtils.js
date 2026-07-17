@@ -16,40 +16,42 @@ export function resizeImage(
   quality = 0.85,
 ) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    const img = new Image();
 
-    reader.onerror = reject;
+    img.onerror = reject;
 
-    reader.onload = () => {
-      const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
 
-      img.onerror = reject;
+      const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
 
-      img.onload = () => {
-        let width = img.width;
-        let height = img.height;
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
 
-        // Maintain aspect ratio
-        const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+      const canvas = document.createElement("canvas");
 
-        width = Math.round(width * ratio);
-        height = Math.round(height * ratio);
+      canvas.width = width;
+      canvas.height = height;
 
-        const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
-        canvas.width = width;
-        canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
 
-        const ctx = canvas.getContext("2d");
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Blob creation failed"));
+            return;
+          }
 
-        ctx.drawImage(img, 0, 0, width, height);
-
-        resolve(canvas.toDataURL("image/webp", quality));
-      };
-
-      img.src = reader.result;
+          resolve(blob);
+        },
+        "image/webp",
+        quality,
+      );
     };
 
-    reader.readAsDataURL(file);
+    img.src = URL.createObjectURL(file);
   });
 }

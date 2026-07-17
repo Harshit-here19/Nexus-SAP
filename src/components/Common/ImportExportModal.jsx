@@ -29,8 +29,13 @@ import { useAuth } from "../../context/AuthContext";
 
 const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
   const [activeTab, setActiveTab] = useState("");
-  const [selectedTable, setSelectedTable] = useState("");
-  const [selectedTables, setSelectedTables] = useState([]);
+  const [selectedTable, setSelectedTable] = useState("all");
+  const [selectedTables, setSelectedTables] = useState([
+  "entertainment_wishlist",
+  "notes",
+  "expenses",
+  "collections",
+]);
   const [exportFormat, setExportFormat] = useState("json");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [importPreviews, setImportPreviews] = useState([]);
@@ -55,10 +60,10 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
     { value: "notes", label: "Notes (NT)" },
     { value: "collections", label: "List Collections (LC)" },
     { value: "calendar_events", label: "Calendar Events" },
-    { value: "customers", label: "Customers (KNA1)" },
-    { value: "vendors", label: "Vendors (LFA1)" },
-    { value: "plants", label: "Plants (T001W)" },
-    { value: "storageLocations", label: "Storage Locations (T001L)" },
+    // { value: "customers", label: "Customers (KNA1)" },
+    // { value: "vendors", label: "Vendors (LFA1)" },
+    // { value: "plants", label: "Plants (T001W)" },
+    // { value: "storageLocations", label: "Storage Locations (T001L)" },
   ];
 
   const tableColumns = {
@@ -537,7 +542,15 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
   const handleClose = () => {
     setSelectedFiles([]);
     setImportPreviews([]);
-    setSelectedTable("");
+
+    setSelectedTable("all");
+setSelectedTables([
+  "entertainment_wishlist",
+  "notes",
+  "expenses",
+  "collections",
+]);
+
     setExportFormat("json");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";

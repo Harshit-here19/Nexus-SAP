@@ -14,6 +14,7 @@ const CustomAvatarDialog = ({
   const fileInputRef = useRef(null);
 
   const [preview, setPreview] = useState(currentImage);
+  const [imageBlob, setImageBlob] = useState(null);
 
   useEffect(() => {
     setPreview(currentImage);
@@ -42,13 +43,25 @@ const CustomAvatarDialog = ({
     }
 
     if (file.size > MAX_IMAGE_SIZE) {
-      alert("Maximum file size is 2 MB.");
+      alert("Maximum file size is 8 MB.");
+      return;
+    }
+
+    if (file.type === "image/gif") {
+      const url = URL.createObjectURL(file);
+
+      setPreview(url);
+      setImageBlob(file);
+
       return;
     }
 
     resizeImage(file)
-      .then((image) => {
-        setPreview(image);
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+
+        setPreview(url);
+        setImageBlob(blob);
       })
       .catch(() => {
         alert("Unable to process image.");
@@ -70,13 +83,18 @@ const CustomAvatarDialog = ({
   };
 
   const handleSave = () => {
-    if (!preview) return;
+    if (!imageBlob) return;
 
-    onSave(preview);
+    onSave(imageBlob);
   };
 
   const handleRemove = () => {
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
+
     setPreview(null);
+    setImageBlob(null);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -149,7 +167,7 @@ const CustomAvatarDialog = ({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,image/gif"
           hidden
           onChange={handleBrowse}
         />

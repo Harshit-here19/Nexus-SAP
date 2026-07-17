@@ -14,6 +14,8 @@ import {
   getUsers,
   updateUserProfile,
   changePassword,
+  saveAvatarBlob,
+  getAvatarBlob,
 } from "../../utils/storage";
 
 const UserProfileScreen = () => {
@@ -49,44 +51,84 @@ const UserProfileScreen = () => {
   const [saveAnimation, setSaveAnimation] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
+  const loadAvatar = async (avatar) => {
+    if (avatar?.style === "custom" && avatar.imageId) {
+      const blob = await getAvatarBlob(avatar.imageId);
+
+      if (!blob) {
+        return {
+          style: "cyber",
+        };
+      }
+
+      return {
+        style: "custom",
+        image: URL.createObjectURL(blob),
+        imageId: avatar.imageId,
+      };
+    }
+
+    return (
+      avatar || {
+        style: "cyber",
+      }
+    );
+  };
+
   // Load user profile data
   useEffect(() => {
-    if (user?.userId) {
-      const users = getUsers();
-      const currentUser = users.find((u) => u.id === user.userId);
-      if (currentUser) {
-        const data = {
-          firstName: currentUser.firstName || "",
-          lastName: currentUser.lastName || "",
-          email: currentUser.email || "",
-          department: currentUser.department || "",
-          phone: currentUser.phone || "",
-          address: currentUser.address || "",
-          city: currentUser.city || "",
-          country: currentUser.country || "",
-          avatar: currentUser.avatar ||
-            settings.avatar || {
-              style: "cyber",
-            },
-        };
-        setProfileData(data);
-        setOriginalData(data);
+    const loadProfile = async () => {
+      if (user?.userId) {
+        const users = getUsers();
+
+        const currentUser = users.find((u) => u.id === user.userId);
+
+        if (currentUser) {
+          const avatar = await loadAvatar(
+            currentUser.avatar || settings.avatar,
+          );
+
+          const data = {
+            firstName: currentUser.firstName || "",
+            lastName: currentUser.lastName || "",
+            email: currentUser.email || "",
+            department: currentUser.department || "",
+            phone: currentUser.phone || "",
+            address: currentUser.address || "",
+            city: currentUser.city || "",
+            country: currentUser.country || "",
+            avatar,
+          };
+
+          setProfileData(data);
+          setOriginalData(data);
+        }
       }
-    }
+    };
+
+    loadProfile();
   }, [user?.userId]);
 
-  const handleAvatarChange = (avatar) => {
-    // Update profile
+  const handleAvatarChange = async (avatar) => {
+    let savedAvatar = {
+      style: avatar.style,
+    };
+
+    if (avatar.style === "custom" && avatar.blob) {
+      const imageId = crypto.randomUUID();
+
+      await saveAvatarBlob(imageId, avatar.blob);
+
+      savedAvatar = {
+        style: "custom",
+        imageId,
+      };
+    }
+
     setProfileData((prev) => ({
       ...prev,
-      avatar,
+      avatar: savedAvatar,
     }));
-
-    // Store globally in settings
-    updateSetting("avatar", avatar);
-
-    // persist immediately
-    saveSettings();
 
     markAsChanged();
 

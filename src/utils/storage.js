@@ -841,6 +841,38 @@ export const changePassword = (userId, currentPassword, newPassword) => {
   return { success: true, message: "Password changed successfully" };
 };
 
+export const saveAvatarBlob = async (id, blob) => {
+  return await idbSetItem(`avatar_blob_${id}`, blob);
+};
+
+export const getAvatarBlob = async (id) => {
+  return await idbGetItem(`avatar_blob_${id}`);
+};
+
+export const loadUserAvatar = async (avatar) => {
+  if (avatar?.style === "custom" && avatar.imageId) {
+    const blob = await getAvatarBlob(avatar.imageId);
+
+    if (!blob) {
+      return {
+        style: "cyber",
+      };
+    }
+
+    return {
+      style: "custom",
+      image: URL.createObjectURL(blob),
+      imageId: avatar.imageId,
+    };
+  }
+
+  return (
+    avatar || {
+      style: "cyber",
+    }
+  );
+};
+
 // ========== FAVORITES ==========
 
 // Get favorites for current user

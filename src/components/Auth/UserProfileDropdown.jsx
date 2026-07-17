@@ -4,29 +4,44 @@ import { useAuth } from "../../context/AuthContext";
 import { useTransaction } from "../../context/TransactionContext";
 import { useSettings } from "../../context/SettingsContext";
 import { useConfirm } from "../../context/ConfirmContext";
-import { getUsers } from "../../utils/storage";
+import { getUsers, loadUserAvatar } from "../../utils/storage";
 import "./UserProfileDropdown.css";
 
 import { AvatarSVG } from "../Common/Avatar/Avatarpicker";
 
 const UserProfileDropdown = () => {
   const { user, logout } = useAuth();
-  const { navigateToTransaction, isTransactionActive, currentTransaction } = useTransaction();
+  const { navigateToTransaction, isTransactionActive, currentTransaction } =
+    useTransaction();
   const { settings, updateSetting } = useSettings();
+
   const [showDropdown, setShowDropdown] = useState(false);
+  const [userAvatar, setUserAvatar] = useState({ style: "cyber" });
+
   const dropdownRef = useRef(null);
 
   const { confirm } = useConfirm();
 
   const isMobile = window.innerWidth <= 786;
-  let userAvatar = "cyber";
   const isProfile = currentTransaction === "SU01";
 
-  if (user?.userId) {
-    const users = getUsers();
-    const currentUser = users.find((u) => u.id === user.userId);
-    userAvatar = currentUser.avatar;
-  }
+  useEffect(() => {
+    const loadAvatar = async () => {
+      if (user?.userId) {
+        const users = getUsers();
+
+        const currentUser = users.find((u) => u.id === user.userId);
+
+        if (currentUser?.avatar) {
+          const avatar = await loadUserAvatar(currentUser.avatar);
+
+          setUserAvatar(avatar);
+        }
+      }
+    };
+
+    loadAvatar();
+  }, [user]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

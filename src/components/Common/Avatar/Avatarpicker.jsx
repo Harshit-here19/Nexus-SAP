@@ -117,12 +117,17 @@ const AvatarPicker = ({ name, value, onChange, isOpen, onClose }) => {
     onClose();
   };
 
-  const handleCustomAvatarSave = (image) => {
+  const handleCustomAvatarSave = (blob) => {
+    const imageUrl = URL.createObjectURL(blob);
+
     setSelected("custom");
+
     onChange({
       style: "custom",
-      image,
+      image: imageUrl,
+      blob,
     });
+
     setShowCustomDialog(false);
   };
 
@@ -131,6 +136,14 @@ const AvatarPicker = ({ name, value, onChange, isOpen, onClose }) => {
       onClose();
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (value?.image?.startsWith("blob:")) {
+        URL.revokeObjectURL(value.image);
+      }
+    };
+  }, [value?.image]);
 
   return (
     <>
