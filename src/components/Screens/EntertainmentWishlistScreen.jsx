@@ -218,35 +218,21 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     }
 
     try {
-      const processCoverImage = async (file) => {
-        if (!file) return;
+      const resized = await resizeImage(file, 1200, 1600, 0.82);
 
-        if (!file.type.startsWith("image/")) {
-          updateStatus("Please select an image file", "error");
-          return;
-        }
+      const response = await fetch(resized);
+      const blob = await response.blob();
 
-        try {
-          const resized = await resizeImage(file, 1200, 1600, 0.82);
+      const imageId = crypto.randomUUID();
 
-          // convert base64 back to blob
-          const response = await fetch(resized);
-          const blob = await response.blob();
+      await saveImageBlob(user?.userid,imageId, blob);
 
-          const imageId = crypto.randomUUID();
-
-          await saveImageBlob(imageId, blob);
-          handleChange("imageId", imageId);
-          handleChange("imageUrl", "");
-
-          updateStatus("Cover image processed successfully", "success");
-        } catch (error) {
-          updateStatus("Unable to process image", "error");
-        }
-      };
+      handleChange("imageId", imageId);
+      handleChange("imageUrl", "");
 
       updateStatus("Cover image processed successfully", "success");
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       updateStatus("Unable to process image", "error");
     }
   };
@@ -301,7 +287,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   };
 
   // Load item for edit/view
-  const loadItem = () => {
+  const loadItem = async () => {
     if (!itemId.trim()) {
       updateStatus("Enter an item ID", "warning");
       return;
@@ -313,9 +299,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     if (item) {
       let loadedItem = { ...item };
 
-
       if (item.imageId) {
-        const blob = await getImageBlob(item.imageId);
+        const blob = await getImageBlob(user?.userid,item.imageId);
 
         loadedItem.imageUrl =
           URL.createObjectURL(blob);
@@ -1185,14 +1170,14 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
               >
                 <span
                   className={`sap-badge ${formData.status === "completed"
-                      ? "success"
-                      : formData.status === "in_progress"
-                        ? "info"
-                        : formData.status === "dropped"
-                          ? "error"
-                          : formData.status === "on_hold"
-                            ? "warning"
-                            : ""
+                    ? "success"
+                    : formData.status === "in_progress"
+                      ? "info"
+                      : formData.status === "dropped"
+                        ? "error"
+                        : formData.status === "on_hold"
+                          ? "warning"
+                          : ""
                     }`}
                   style={{
                     fontSize: isDisplayMode ? "12px" : "11px",
@@ -1744,14 +1729,14 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           <div>
             <span
               className={`sap-badge ${formData.status === "completed"
-                  ? "success"
-                  : formData.status === "dropped"
-                    ? "error"
-                    : formData.status === "in_progress"
-                      ? "info"
-                      : formData.status === "on_hold"
-                        ? "warning"
-                        : ""
+                ? "success"
+                : formData.status === "dropped"
+                  ? "error"
+                  : formData.status === "in_progress"
+                    ? "info"
+                    : formData.status === "on_hold"
+                      ? "warning"
+                      : ""
                 }`}
               style={{
                 fontSize: "11px",
@@ -2209,14 +2194,14 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     <td>
                       <span
                         className={`sap-badge ${item.status === "completed"
-                            ? "success"
-                            : item.status === "in_progress"
-                              ? "info"
-                              : item.status === "dropped"
-                                ? "error"
-                                : item.status === "on_hold"
-                                  ? "warning"
-                                  : ""
+                          ? "success"
+                          : item.status === "in_progress"
+                            ? "info"
+                            : item.status === "dropped"
+                              ? "error"
+                              : item.status === "on_hold"
+                                ? "warning"
+                                : ""
                           }`}
                         style={{
                           fontSize: "11px",

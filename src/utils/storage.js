@@ -845,43 +845,58 @@ export const changePassword = (userId, currentPassword, newPassword) => {
   return { success: true, message: "Password changed successfully" };
 };
 
-export const saveImageBlob = async (id, blob) => {
-  return await idbSetItem(`image_blob_${id}`, blob);
+export const saveImageBlob = async (userId, id, blob) => {
+  const key = `sap_user_images_${userId}`;
+
+  const images = (await idbGetItem(key)) || [];
+  const index = images.findIndex((img) => img.id === id);
+
+  if (index >= 0) {
+    images[index].blob = blob;
+  } else {
+    images.push({
+      id,
+      blob,
+    });
+  }
+  await idbSetItem(key, images);
 };
 
-
-export const getImageBlob = async (id) => {
-  return await idbGetItem(`image_blob_${id}`);
+export const getImageBlob = async (userId, id) => {
+  const key = `sap_user_images_${userId}`;
+  const images = (await idbGetItem(key)) || [];
+  return images.find((img) => img.id === id)?.blob || null;
 };
 
-
-export const deleteImageBlob = async (id) => {
-  return await idbRemoveItem(`image_blob_${id}`);
+export const deleteImageBlob = async (userId, id) => {
+  const key = `sap_user_images_${userId}`;
+  const images = (await idbGetItem(key)) || [];
+  const filtered = images.filter((img) => img.id !== id);
+  await idbSetItem(key, filtered);
 };
 
 export const loadUserAvatar = async (avatar) => {
-
   if (avatar?.style === "custom" && avatar.imageId) {
-
     const blob = await getImageBlob(avatar.imageId);
 
     if (!blob) {
       return {
-        style: "cyber"
+        style: "cyber",
       };
     }
 
     return {
       style: "custom",
       image: URL.createObjectURL(blob),
-      imageId: avatar.imageId
+      imageId: avatar.imageId,
     };
   }
 
-
-  return avatar || {
-    style: "cyber"
-  };
+  return (
+    avatar || {
+      style: "cyber",
+    }
+  );
 };
 
 // ========== FAVORITES ==========

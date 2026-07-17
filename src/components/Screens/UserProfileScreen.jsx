@@ -17,7 +17,8 @@ import {
   // saveAvatarBlob,
   // getAvatarBlob,
   saveImageBlob,
-  getImageBlob
+  getImageBlob,
+  deleteImageBlob
 } from "../../utils/storage";
 
 const UserProfileScreen = () => {
@@ -124,12 +125,14 @@ const UserProfileScreen = () => {
       // delete previous avatar image
       if (oldAvatar?.imageId) {
         await deleteImageBlob(
+          user?.userid,
           oldAvatar.imageId
         );
       }
 
       const imageId = crypto.randomUUID();
       await saveImageBlob(
+        user?.userid,
         imageId,
         avatar.blob
       );
