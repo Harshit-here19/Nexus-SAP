@@ -845,67 +845,43 @@ export const changePassword = (userId, currentPassword, newPassword) => {
   return { success: true, message: "Password changed successfully" };
 };
 
-export const saveAvatarBlob = async (id, blob) => {
-  return await idbSetItem(`avatar_blob_${id}`, blob);
+export const saveImageBlob = async (id, blob) => {
+  return await idbSetItem(`image_blob_${id}`, blob);
 };
 
-export const getAvatarBlob = async (id) => {
-  return await idbGetItem(`avatar_blob_${id}`);
+
+export const getImageBlob = async (id) => {
+  return await idbGetItem(`image_blob_${id}`);
 };
 
-export const saveImageBlob = (id, blob) => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onsuccess = () => {
-      const db = request.result;
-      const tx = db.transaction("images", "readwrite");
-      tx.objectStore("images").put(blob, id);
-      tx.oncomplete = resolve;
-      tx.onerror = reject;
-    };
-  });
-};
 
-export const getImageBlob = (id) => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onsuccess = () => {
-      const db = request.result;
-      const tx = db.transaction("images", "readonly");
-      const req = tx.objectStore("images").get(id);
-
-      req.onsuccess = () => {
-        resolve(req.result);
-      };
-
-      req.onerror = reject;
-    };
-  });
+export const deleteImageBlob = async (id) => {
+  return await idbRemoveItem(`image_blob_${id}`);
 };
 
 export const loadUserAvatar = async (avatar) => {
+
   if (avatar?.style === "custom" && avatar.imageId) {
-    const blob = await getAvatarBlob(avatar.imageId);
+
+    const blob = await getImageBlob(avatar.imageId);
 
     if (!blob) {
       return {
-        style: "cyber",
+        style: "cyber"
       };
     }
 
     return {
       style: "custom",
       image: URL.createObjectURL(blob),
-      imageId: avatar.imageId,
+      imageId: avatar.imageId
     };
   }
 
-  return (
-    avatar || {
-      style: "cyber",
-    }
-  );
+
+  return avatar || {
+    style: "cyber"
+  };
 };
 
 // ========== FAVORITES ==========

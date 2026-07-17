@@ -236,9 +236,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           const imageId = crypto.randomUUID();
 
           await saveImageBlob(imageId, blob);
-
           handleChange("imageId", imageId);
-
           handleChange("imageUrl", "");
 
           updateStatus("Cover image processed successfully", "success");

@@ -41,7 +41,7 @@ const UserProfileDropdown = () => {
     };
 
     loadAvatar();
-  }, [user]);
+  }, [user, settings]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

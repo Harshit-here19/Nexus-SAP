@@ -14,8 +14,10 @@ import {
   getUsers,
   updateUserProfile,
   changePassword,
-  saveAvatarBlob,
-  getAvatarBlob,
+  // saveAvatarBlob,
+  // getAvatarBlob,
+  saveImageBlob,
+  getImageBlob
 } from "../../utils/storage";
 
 const UserProfileScreen = () => {
@@ -110,29 +112,45 @@ const UserProfileScreen = () => {
   }, [user?.userId]);
 
   const handleAvatarChange = async (avatar) => {
+
     let savedAvatar = {
-      style: avatar.style,
+      style: avatar.style
     };
 
-    if (avatar.style === "custom" && avatar.blob) {
-      const imageId = crypto.randomUUID();
 
-      await saveAvatarBlob(imageId, avatar.blob);
+    if (avatar.style === "custom" && avatar.blob) {
+      const oldAvatar = profileData.avatar;
+
+      // delete previous avatar image
+      if (oldAvatar?.imageId) {
+        await deleteImageBlob(
+          oldAvatar.imageId
+        );
+      }
+
+      const imageId = crypto.randomUUID();
+      await saveImageBlob(
+        imageId,
+        avatar.blob
+      );
 
       savedAvatar = {
         style: "custom",
-        imageId,
+        imageId
       };
     }
 
-    setProfileData((prev) => ({
+    setProfileData(prev => ({
       ...prev,
-      avatar: savedAvatar,
+      avatar: savedAvatar
     }));
 
     markAsChanged();
 
-    updateStatus("Avatar updated successfully", "success");
+    updateStatus(
+      "Avatar updated successfully",
+      "success"
+    );
   };
 
   // Handle profile field change
