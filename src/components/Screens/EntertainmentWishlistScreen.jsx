@@ -225,7 +225,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
 
       const imageId = crypto.randomUUID();
 
-      await saveImageBlob(user?.userid,imageId, blob);
+      await saveImageBlob(user?.userId,imageId, blob);
 
       handleChange("imageId", imageId);
       handleChange("imageUrl", "");
@@ -300,7 +300,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       let loadedItem = { ...item };
 
       if (item.imageId) {
-        const blob = await getImageBlob(user?.userid,item.imageId);
+        const blob = await getImageBlob(user?.userId,item.imageId);
 
         loadedItem.imageUrl =
           URL.createObjectURL(blob);

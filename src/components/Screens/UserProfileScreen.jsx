@@ -14,8 +14,6 @@ import {
   getUsers,
   updateUserProfile,
   changePassword,
-  // saveAvatarBlob,
-  // getAvatarBlob,
   saveImageBlob,
   getImageBlob,
   deleteImageBlob
@@ -56,7 +54,7 @@ const UserProfileScreen = () => {
 
   const loadAvatar = async (avatar) => {
     if (avatar?.style === "custom" && avatar.imageId) {
-      const blob = await getAvatarBlob(avatar.imageId);
+      const blob = await getImageBlob(user?.userId,avatar.imageId);
 
       if (!blob) {
         return {
@@ -125,14 +123,14 @@ const UserProfileScreen = () => {
       // delete previous avatar image
       if (oldAvatar?.imageId) {
         await deleteImageBlob(
-          user?.userid,
+          user?.userId,
           oldAvatar.imageId
         );
       }
 
       const imageId = crypto.randomUUID();
       await saveImageBlob(
-        user?.userid,
+        user?.userId,
         imageId,
         avatar.blob
       );
