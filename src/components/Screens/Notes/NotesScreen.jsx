@@ -1,16 +1,12 @@
 // src/components/Screens/Notes/NotesScreen.jsx
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import SapButton from "../../Common/SapButton";
-import SapInput from "../../Common/SapInput";
-import SapTabs from "../../Common/SapTabs";
 import { useTransaction } from "../../../context/TransactionContext";
 import { useAuth } from "../../../context/AuthContext";
 import { useAction } from "../../../context/ActionContext";
 import { useConfirm } from "../../../context/ConfirmContext";
 import { useSettings } from "../../../context/SettingsContext";
 import { getTableData, getAllData, saveAllData } from "../../../utils/storage";
-import { parseMarkdown } from "../../Common/MarkdownPreview";
 
 // Components
 import NotesEditor from "./NotesEditor";
@@ -37,7 +33,11 @@ import {
 
 import { generateNextNumber } from "../../../utils/storage";
 
+import SapButton from "../../Common/SapButton";
+import SapInput from "../../Common/SapInput";
+import SapTabs from "../../Common/SapTabs";
 import SapModal from "../../Common/SapModal";
+import { parseMarkdown } from "../../Common/MarkdownPreview";
 import Autocomplete from "../../Common/Autocomplete";
 
 import "./NotesStyles.css";

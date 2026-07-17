@@ -819,12 +819,14 @@ const DashboardScreen = () => {
 
         {/* Monthly Trend */}
         {stats?.monthlyTrend?.length > 0 ? (
-          <SpendingBarChart
-            data={stats.monthlyTrend}
-            title={<>📈 {t("dashboard.monthlyTrend")}</>}
-            subtitle={t("dashboard.lastSixMonths")}
-            formatCurrency={formatCurrency}
-          />
+          <Screenshotable filename="bar-chart.png">
+            <SpendingBarChart
+              data={stats.monthlyTrend}
+              title={<>📈 {t("dashboard.monthlyTrend")}</>}
+              subtitle={t("dashboard.lastSixMonths")}
+              formatCurrency={formatCurrency}
+            />
+          </Screenshotable>
         ) : (
           <div
             style={{
@@ -1092,13 +1094,15 @@ const DashboardScreen = () => {
         </div>
       </div>
 
-      <SpendingLineChart
-        data={lineData}
-        title="Spending Trend"
-        range={lineRange}
-        setRange={setLineRange}
-        height={window.innerWidth < 600 ? 360 : 300}
-      />
+      <Screenshotable filename="line-chart.png">
+        <SpendingLineChart
+          data={lineData}
+          title="Spending Trend"
+          range={lineRange}
+          setRange={setLineRange}
+          height={window.innerWidth < 600 ? 360 : 300}
+        />
+      </Screenshotable>
 
       {/* Admin Section */}
       {checkIsAdmin() && (

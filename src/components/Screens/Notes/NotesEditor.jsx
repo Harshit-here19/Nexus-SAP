@@ -3,7 +3,9 @@
 import { forwardRef, useState, useEffect, useRef } from "react";
 import styles from "./NotesEditor.module.css";
 import NotesVerticalToolbar from "./NotesVerticalToolbar";
+
 import MarkdownPreview from "../../Common/MarkdownPreview";
+import Screenshotable from "../../Common/Screenshotable";
 
 const isMobile = window.innerWidth <= 768;
 
@@ -22,7 +24,7 @@ const NotesEditor = forwardRef(
       loadDemoNote,
       mode,
       codeTheme,
-      tableTheme
+      tableTheme,
     },
     ref,
   ) => {
@@ -34,22 +36,23 @@ const NotesEditor = forwardRef(
     const summaryRef = useRef(null);
     const titleInputRef = useRef(null);
 
-
     // Check if title and summary are valid
     const isTitleValid = formData.title && formData.title.trim().length >= 3;
-    const isSummaryValid = formData.summary && formData.summary.trim().length >= 10;
-    const canProceed = isTitleValid && isSummaryValid && !errors.title && !errors.summary;
+    const isSummaryValid =
+      formData.summary && formData.summary.trim().length >= 10;
+    const canProceed =
+      isTitleValid && isSummaryValid && !errors.title && !errors.summary;
 
     // Auto-focus title input on mount in create mode
     useEffect(() => {
-      if (mode === 'create' && titleInputRef.current && !hasProceeded) {
+      if (mode === "create" && titleInputRef.current && !hasProceeded) {
         titleInputRef.current.focus();
       }
     }, [mode, hasProceeded]);
 
     // If in edit/view mode with existing content, show content directly
     useEffect(() => {
-      if (mode !== 'create' && formData.content) {
+      if (mode !== "create" && formData.content) {
         setHasProceeded(true);
       }
     }, [mode, formData.content]);
@@ -59,7 +62,7 @@ const NotesEditor = forwardRef(
       const handleKeyDown = (event) => {
         if (event.ctrlKey && event.code === "Space") {
           event.preventDefault();
-          onShowPreviewChange(prev => !prev);
+          onShowPreviewChange((prev) => !prev);
         }
       };
 
@@ -98,7 +101,7 @@ const NotesEditor = forwardRef(
 
     // Handle Enter key to proceed
     const handleKeyPress = (e) => {
-      if (e.key === 'Enter' && canProceed && !hasProceeded) {
+      if (e.key === "Enter" && canProceed && !hasProceeded) {
         e.preventDefault();
         handleProceed();
       }
@@ -128,52 +131,56 @@ const NotesEditor = forwardRef(
 
     // Render the initial step (Title + Summary)
     const renderInitialStep = () => (
-      <div className={`${styles['notes-initial-step']} ${isTransitioning ? styles['fade-out'] : styles['fade-in']}`}>
+      <div
+        className={`${styles["notes-initial-step"]} ${isTransitioning ? styles["fade-out"] : styles["fade-in"]}`}
+      >
         {/* Hero Section */}
-        <div className={styles['notes-hero-section']}>
-          <div className={styles['notes-hero-icon']}>
-            {mode === 'create' ? '✨' : '📝'}
+        <div className={styles["notes-hero-section"]}>
+          <div className={styles["notes-hero-icon"]}>
+            {mode === "create" ? "✨" : "📝"}
           </div>
           <div>
-            <h2 className={styles['notes-hero-title']}>
-              {mode === 'create' ? 'Create a New Note' : 'Edit Note Details'}
+            <h2 className={styles["notes-hero-title"]}>
+              {mode === "create" ? "Create a New Note" : "Edit Note Details"}
             </h2>
-            <p className={styles['notes-hero-subtitle']}>
+            <p className={styles["notes-hero-subtitle"]}>
               Start by giving your note a title and brief summary
             </p>
           </div>
         </div>
 
         {/* Form Card */}
-        <div className={styles['notes-form-card']}>
+        <div className={styles["notes-form-card"]}>
           {/* Title Field */}
-          <div className={styles['notes-field-group']}>
-            <label className={styles['notes-field-label']}>
-              <span className={styles['field-icon']}>📌</span>
+          <div className={styles["notes-field-group"]}>
+            <label className={styles["notes-field-label"]}>
+              <span className={styles["field-icon"]}>📌</span>
               Note Title
-              <span className={styles['field-required']}>*</span>
+              <span className={styles["field-required"]}>*</span>
             </label>
-            <div className={styles['notes-field-wrapper']}>
+            <div className={styles["notes-field-wrapper"]}>
               <input
                 ref={titleInputRef}
                 type="text"
-                value={formData.title || ''}
+                value={formData.title || ""}
                 onChange={(e) => onTitleChange(e.target.value)}
                 onKeyPress={handleKeyPress}
                 disabled={isReadOnly}
                 placeholder="Enter a descriptive title..."
-                className={`${styles['notes-field-input']} ${errors.title ? styles['has-error'] : ''} ${isTitleValid ? styles['is-valid'] : ''}`}
+                className={`${styles["notes-field-input"]} ${errors.title ? styles["has-error"] : ""} ${isTitleValid ? styles["is-valid"] : ""}`}
                 maxLength={100}
               />
               {isTitleValid && (
-                <span className={styles['field-valid-icon']}>✓</span>
+                <span className={styles["field-valid-icon"]}>✓</span>
               )}
             </div>
-            <div className={styles['notes-field-footer']}>
+            <div className={styles["notes-field-footer"]}>
               {errors.title ? (
-                <span className={styles['notes-field-error']}>{errors.title}</span>
+                <span className={styles["notes-field-error"]}>
+                  {errors.title}
+                </span>
               ) : (
-                <span className={styles['notes-field-hint']}>
+                <span className={styles["notes-field-hint"]}>
                   {formData.title?.length || 0}/100 characters (min 3)
                 </span>
               )}
@@ -181,39 +188,41 @@ const NotesEditor = forwardRef(
           </div>
 
           {/* Summary Field */}
-          <div className={styles['notes-field-group']}>
-            <label className={styles['notes-field-label']}>
-              <span className={styles['field-icon']}>📋</span>
+          <div className={styles["notes-field-group"]}>
+            <label className={styles["notes-field-label"]}>
+              <span className={styles["field-icon"]}>📋</span>
               Summary
-              <span className={styles['field-required']}>*</span>
+              <span className={styles["field-required"]}>*</span>
             </label>
-            <div className={styles['notes-field-wrapper']}>
+            <div className={styles["notes-field-wrapper"]}>
               <textarea
                 ref={summaryRef}
-                value={formData.summary || ''}
+                value={formData.summary || ""}
                 onChange={(e) => onSummaryChange(e.target.value)}
                 onKeyPress={(e) => {
                   // Allow Enter for new lines, but Ctrl+Enter to proceed
-                  if (e.key === 'Enter' && e.ctrlKey && canProceed) {
+                  if (e.key === "Enter" && e.ctrlKey && canProceed) {
                     e.preventDefault();
                     handleProceed();
                   }
                 }}
                 disabled={isReadOnly}
                 placeholder="Write a brief summary of what this note is about..."
-                className={`${styles['notes-field-textarea']} ${errors.summary ? styles['has-error'] : ''} ${isSummaryValid ? styles['is-valid'] : ''}`}
+                className={`${styles["notes-field-textarea"]} ${errors.summary ? styles["has-error"] : ""} ${isSummaryValid ? styles["is-valid"] : ""}`}
                 rows={3}
                 maxLength={300}
               />
               {isSummaryValid && (
-                <span className={styles['field-valid-icon']}>✓</span>
+                <span className={styles["field-valid-icon"]}>✓</span>
               )}
             </div>
-            <div className={styles['notes-field-footer']}>
+            <div className={styles["notes-field-footer"]}>
               {errors.summary ? (
-                <span className={styles['notes-field-error']}>{errors.summary}</span>
+                <span className={styles["notes-field-error"]}>
+                  {errors.summary}
+                </span>
               ) : (
-                <span className={styles['notes-field-hint']}>
+                <span className={styles["notes-field-hint"]}>
                   {formData.summary?.length || 0}/300 characters (min 10)
                 </span>
               )}
@@ -221,32 +230,29 @@ const NotesEditor = forwardRef(
           </div>
 
           {/* Action Buttons */}
-          <div className={styles['notes-form-actions']}>
+          <div className={styles["notes-form-actions"]}>
             <button
               type="button"
               onClick={handleProceed}
               disabled={!canProceed || isReadOnly}
-              className={`${styles['notes-proceed-button']} ${canProceed ? styles['active'] : ''}`}
+              className={`${styles["notes-proceed-button"]} ${canProceed ? styles["active"] : ""}`}
             >
-              <span className={styles['button-text']}>
-                Continue to Write
-              </span>
-              <span className={styles['button-icon']}>→</span>
+              <span className={styles["button-text"]}>Continue to Write</span>
+              <span className={styles["button-icon"]}>→</span>
             </button>
 
             {!canProceed && (
-              <p className={styles['notes-proceed-hint']}>
+              <p className={styles["notes-proceed-hint"]}>
                 {!isTitleValid && !isSummaryValid
-                  ? 'Please enter both title and summary to continue'
+                  ? "Please enter both title and summary to continue"
                   : !isTitleValid
-                    ? 'Title must be at least 3 characters'
-                    : 'Summary must be at least 10 characters'
-                }
+                    ? "Title must be at least 3 characters"
+                    : "Summary must be at least 10 characters"}
               </p>
             )}
 
             {canProceed && (
-              <p className={styles['notes-proceed-hint']}>
+              <p className={styles["notes-proceed-hint"]}>
                 <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to continue
               </p>
             )}
@@ -254,9 +260,9 @@ const NotesEditor = forwardRef(
         </div>
 
         {/* Tips Section */}
-        <div className={styles['notes-tips-section']}>
-          <h4 className={styles['tips-title']}>💡 Writing Tips</h4>
-          <ul className={styles['tips-list']}>
+        <div className={styles["notes-tips-section"]}>
+          <h4 className={styles["tips-title"]}>💡 Writing Tips</h4>
+          <ul className={styles["tips-list"]}>
             <li>Use a clear, descriptive title that reflects the content</li>
             <li>Keep the summary concise - it helps you find notes later</li>
             <li>You can use Markdown formatting in the content area</li>
@@ -267,28 +273,27 @@ const NotesEditor = forwardRef(
 
     // Render the content step (Editor)
     const renderContentStep = () => (
-      <div className={`${styles['notes-content-step']} ${isTransitioning ? styles['fade-out'] : styles['fade-in']}`}>
-
+      <div
+        className={`${styles["notes-content-step"]} ${isTransitioning ? styles["fade-out"] : styles["fade-in"]}`}
+      >
         {/* Header with Title & Summary Preview */}
-        <div className={styles['notes-content-header-bar']}>
-          {!(mode === "display") && <button
-            type="button"
-            onClick={handleGoBack}
-            className={styles['notes-back-button']}
-            disabled={isReadOnly}
-            title="Edit title & summary"
-          >
-            <span className={styles['back-icon']}>←</span>
-            <span className={styles['back-text']}>Edit Details</span>
-          </button>}
+        <div className={styles["notes-content-header-bar"]}>
+          {!(mode === "display") && (
+            <button
+              type="button"
+              onClick={handleGoBack}
+              className={styles["notes-back-button"]}
+              disabled={isReadOnly}
+              title="Edit title & summary"
+            >
+              <span className={styles["back-icon"]}>←</span>
+              <span className={styles["back-text"]}>Edit Details</span>
+            </button>
+          )}
 
-          <div className={styles['notes-header-info']}>
-            <h3 className={styles['notes-header-title']}>
-              {formData.title}
-            </h3>
-            <p className={styles['notes-header-summary']}>
-              {formData.summary}
-            </p>
+          <div className={styles["notes-header-info"]}>
+            <h3 className={styles["notes-header-title"]}>{formData.title}</h3>
+            <p className={styles["notes-header-summary"]}>{formData.summary}</p>
           </div>
 
           {mode === "create" && !formData.content && (
@@ -305,7 +310,7 @@ const NotesEditor = forwardRef(
         <div className={styles["notes-content-section"]}>
           <div className={styles["notes-content-header"]}>
             <label className={styles["notes-content-label"]}>
-              <span className={styles['content-icon']}>📝</span>
+              <span className={styles["content-icon"]}>📝</span>
               Content
               {!isReadOnly && (
                 <span className={styles["notes-content-hint"]}>
@@ -315,15 +320,23 @@ const NotesEditor = forwardRef(
             </label>
           </div>
 
-          <div className={styles['notes-editor-layout']} style={{ flexDirection: isMobile ? "column-reverse" : "row" }}>
+          <div
+            className={styles["notes-editor-layout"]}
+            style={{ flexDirection: isMobile ? "column-reverse" : "row" }}
+          >
             <div className={styles["notes-editor-wrapper"]}>
               <div className={styles["notes-editor-inner"]}>
                 {showPreview || isReadOnly ? (
-                  <div className={styles["notes-preview-wrapper"]}>
-                    <MarkdownPreview codeTheme={codeTheme} tableTheme={tableTheme}>
-                      {formData.content}
-                    </MarkdownPreview>
-                  </div>
+                  <Screenshotable fliename={formdata?.title ? `${formdata?.title}.png` : "notes.png"}>
+                    <div className={styles["notes-preview-wrapper"]}>
+                      <MarkdownPreview
+                        codeTheme={codeTheme}
+                        tableTheme={tableTheme}
+                      >
+                        {formData.content}
+                      </MarkdownPreview>
+                    </div>
+                  </Screenshotable>
                 ) : (
                   <div className={styles["notes-textarea-wrapper"]}>
                     <textarea
@@ -331,8 +344,7 @@ const NotesEditor = forwardRef(
                       value={formData.content}
                       onChange={(e) => onContentChange(e.target.value)}
                       disabled={isReadOnly}
-                      placeholder={
-                        `Start writing your note...
+                      placeholder={`Start writing your note...
 📝 Formatting tips:
 ──────────────────
 • **bold** or *italic* or __underline__
@@ -349,24 +361,25 @@ const NotesEditor = forwardRef(
                     />
 
                     {/* Keyboard Shortcuts Hint */}
-                    {!isMobile && <div className={styles["notes-shortcuts-hint"]}>
-                      <span className={styles["shortcut-item"]}>
-                        <kbd>Ctrl</kbd> + <kbd>B</kbd> Bold
-                      </span>
-                      <span className={styles["shortcut-item"]}>
-                        <kbd>Ctrl</kbd> + <kbd>I</kbd> Italic
-                      </span>
-                      <span className={styles["shortcut-item"]}>
-                        <kbd>Ctrl</kbd> + <kbd>U</kbd> Underline
-                      </span>
-                    </div>}
+                    {!isMobile && (
+                      <div className={styles["notes-shortcuts-hint"]}>
+                        <span className={styles["shortcut-item"]}>
+                          <kbd>Ctrl</kbd> + <kbd>B</kbd> Bold
+                        </span>
+                        <span className={styles["shortcut-item"]}>
+                          <kbd>Ctrl</kbd> + <kbd>I</kbd> Italic
+                        </span>
+                        <span className={styles["shortcut-item"]}>
+                          <kbd>Ctrl</kbd> + <kbd>U</kbd> Underline
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
               {/* Stats Footer */}
               {StatFooter(isMobile, formData)}
-
             </div>
 
             {/* Vertical Toolbar */}
@@ -389,16 +402,22 @@ const NotesEditor = forwardRef(
     return (
       <div className={styles["notes-editor-container"]}>
         {/* Progress Indicator */}
-        <div className={styles['notes-progress']}>
-          <div className={styles['progress-steps']}>
-            <div className={`${styles['progress-step']} ${styles['completed']}`}>
-              <span className={styles['step-number']}>1</span>
-              <span className={styles['step-label']}>Details</span>
+        <div className={styles["notes-progress"]}>
+          <div className={styles["progress-steps"]}>
+            <div
+              className={`${styles["progress-step"]} ${styles["completed"]}`}
+            >
+              <span className={styles["step-number"]}>1</span>
+              <span className={styles["step-label"]}>Details</span>
             </div>
-            <div className={`${styles['progress-line']} ${hasProceeded ? styles['active'] : ''}`} />
-            <div className={`${styles['progress-step']} ${hasProceeded ? styles['active'] : ''}`}>
-              <span className={styles['step-number']}>2</span>
-              <span className={styles['step-label']}>Content</span>
+            <div
+              className={`${styles["progress-line"]} ${hasProceeded ? styles["active"] : ""}`}
+            />
+            <div
+              className={`${styles["progress-step"]} ${hasProceeded ? styles["active"] : ""}`}
+            >
+              <span className={styles["step-number"]}>2</span>
+              <span className={styles["step-label"]}>Content</span>
             </div>
           </div>
         </div>
@@ -416,87 +435,93 @@ export default NotesEditor;
 
 const StatFooter = (mobile, formData) => {
   if (!isMobile) {
-    return (<div className={styles["notes-stats-footer"]}>
-      <div className={styles["notes-stats"]}>
-        <span className={styles["notes-stats-item"]}>
-          <span className={styles["stats-icon"]}>📝</span>
-          <span className={styles["stats-value"]}>
-            {formData.wordCount || 0}
+    return (
+      <div className={styles["notes-stats-footer"]}>
+        <div className={styles["notes-stats"]}>
+          <span className={styles["notes-stats-item"]}>
+            <span className={styles["stats-icon"]}>📝</span>
+            <span className={styles["stats-value"]}>
+              {formData.wordCount || 0}
+            </span>
+            <span className={styles["stats-label"]}>words</span>
           </span>
-          <span className={styles["stats-label"]}>words</span>
-        </span>
-        <span className={styles["notes-stats-divider"]}>•</span>
-        <span className={styles["notes-stats-item"]}>
-          <span className={styles["stats-icon"]}>🔤</span>
-          <span className={styles["stats-value"]}>
-            {formData.charCount || 0}
+          <span className={styles["notes-stats-divider"]}>•</span>
+          <span className={styles["notes-stats-item"]}>
+            <span className={styles["stats-icon"]}>🔤</span>
+            <span className={styles["stats-value"]}>
+              {formData.charCount || 0}
+            </span>
+            <span className={styles["stats-label"]}>characters</span>
           </span>
-          <span className={styles["stats-label"]}>characters</span>
-        </span>
-        <span className={styles["notes-stats-divider"]}>•</span>
-        <span className={styles["notes-stats-item"]}>
-          <span className={styles["stats-icon"]}>📄</span>
-          <span className={styles["stats-value"]}>
-            {formData.content
-              ? Math.ceil(formData.content.split("\n").length / 10)
-              : 0}
+          <span className={styles["notes-stats-divider"]}>•</span>
+          <span className={styles["notes-stats-item"]}>
+            <span className={styles["stats-icon"]}>📄</span>
+            <span className={styles["stats-value"]}>
+              {formData.content
+                ? Math.ceil(formData.content.split("\n").length / 10)
+                : 0}
+            </span>
+            <span className={styles["stats-label"]}>pages</span>
           </span>
-          <span className={styles["stats-label"]}>pages</span>
-        </span>
+        </div>
       </div>
-    </div>)
+    );
   } else {
-    return (<div
-      className={styles["notes-stats-footer"]}
-      style={{
-        marginTop: '12px',
-        padding: '8px 4px',
-        borderTop: '1px solid var(--notes-border, #30363d)',
-      }}
-    >
+    return (
       <div
-        className={styles["notes-stats"]}
+        className={styles["notes-stats-footer"]}
         style={{
-          display: 'flex',
-          flexWrap: 'wrap',   // Essential for mobile screens
-          gap: '12px',        // Spacing between items
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          fontSize: '12px',   // Smaller font for mobile
-          color: 'var(--notes-text-secondary, #8b949e)',
+          marginTop: "12px",
+          padding: "8px 4px",
+          borderTop: "1px solid var(--notes-border, #30363d)",
         }}
       >
-        {/* Word Count Item */}
-        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span>📝</span>
-          <strong style={{ color: 'var(--notes-text, #c9d1d9)' }}>
-            {formData.wordCount || 0}
-          </strong>
-          <span>words</span>
-        </span>
+        <div
+          className={styles["notes-stats"]}
+          style={{
+            display: "flex",
+            flexWrap: "wrap", // Essential for mobile screens
+            gap: "12px", // Spacing between items
+            alignItems: "center",
+            justifyContent: "flex-start",
+            fontSize: "12px", // Smaller font for mobile
+            color: "var(--notes-text-secondary, #8b949e)",
+          }}
+        >
+          {/* Word Count Item */}
+          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <span>📝</span>
+            <strong style={{ color: "var(--notes-text, #c9d1d9)" }}>
+              {formData.wordCount || 0}
+            </strong>
+            <span>words</span>
+          </span>
 
-        <span style={{ opacity: 0.3 }}>•</span>
+          <span style={{ opacity: 0.3 }}>•</span>
 
-        {/* Char Count Item */}
-        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span>🔤</span>
-          <strong style={{ color: 'var(--notes-text, #c9d1d9)' }}>
-            {formData.charCount || 0}
-          </strong>
-          <span>chars</span>
-        </span>
+          {/* Char Count Item */}
+          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <span>🔤</span>
+            <strong style={{ color: "var(--notes-text, #c9d1d9)" }}>
+              {formData.charCount || 0}
+            </strong>
+            <span>chars</span>
+          </span>
 
-        <span style={{ opacity: 0.3 }}>•</span>
+          <span style={{ opacity: 0.3 }}>•</span>
 
-        {/* Pages Item */}
-        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span>📄</span>
-          <strong style={{ color: 'var(--notes-text, #c9d1d9)' }}>
-            {formData.content ? Math.ceil(formData.content.split("\n").length / 10) : 0}
-          </strong>
-          <span>pages</span>
-        </span>
+          {/* Pages Item */}
+          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <span>📄</span>
+            <strong style={{ color: "var(--notes-text, #c9d1d9)" }}>
+              {formData.content
+                ? Math.ceil(formData.content.split("\n").length / 10)
+                : 0}
+            </strong>
+            <span>pages</span>
+          </span>
+        </div>
       </div>
-    </div>)
+    );
   }
-}
+};

@@ -6,6 +6,7 @@ import {
 
 const Screenshotable = ({ children, filename = "capture.png" }) => {
   const captureRef = useRef(null);
+  const longPressTimer = useRef(null);
 
   const [menu, setMenu] = useState({
     visible: false,
@@ -23,6 +24,27 @@ const Screenshotable = ({ children, filename = "capture.png" }) => {
     });
   };
 
+  const LONG_PRESS_DURATION = 600;
+
+  const startLongPress = (e) => {
+    const touch = e.touches[0];
+
+    longPressTimer.current = setTimeout(() => {
+      if (navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+      setMenu({
+        visible: true,
+        x: touch.clientX,
+        y: touch.clientY,
+      });
+    }, LONG_PRESS_DURATION);
+  };
+
+  const cancelLongPress = () => {
+    clearTimeout(longPressTimer.current);
+  };
+
   useEffect(() => {
     const hide = () =>
       setMenu((m) => ({
@@ -37,7 +59,18 @@ const Screenshotable = ({ children, filename = "capture.png" }) => {
 
   return (
     <>
-      <div ref={captureRef} onContextMenu={handleContextMenu}>
+      <div
+        ref={captureRef}
+        onContextMenu={handleContextMenu}
+        onTouchStart={startLongPress}
+        onTouchEnd={cancelLongPress}
+        onTouchMove={cancelLongPress}
+        onTouchCancel={cancelLongPress}
+        style={{
+          WebkitTouchCallout: "none",
+          userSelect: "none",
+        }}
+      >
         {children}
       </div>
 
