@@ -1,0 +1,90 @@
+/* Extracted tree-menu classes from src/styles/sap-theme.css */
+
+/* .sap-sidebar.collapsed .sap-tree-item span,
+.sap-sidebar.collapsed .sap-tree-header {
+	display: none;
+} */
+
+.sap-tree {
+	padding: 8px;
+}
+
+.sap-tree-header {
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--sap-text-secondary);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding: 6px 10px;
+	margin-bottom: 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sap-tree-item {
+	display: flex;
+	align-items: center;
+	padding: 6px 10px;
+	cursor: pointer;
+	user-select: none;
+	border-radius: 4px;
+	margin-bottom: 1px;
+	transition: all 0.15s;
+	font-size: 12px;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.sap-tree-item:hover {
+	background: var(--sap-highlight);
+}
+
+.sap-tree-item.selected {
+	background: var(--sap-brand);
+	color: white;
+}
+
+.sap-tree-toggle {
+	width: 16px;
+	height: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-right: 4px;
+	font-size: 9px;
+	color: var(--sap-text-secondary);
+	flex-shrink: 0;
+}
+
+.sap-tree-icon {
+	margin-right: 8px;
+	font-size: 14px;
+	flex-shrink: 0;
+}
+
+.sap-tree-children {
+	margin-left: 10px;
+}
+
+/* Dark theme variants */
+[data-theme="dark"] .sap-sidebar-header,
+[data-theme="dark"] .sap-tree-header {
+	color: #b0b0b0;
+	border-bottom: 1px solid #2a2a4a;
+}
+
+[data-theme="dark"] .sap-tree-item {
+	color: #d0d0d0;
+}
+
+[data-theme="dark"] .sap-tree-item:hover {
+	background: #2a2a4a;
+	color: #eaeaea;
+}
+
+[data-theme="dark"] .sap-tree-item.selected {
+	background: #0a6ed1;
+	color: #ffffff;
+}
+

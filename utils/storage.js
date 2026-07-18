@@ -1,0 +1,1377 @@
+// src/utils/storage.js
+
+// ========== INDEXEDDB SETUP ==========
+
+const DB_NAME = "nexus_db";
+const DB_VERSION = 2;
+const STORE_NAME = "keyvalue";
+
+// In-memory cache to allow synchronous reads after initial load
+let dbInstance = null;
+let memoryCache = {};
+let dbReady = false;
+let dbReadyCallbacks = [];
+
+// Open (or create) the IndexedDB database
+const openDB = () => {
+  return new Promise((resolve, reject) => {
+    if (dbInstance) {
+      resolve(dbInstance);
+      return;
+    }
+
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+
+      if (!db.objectStoreNames.contains("images")) {
+        db.createObjectStore("images");
+      }
+    };
+
+    request.onsuccess = (event) => {
+      dbInstance = event.target.result;
+      resolve(dbInstance);
+    };
+
+    request.onerror = (event) => {
+      console.error("IndexedDB open error:", event.target.error);
+      reject(event.target.error);
+    };
+  });
+};
+
+// Write a key-value pair to IndexedDB and update cache
+export const idbSetItem = async (key, value) => {
+  memoryCache[key] = value;
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.put(value, key);
+      request.onsuccess = () => resolve(true);
+      request.onerror = (e) => reject(e.target.error);
+    });
+  } catch (error) {
+    console.error("idbSetItem error:", error);
+    return false;
+  }
+};
+
+// Read a value from IndexedDB (falls back to cache if available)
+export const idbGetItem = async (key) => {
+  if (memoryCache.hasOwnProperty(key)) {
+    return memoryCache[key];
+  }
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.get(key);
+      request.onsuccess = (e) => {
+        const val = e.target.result !== undefined ? e.target.result : null;
+        memoryCache[key] = val;
+        resolve(val);
+      };
+      request.onerror = (e) => reject(e.target.error);
+    });
+  } catch (error) {
+    console.error("idbGetItem error:", error);
+    return null;
+  }
+};
+
+// Delete a key from IndexedDB and cache
+const idbRemoveItem = async (key) => {
+  delete memoryCache[key];
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.delete(key);
+      request.onsuccess = () => resolve(true);
+      request.onerror = (e) => reject(e.target.error);
+    });
+  } catch (error) {
+    console.error("idbRemoveItem error:", error);
+    return false;
+  }
+};
+
+// Load ALL keys from IndexedDB into memory cache (called once on startup)
+const loadAllKeysIntoCache = async () => {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const store = tx.objectStore(STORE_NAME);
+      const keys = [];
+      const values = [];
+
+      // Collect all keys
+      const keyRequest = store.getAllKeys();
+      keyRequest.onsuccess = (e) => {
+        const allKeys = e.target.result;
+
+        // Collect all values
+        const valueRequest = store.getAll();
+        valueRequest.onsuccess = (ev) => {
+          const allValues = ev.target.result;
+          allKeys.forEach((key, index) => {
+            memoryCache[key] = allValues[index];
+          });
+          dbReady = true;
+          dbReadyCallbacks.forEach((cb) => cb());
+          dbReadyCallbacks = [];
+          resolve();
+        };
+        valueRequest.onerror = (e) => reject(e.target.error);
+      };
+      keyRequest.onerror = (e) => reject(e.target.error);
+    });
+  } catch (error) {
+    console.error("loadAllKeysIntoCache error:", error);
+    dbReady = true; // still mark ready so app doesn't hang
+  }
+};
+
+// Synchronous-style read from memory cache only
+// Returns null if key is not in cache
+const cacheGetItem = (key) => {
+  const val = memoryCache[key];
+  return val !== undefined ? val : null;
+};
+
+// Synchronous-style write to both cache and schedules async IDB write
+const cacheSetItem = (key, value) => {
+  memoryCache[key] = value;
+
+  idbSetItem(key, value).catch((err) => {
+    console.error(err);
+
+    // rollback
+    delete memoryCache[key];
+  });
+};
+
+// Synchronous-style delete from cache + schedules async IDB delete
+const cacheRemoveItem = (key) => {
+  delete memoryCache[key];
+  idbRemoveItem(key).catch((e) =>
+    console.error("Background IDB delete failed:", e),
+  );
+};
+
+// ========== PUBLIC INIT ==========
+
+/**
+ * Must be called once at app startup (before anything else).
+ * Loads all IndexedDB data into memory cache so the rest of
+ * the module can work synchronously (just like localStorage).
+ */
+export const initializeDB = async () => {
+  await loadAllKeysIntoCache();
+  // Initialize users and default data after DB is ready
+  initializeUsers();
+};
+
+// ========== STORAGE KEYS ==========
+
+const USERS_KEY = "sap_users";
+const SESSION_KEY = "sap_session";
+const FAVORITES_KEY = "sap_favorites";
+const HISTORY_KEY = "sap_history";
+
+// ========== USER-SPECIFIC DATA STORAGE ==========
+
+// Get user-specific storage key
+const getUserStorageKey = (userId) => {
+  return `sap_user_data_${userId}`;
+};
+
+// Get current user ID from session
+const getCurrentUserId = () => {
+  const session = getSession();
+  return session?.userId || null;
+};
+
+// Get all data for current user
+export const getAllData = (userId = null) => {
+  try {
+    const uid = userId || getCurrentUserId();
+    if (!uid) {
+      return getDefaultData();
+    }
+
+    const key = getUserStorageKey(uid);
+    const data = cacheGetItem(key);
+    return data ? data : getDefaultData();
+  } catch (error) {
+    return getDefaultData();
+  }
+};
+
+// Save all data for current user
+export const saveAllData = (data, userId = null) => {
+  try {
+    const uid = userId || getCurrentUserId();
+    if (!uid) {
+      return false;
+    }
+
+    const key = getUserStorageKey(uid);
+    cacheSetItem(key, data);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+// Get specific table data for current user
+export const getTableData = (tableName, userId = null) => {
+  const allData = getAllData(userId);
+  const data = allData[tableName] || [];
+
+  if (data.length === 0) return data;
+
+  // Get first key of the first row to use for sorting
+  const sortKey = Object.keys(data[0])[0];
+
+  return [...data].sort((a, b) => {
+    const valA = a[sortKey] || 0;
+    const valB = b[sortKey] || 0;
+
+    // If numeric, compare numerically
+    const numA = parseInt(String(valA).replace(/^\D+/g, ""), 10);
+    const numB = parseInt(String(valB).replace(/^\D+/g, ""), 10);
+
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return numA - numB;
+    }
+
+    // Otherwise, fallback to string comparison
+    return String(valA).localeCompare(String(valB));
+  });
+};
+
+// Save table data for current user
+export const saveTableData = (tableName, data, userId = null) => {
+  const allData = getAllData(userId);
+  allData[tableName] = data;
+  return saveAllData(allData, userId);
+};
+
+// Add record to table for current user
+export const addRecord = (tableName, record, userId = null) => {
+  const uid = userId || getCurrentUserId();
+  const tableData = getTableData(tableName, uid);
+  const newRecord = {
+    ...record,
+    id: Date.now().toString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    createdBy: uid,
+  };
+  tableData.push(newRecord);
+  saveTableData(tableName, tableData, uid);
+  return newRecord;
+};
+
+// Update record for current user
+export const updateRecord = (tableName, id, updates, userId = null) => {
+  const uid = userId || getCurrentUserId();
+  const tableData = getTableData(tableName, uid);
+  const index = tableData.findIndex((r) => r.id === id);
+  if (index !== -1) {
+    tableData[index] = {
+      ...tableData[index],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+      updatedBy: uid,
+    };
+    saveTableData(tableName, tableData, uid);
+    return tableData[index];
+  }
+  return null;
+};
+
+// Delete record for current user
+export const deleteRecord = (tableName, id, userId = null) => {
+  const uid = userId || getCurrentUserId();
+  const tableData = getTableData(tableName, uid);
+  const filtered = tableData.filter((r) => r.id !== id);
+  saveTableData(tableName, filtered, uid);
+  return true;
+};
+
+// Find record by field for current user
+export const findRecord = (tableName, field, value, userId = null) => {
+  const tableData = getTableData(tableName, userId);
+  return tableData.find((r) => r[field] === value);
+};
+
+// Generate next number for current user
+export const generateNextNumber = (
+  tableName,
+  field,
+  prefix = "",
+  userId = null,
+) => {
+  const tableData = getTableData(tableName, userId);
+  if (tableData.length === 0) {
+    return `${prefix}100000001`;
+  }
+
+  const numbers = tableData
+    .map((r) => {
+      const value = r[field] || "";
+      // Remove any letters at the beginning
+      const numericPart = value.replace(/^\D+/, "");
+      return parseInt(numericPart, 10);
+    })
+    .filter((n) => !isNaN(n));
+
+  const maxNumber = numbers.length ? Math.max(...numbers) : 100000000;
+  return `${prefix}${maxNumber + 1}`;
+};
+
+// Default data structure
+const getDefaultData = () => ({
+  materials: [],
+  salesOrders: [],
+  customers: [
+    {
+      id: "C001",
+      customerNumber: "C001",
+      name: "ABC Corporation",
+      city: "New York",
+      country: "USA",
+      phone: "555-0101",
+    },
+    {
+      id: "C002",
+      customerNumber: "C002",
+      name: "XYZ Industries",
+      city: "Los Angeles",
+      country: "USA",
+      phone: "555-0102",
+    },
+    {
+      id: "C003",
+      customerNumber: "C003",
+      name: "Global Traders",
+      city: "Chicago",
+      country: "USA",
+      phone: "555-0103",
+    },
+    {
+      id: "C004",
+      customerNumber: "C004",
+      name: "Tech Solutions Inc",
+      city: "San Francisco",
+      country: "USA",
+      phone: "555-0104",
+    },
+    {
+      id: "C005",
+      customerNumber: "C005",
+      name: "Prime Distributors",
+      city: "Seattle",
+      country: "USA",
+      phone: "555-0105",
+    },
+  ],
+  vendors: [
+    {
+      id: "V001",
+      vendorNumber: "V001",
+      name: "Supplier A",
+      city: "Boston",
+      country: "USA",
+    },
+    {
+      id: "V002",
+      vendorNumber: "V002",
+      name: "Supplier B",
+      city: "Denver",
+      country: "USA",
+    },
+  ],
+  plants: [
+    { id: "1", plantCode: "1000", plantName: "Main Plant", city: "New York" },
+    {
+      id: "2",
+      plantCode: "2000",
+      plantName: "West Plant",
+      city: "Los Angeles",
+    },
+    { id: "3", plantCode: "3000", plantName: "East Plant", city: "Chicago" },
+  ],
+  storageLocations: [
+    { id: "1", sloc: "0001", name: "Main Storage", plantCode: "1000" },
+    { id: "2", sloc: "0002", name: "Raw Materials", plantCode: "1000" },
+    { id: "3", sloc: "0003", name: "Finished Goods", plantCode: "1000" },
+  ],
+  materialTypes: [
+    { value: "FERT", label: "FERT - Finished Product" },
+    { value: "HALB", label: "HALB - Semi-Finished Product" },
+    { value: "ROH", label: "ROH - Raw Material" },
+    { value: "HIBE", label: "HIBE - Operating Supplies" },
+    { value: "VERP", label: "VERP - Packaging Material" },
+  ],
+  baseUnits: [
+    { value: "EA", label: "EA - Each" },
+    { value: "KG", label: "KG - Kilogram" },
+    { value: "L", label: "L - Liter" },
+    { value: "M", label: "M - Meter" },
+    { value: "PC", label: "PC - Piece" },
+    { value: "BOX", label: "BOX - Box" },
+  ],
+  materialGroups: [
+    { value: "001", label: "001 - Electronics" },
+    { value: "002", label: "002 - Mechanical Parts" },
+    { value: "003", label: "003 - Chemicals" },
+    { value: "004", label: "004 - Packaging" },
+    { value: "005", label: "005 - Raw Materials" },
+  ],
+});
+
+// Initialize data for a user
+export const initializeUserData = (userId) => {
+  const key = getUserStorageKey(userId);
+  if (cacheGetItem(key) === null) {
+    cacheSetItem(key, getDefaultData());
+  }
+};
+
+// ========== USER MANAGEMENT (GLOBAL) ==========
+
+// Get all users (global, not user-specific)
+export const getUsers = () => {
+  try {
+    const users = cacheGetItem(USERS_KEY);
+    if (!users) {
+      const defaultUsers = createDefaultUsers();
+      return defaultUsers;
+    }
+    return users;
+  } catch (error) {
+    return createDefaultUsers();
+  }
+};
+
+// Save users (global)
+export const saveUsers = (users) => {
+  try {
+    cacheSetItem(USERS_KEY, users);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+// Create and save default users
+const createDefaultUsers = () => {
+  const defaultUsers = [
+    {
+      id: "admin_001",
+      username: "ADMIN",
+      password: "admin123",
+      firstName: "System",
+      lastName: "Administrator",
+      email: "admin@sapclone.com",
+      role: "Admin",
+      department: "IT",
+      client: "001",
+      language: "EN",
+      dateFormat: "MM/DD/YYYY",
+      decimalNotation: "1,234,567.89",
+      createdAt: new Date().toISOString(),
+      lastLogin: null,
+      isActive: true,
+      isLocked: false,
+      failedAttempts: 0,
+    },
+    {
+      id: "user_001",
+      username: "SAPUSER",
+      password: "welcome123",
+      firstName: "John",
+      lastName: "Doe",
+      email: "john.doe@company.com",
+      role: "User",
+      department: "Sales",
+      client: "001",
+      language: "EN",
+      dateFormat: "MM/DD/YYYY",
+      decimalNotation: "1,234,567.89",
+      createdAt: new Date().toISOString(),
+      lastLogin: null,
+      isActive: true,
+      isLocked: false,
+      failedAttempts: 0,
+    },
+    {
+      id: "user_002",
+      username: "DEMO",
+      password: "demo123",
+      firstName: "Demo",
+      lastName: "User",
+      email: "demo@company.com",
+      role: "User",
+      department: "Purchasing",
+      client: "001",
+      language: "EN",
+      dateFormat: "MM/DD/YYYY",
+      decimalNotation: "1,234,567.89",
+      createdAt: new Date().toISOString(),
+      lastLogin: null,
+      isActive: true,
+      isLocked: false,
+      failedAttempts: 0,
+    },
+  ];
+  saveUsers(defaultUsers);
+  return defaultUsers;
+};
+
+// Initialize users - FORCE reset to ensure admin exists
+export const initializeUsers = () => {
+  const users = cacheGetItem(USERS_KEY);
+  if (!users) {
+    createDefaultUsers();
+  } else {
+    // Check if admin exists, if not add it
+    const adminExists = users.some((u) => u.username === "ADMIN");
+    if (!adminExists) {
+      const updatedUsers = [
+        {
+          id: "admin_001",
+          username: "ADMIN",
+          password: "admin123",
+          firstName: "System",
+          lastName: "Administrator",
+          email: "admin@sapclone.com",
+          role: "Admin",
+          department: "IT",
+          client: "001",
+          language: "EN",
+          dateFormat: "MM/DD/YYYY",
+          decimalNotation: "1,234,567.89",
+          createdAt: new Date().toISOString(),
+          lastLogin: null,
+          isActive: true,
+          isLocked: false,
+          failedAttempts: 0,
+        },
+        ...users,
+      ];
+      saveUsers(updatedUsers);
+    }
+  }
+};
+
+// Reset users to default (utility function for debugging)
+export const resetUsersToDefault = () => {
+  cacheRemoveItem(USERS_KEY);
+  return createDefaultUsers();
+};
+
+// Authenticate user
+export const authenticateUser = (username, password) => {
+  const users = getUsers();
+
+  const user = users.find(
+    (u) => u.username.toUpperCase() === username.toUpperCase(),
+  );
+
+  if (!user) {
+    return { success: false, message: "User does not exist" };
+  }
+
+  if (!user.isActive) {
+    return { success: false, message: "User account is deactivated" };
+  }
+
+  if (user.isLocked) {
+    return {
+      success: false,
+      message: "User account is locked. Contact administrator.",
+    };
+  }
+
+  if (user.password !== password) {
+    // Increment failed attempts
+    user.failedAttempts = (user.failedAttempts || 0) + 1;
+    if (user.failedAttempts >= 5) {
+      user.isLocked = true;
+    }
+    const updatedUsers = users.map((u) => (u.id === user.id ? user : u));
+    saveUsers(updatedUsers);
+
+    return {
+      success: false,
+      message: user.isLocked
+        ? "Account locked due to too many failed attempts"
+        : `Invalid password. ${5 - user.failedAttempts} attempts remaining.`,
+    };
+  }
+
+  // Successful login - reset failed attempts
+  user.lastLogin = new Date().toISOString();
+  user.failedAttempts = 0;
+  const updatedUsers = users.map((u) => (u.id === user.id ? user : u));
+  saveUsers(updatedUsers);
+
+  // Initialize user data if first login
+  initializeUserData(user.id);
+
+  // Create session (without password)
+  const isAdmin = user.role === "Admin";
+
+  const session = {
+    userId: user.id,
+    username: user.username,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    fullName: `${user.firstName} ${user.lastName}`,
+    email: user.email,
+    role: user.role,
+    department: user.department,
+    client: user.client,
+    loginTime: new Date().toISOString(),
+    isAdmin: isAdmin,
+  };
+
+  return { success: true, user: session };
+};
+
+// Register new user
+export const registerUser = (userData) => {
+  const users = getUsers();
+
+  // Check if username exists
+  if (
+    users.find(
+      (u) => u.username.toUpperCase() === userData.username.toUpperCase(),
+    )
+  ) {
+    return { success: false, message: "Username already exists" };
+  }
+
+  // Check if email exists
+  if (
+    users.find((u) => u.email.toLowerCase() === userData.email.toLowerCase())
+  ) {
+    return { success: false, message: "Email already registered" };
+  }
+
+  const newUser = {
+    id: `user_${Date.now()}`,
+    username: userData.username.toUpperCase(),
+    password: userData.password,
+    firstName: userData.firstName,
+    lastName: userData.lastName,
+    email: userData.email,
+    role: userData.role || "User",
+    department: userData.department || "General",
+    client: "001",
+    language: "EN",
+    dateFormat: "MM/DD/YYYY",
+    decimalNotation: "1,234,567.89",
+    createdAt: new Date().toISOString(),
+    lastLogin: null,
+    isActive: true,
+    isLocked: false,
+    failedAttempts: 0,
+  };
+
+  users.push(newUser);
+  saveUsers(users);
+
+  // Initialize user data
+  initializeUserData(newUser.id);
+
+  return {
+    success: true,
+    message: "User registered successfully",
+    user: newUser,
+  };
+};
+
+// Update user (admin function)
+export const updateUser = (userId, updates) => {
+  const users = getUsers();
+  const index = users.findIndex((u) => u.id === userId);
+
+  if (index !== -1) {
+    users[index] = {
+      ...users[index],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    saveUsers(users);
+    return { success: true, user: users[index] };
+  }
+
+  return { success: false, message: "User not found" };
+};
+
+// Delete user (admin function)
+export const deleteUser = (userId) => {
+  const users = getUsers();
+
+  // Prevent deleting the last admin
+  const admins = users.filter((u) => u.role === "Admin");
+  const userToDelete = users.find((u) => u.id === userId);
+
+  if (userToDelete?.role === "Admin" && admins.length <= 1) {
+    return { success: false, message: "Cannot delete the last admin user" };
+  }
+
+  const filtered = users.filter((u) => u.id !== userId);
+  saveUsers(filtered);
+
+  // Also delete user's data
+  const userDataKey = getUserStorageKey(userId);
+  cacheRemoveItem(userDataKey);
+
+  return { success: true, message: "User deleted successfully" };
+};
+
+// Reset user password (admin function)
+export const resetUserPassword = (userId, newPassword) => {
+  const users = getUsers();
+  const user = users.find((u) => u.id === userId);
+
+  if (!user) {
+    return { success: false, message: "User not found" };
+  }
+
+  user.password = newPassword;
+  user.isLocked = false;
+  user.failedAttempts = 0;
+  saveUsers(users);
+
+  return { success: true, message: "Password reset successfully" };
+};
+
+// Unlock user (admin function)
+export const unlockUser = (userId) => {
+  const users = getUsers();
+  const user = users.find((u) => u.id === userId);
+
+  if (!user) {
+    return { success: false, message: "User not found" };
+  }
+
+  user.isLocked = false;
+  user.failedAttempts = 0;
+  saveUsers(users);
+
+  return { success: true, message: "User unlocked successfully" };
+};
+
+// ========== SESSION MANAGEMENT ==========
+
+// Save session
+export const saveSession = (session) => {
+  try {
+    cacheSetItem(SESSION_KEY, session);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+// Get current session
+export const getSession = () => {
+  try {
+    const session = cacheGetItem(SESSION_KEY);
+    return session ? session : null;
+  } catch (error) {
+    return null;
+  }
+};
+
+// Clear session (logout)
+export const clearSession = () => {
+  cacheRemoveItem(SESSION_KEY);
+};
+
+// Update user profile
+export const updateUserProfile = (userId, updates) => {
+  const users = getUsers();
+  const index = users.findIndex((u) => u.id === userId);
+
+  if (index !== -1) {
+    // Don't allow changing role through profile update
+    const { role, ...safeUpdates } = updates;
+    users[index] = {
+      ...users[index],
+      ...safeUpdates,
+      updatedAt: new Date().toISOString(),
+    };
+    saveUsers(users);
+    return { success: true, user: users[index] };
+  }
+
+  return { success: false, message: "User not found" };
+};
+
+// Change password
+export const changePassword = (userId, currentPassword, newPassword) => {
+  const users = getUsers();
+  const user = users.find((u) => u.id === userId);
+
+  if (!user) {
+    return { success: false, message: "User not found" };
+  }
+
+  if (user.password !== currentPassword) {
+    return { success: false, message: "Current password is incorrect" };
+  }
+
+  user.password = newPassword;
+  saveUsers(users);
+
+  return { success: true, message: "Password changed successfully" };
+};
+
+export const saveImageBlob = async (userId, id, blob) => {
+  const key = `sap_user_images_${userId}`;
+
+  const images = (await idbGetItem(key)) || [];
+  const index = images.findIndex((img) => img.id === id);
+
+  if (index >= 0) {
+    images[index].blob = blob;
+  } else {
+    images.push({
+      id,
+      blob,
+    });
+  }
+  await idbSetItem(key, images);
+};
+
+export const getImageBlob = async (userId, id) => {
+  const key = `sap_user_images_${userId}`;
+  const images = (await idbGetItem(key)) || [];
+  return images.find((img) => img.id === id)?.blob || null;
+};
+
+export const deleteImageBlob = async (userId, id) => {
+  const key = `sap_user_images_${userId}`;
+  const images = (await idbGetItem(key)) || [];
+  const filtered = images.filter((img) => img.id !== id);
+  await idbSetItem(key, filtered);
+};
+
+/**
+ * Convert Blob image into Base64 string.
+ * Needed because JSON cannot store Blob objects.
+ */
+export const imageBlobToBase64 = (blob) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      resolve(reader.result);
+    };
+
+    reader.onerror = reject;
+
+    reader.readAsDataURL(blob);
+  });
+};
+
+/**
+ * Convert Base64 string back into Blob.
+ * Used when restoring images after import.
+ */
+export const base64ToImageBlob = async (base64) => {
+  const response = await fetch(base64);
+
+  return await response.blob();
+};
+
+export const loadUserAvatar = async (avatar) => {
+  if (avatar?.style === "custom" && avatar.imageId) {
+    const blob = await getImageBlob(avatar.imageId);
+
+    if (!blob) {
+      return {
+        style: "cyber",
+      };
+    }
+
+    return {
+      style: "custom",
+      image: URL.createObjectURL(blob),
+      imageId: avatar.imageId,
+    };
+  }
+
+  return (
+    avatar || {
+      style: "cyber",
+    }
+  );
+};
+
+// ========== FAVORITES ==========
+
+// Get favorites for current user
+export const getFavorites = (userId = null) => {
+  try {
+    const uid = userId || getCurrentUserId();
+    if (!uid) return [];
+
+    const key = `${FAVORITES_KEY}_${uid}`;
+    const favorites = cacheGetItem(key);
+    return favorites ? favorites : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+// Save favorites for current user
+export const saveFavorites = (favorites, userId = null) => {
+  try {
+    const uid = userId || getCurrentUserId();
+    if (!uid) return false;
+
+    const key = `${FAVORITES_KEY}_${uid}`;
+    cacheSetItem(key, favorites);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+// Add to favorites
+export const addToFavorites = (transaction, userId = null) => {
+  const favorites = getFavorites(userId);
+
+  // Check if already exists
+  if (favorites.some((f) => f.tcode === transaction.tcode)) {
+    return { success: false, message: "Already in favorites" };
+  }
+
+  favorites.push({
+    ...transaction,
+    addedAt: new Date().toISOString(),
+  });
+
+  saveFavorites(favorites, userId);
+  return { success: true, message: "Added to favorites" };
+};
+
+// Remove from favorites
+export const removeFromFavorites = (tcode, userId = null) => {
+  const favorites = getFavorites(userId);
+  const filtered = favorites.filter((f) => f.tcode !== tcode);
+  saveFavorites(filtered, userId);
+  return { success: true, message: "Removed from favorites" };
+};
+
+// Check if transaction is in favorites
+export const isFavorite = (tcode, userId = null) => {
+  const favorites = getFavorites(userId);
+  return favorites.some((f) => f.tcode === tcode);
+};
+
+// ========== TRANSACTION HISTORY ==========
+
+// Get transaction history for current user
+export const getTransactionHistory = (userId = null) => {
+  try {
+    const uid = userId || getCurrentUserId();
+    if (!uid) return [];
+
+    const key = `${HISTORY_KEY}_${uid}`;
+    const history = cacheGetItem(key);
+    return history ? history : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+// Save transaction history
+export const saveTransactionHistory = (history, userId = null) => {
+  try {
+    const uid = userId || getCurrentUserId();
+    if (!uid) return false;
+
+    const key = `${HISTORY_KEY}_${uid}`;
+    cacheSetItem(key, history);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+// Add to transaction history
+export const addToHistory = (tcode, description = "", userId = null) => {
+  const history = getTransactionHistory(userId) || [];
+
+  const newTcode = tcode.trim().toUpperCase();
+
+  // Remove any existing entry with the same tcode
+  const filtered = history.filter(
+    (h) => (h.tcode || "").trim().toUpperCase() !== newTcode,
+  );
+
+  // Add new entry at the front
+  const updated = [
+    { tcode: newTcode, description, accessedAt: new Date().toISOString() },
+    ...filtered,
+  ];
+
+  // Keep only last 5
+  const trimmed = updated.slice(0, 5);
+
+  // Save updated history
+  saveTransactionHistory(trimmed, userId);
+
+  return trimmed;
+};
+
+// Clear transaction history
+export const clearTransactionHistory = (userId = null) => {
+  const uid = userId || getCurrentUserId();
+  if (!uid) return false;
+
+  const key = `${HISTORY_KEY}_${uid}`;
+  cacheRemoveItem(key);
+  return true;
+};
+
+// ========== INITIALIZE ==========
+
+// Initialize data (called on app start) - NOW ASYNC
+// Use initializeDB() instead for IndexedDB startup
+export const initializeData = () => {
+  initializeUsers();
+};
+
+// ========== EXPENSE TRACKER ==========
+
+// Get expense categories
+export const getExpenseCategories = () => [
+  {
+    value: "food",
+    label: { en: "🍔 Food & Dining", hi: "🍔 भोजन एवं रेस्तरां" },
+    color: "#E57373",
+  },
+  {
+    value: "travel",
+    label: { en: "✈️ Travel & Transport", hi: "✈️ यात्रा एवं परिवहन" },
+    color: "#4DB6AC",
+  },
+  {
+    value: "shopping",
+    label: { en: "🛍️ Shopping", hi: "🛍️ खरीदारी" },
+    color: "#7986CB",
+  },
+  {
+    value: "bills",
+    label: { en: "📄 Bills & Utilities", hi: "📄 बिल और उपयोगिताएँ" },
+    color: "#4DD0E1",
+  },
+  {
+    value: "entertainment",
+    label: { en: "🎬 Entertainment", hi: "🎬 मनोरंजन" },
+    color: "#FFB74D",
+  },
+  {
+    value: "healthcare",
+    label: { en: "🏥 Healthcare", hi: "🏥 स्वास्थ्य सेवा" },
+    color: "#81C784",
+  },
+  {
+    value: "education",
+    label: { en: "📚 Education", hi: "📚 शिक्षा" },
+    color: "#A1887F",
+  },
+  {
+    value: "groceries",
+    label: { en: "🛒 Groceries", hi: "🛒 किराना" },
+    color: "#DCE775",
+  },
+  {
+    value: "rent",
+    label: { en: "🏠 Rent & Housing", hi: "🏠 किराया और आवास" },
+    color: "#EF5350",
+  },
+  {
+    value: "insurance",
+    label: { en: "🛡️ Insurance", hi: "🛡️ बीमा" },
+    color: "#9575CD",
+  },
+  {
+    value: "personal",
+    label: { en: "💄 Personal Care", hi: "💄 व्यक्तिगत देखभाल" },
+    color: "#F06292",
+  },
+  {
+    value: "gifts",
+    label: { en: "🎁 Gifts & Donations", hi: "🎁 उपहार और दान" },
+    color: "#FF8A65",
+  },
+  {
+    value: "investment",
+    label: { en: "📈 Investment", hi: "📈 निवेश" },
+    color: "#64B5F6",
+  },
+  {
+    value: "other",
+    label: { en: "📦 Other", hi: "📦 अन्य" },
+    color: "#B0BEC5",
+  },
+  {
+    value: "alcohol",
+    label: {
+      en: "🍺 Alcohol & Beverages",
+      hi: "🍺 शराब और पेय पदार्थ",
+    },
+    color: "#AED581",
+  },
+  {
+    value: "cigarette",
+    label: { en: "🚬 Cigarette 🌿", hi: "🚬 सिगरेट 🌿" },
+    color: "#8D6E63",
+  },
+];
+
+// Get payment methods
+export const getPaymentMethods = () => [
+  { value: "cash", label: { en: "💵 Cash", hi: "💵 नकद" } },
+  {
+    value: "credit_card",
+    label: { en: "💳 Credit Card", hi: "💳 क्रेडिट कार्ड" },
+  },
+  {
+    value: "debit_card",
+    label: { en: "💳 Debit Card", hi: "💳 डेबिट कार्ड" },
+  },
+  { value: "upi", label: { en: "📱 UPI", hi: "📱 यूपीआई" } },
+  {
+    value: "bank_transfer",
+    label: { en: "🏦 Bank Transfer", hi: "🏦 बैंक ट्रांसफर" },
+  },
+  { value: "cheque", label: { en: "📝 Cheque", hi: "📝 चेक" } },
+];
+
+// Get expense statistics
+export const getExpenseStats = (userId = null) => {
+  const expenses = getTableData("expenses", userId);
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  // This month's expenses
+  const thisMonthExpenses = expenses.filter((e) => {
+    const date = new Date(e.date);
+    return (
+      date.getMonth() === currentMonth && date.getFullYear() === currentYear
+    );
+  });
+
+  // Last month's expenses
+  const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  const lastMonthExpenses = expenses.filter((e) => {
+    const date = new Date(e.date);
+    return (
+      date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear
+    );
+  });
+
+  // This year's expenses
+  const thisYearExpenses = expenses.filter((e) => {
+    const date = new Date(e.date);
+    return date.getFullYear() === currentYear;
+  });
+
+  // Calculate totals
+  const totalThisMonth = thisMonthExpenses.reduce(
+    (sum, e) => sum + parseFloat(e.amount || 0),
+    0,
+  );
+  const totalLastMonth = lastMonthExpenses.reduce(
+    (sum, e) => sum + parseFloat(e.amount || 0),
+    0,
+  );
+  const totalThisYear = thisYearExpenses.reduce(
+    (sum, e) => sum + parseFloat(e.amount || 0),
+    0,
+  );
+  const totalAllTime = expenses.reduce(
+    (sum, e) => sum + parseFloat(e.amount || 0),
+    0,
+  );
+
+  // Budget forecast / run-rate
+  let projectedMonthEnd = 0;
+  if (totalThisMonth > 0) {
+    const currentDay = now.getDate();
+    const totalDaysInMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+    ).getDate();
+    projectedMonthEnd = Math.round(
+      (totalThisMonth / currentDay) * totalDaysInMonth,
+    );
+  }
+
+  // Top category
+  const categoryMap = {};
+  thisMonthExpenses.forEach((e) => {
+    const cat = e.category || "Unknown";
+    categoryMap[cat] = (categoryMap[cat] || 0) + parseFloat(e.amount || 0);
+  });
+
+  let topCategory = { name: null, amount: 0 };
+  Object.entries(categoryMap).forEach(([name, amount]) => {
+    if (amount > topCategory.amount) {
+      topCategory = { name, amount };
+    }
+  });
+
+  // Average daily spend
+  let averageDailySpend = 0;
+  if (expenses.length > 0) {
+    const uniqueDays = new Set(
+      expenses
+        .filter((e) => e.date)
+        .map((e) => new Date(e.date).toISOString().split("T")[0]),
+    );
+    const totalUniqueDays = Math.max(1, uniqueDays.size);
+    averageDailySpend = totalAllTime / totalUniqueDays;
+  }
+
+  // Category breakdown
+  const categories = getExpenseCategories();
+  const categoryBreakdown = categories
+    .map((cat) => {
+      const catExpenses = thisMonthExpenses.filter(
+        (e) => e.category === cat.value,
+      );
+      const total = catExpenses.reduce(
+        (sum, e) => sum + parseFloat(e.amount || 0),
+        0,
+      );
+      return {
+        ...cat,
+        total,
+        count: catExpenses.length,
+        percentage:
+          totalThisMonth > 0 ? Math.round((total / totalThisMonth) * 100) : 0,
+      };
+    })
+    .filter((c) => c.total > 0)
+    .sort((a, b) => b.total - a.total);
+
+  // Monthly trend (last 6 months)
+  const monthlyTrend = [];
+  for (let i = 5; i >= 0; i--) {
+    const month = new Date(currentYear, currentMonth - i, 1);
+
+    const monthExpenses = expenses.filter((e) => {
+      const date = new Date(e.date);
+      return (
+        date.getMonth() === month.getMonth() &&
+        date.getFullYear() === month.getFullYear()
+      );
+    });
+
+    const total = monthExpenses.reduce(
+      (sum, e) => sum + parseFloat(e.amount || 0),
+      0,
+    );
+
+    // Top category for this month
+    const monthCategoryMap = {};
+    monthExpenses.forEach((e) => {
+      const category = e.category || "Unknown";
+      monthCategoryMap[category] =
+        (monthCategoryMap[category] || 0) + parseFloat(e.amount || 0);
+    });
+
+    let monthTopCategory = { name: null, amount: 0 };
+    Object.entries(monthCategoryMap).forEach(([name, amount]) => {
+      if (amount > monthTopCategory.amount) {
+        monthTopCategory = { name, amount };
+      }
+    });
+
+    monthlyTrend.push({
+      month: month.toLocaleString("default", { month: "short" }),
+      year: month.getFullYear(),
+      total,
+      count: monthExpenses.length,
+      topCategory: monthTopCategory,
+    });
+  }
+
+  // Payment method breakdown
+  const paymentMethods = getPaymentMethods();
+  const paymentBreakdown = paymentMethods
+    .map((method) => {
+      const methodExpenses = thisMonthExpenses.filter(
+        (e) => e.paymentMethod === method.value,
+      );
+      const total = methodExpenses.reduce(
+        (sum, e) => sum + parseFloat(e.amount || 0),
+        0,
+      );
+      return {
+        ...method,
+        total,
+        count: methodExpenses.length,
+        percentage:
+          totalThisMonth > 0 ? Math.round((total / totalThisMonth) * 100) : 0,
+      };
+    })
+    .filter((m) => m.total > 0)
+    .sort((a, b) => b.total - a.total);
+
+  // Recent expenses
+  const recentExpenses = [...expenses]
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 10);
+
+  // Month over month change
+  const monthChange =
+    totalLastMonth > 0
+      ? Math.round(((totalThisMonth - totalLastMonth) / totalLastMonth) * 100)
+      : 0;
+
+  return {
+    totalThisMonth,
+    totalLastMonth,
+    totalThisYear,
+    totalAllTime,
+    expenseCount: expenses.length,
+    thisMonthCount: thisMonthExpenses.length,
+    monthChange,
+    categoryBreakdown,
+    monthlyTrend,
+    paymentBreakdown,
+    recentExpenses,
+    averageExpense: expenses.length > 0 ? totalAllTime / expenses.length : 0,
+    topCategory,
+    averageDailySpend,
+    projectedMonthEnd,
+  };
+};
