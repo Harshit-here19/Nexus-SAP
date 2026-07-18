@@ -23,6 +23,7 @@ import {
   saveAllData,
   saveImageBlob,
   getImageBlob,
+  deleteImageBlob,
 } from "../../utils/storage";
 import Screenshotable from "../Common/Screenshotable";
 
@@ -131,6 +132,8 @@ const initialFormState = (user) => ({
   rating: "",
   genres: [],
   platform: "",
+  // imageUrl: "",
+  imageId: "",
   imageUrl: "",
   episodes: "",
   currentEpisode: "",
@@ -180,10 +183,10 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
+  const [imageCache, setImageCache] = useState({});
 
   // Form data
   const [formData, setFormData] = useState(initialFormState(user));
-
   const [errors, setErrors] = useState({});
 
   // Generate next ID based on category
@@ -218,17 +221,21 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     }
 
     try {
-      const resized = await resizeImage(file, 1200, 1600, 0.82);
+      let blob;
+      if (file.type === "image/gif") {
+        blob = file;
+      } else {
+        blob = await resizeImage(file, 1200, 1600, 0.82);
+      }
 
-      const response = await fetch(resized);
-      const blob = await response.blob();
-
+      await deleteImageBlob(user?.userId, formData.imageId);
       const imageId = crypto.randomUUID();
 
-      await saveImageBlob(user?.userId,imageId, blob);
+      await saveImageBlob(user.userId, imageId, blob);
+      const previewUrl = URL.createObjectURL(blob);
 
       handleChange("imageId", imageId);
-      handleChange("imageUrl", "");
+      handleChange("imageUrl", previewUrl);
 
       updateStatus("Cover image processed successfully", "success");
     } catch (err) {
@@ -287,30 +294,39 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   };
 
   // Load item for edit/view
-  const loadItem = async () => {
-    if (!itemId.trim()) {
+  const loadItem = async (autoId = itemId) => {
+    if (!user?.userId) {
+      updateStatus("User data not loaded yet", "warning");
+      return;
+    }
+    if (!autoId.trim()) {
       updateStatus("Enter an item ID", "warning");
       return;
     }
 
     const data = getTableData("entertainment_wishlist") || [];
-    const item = data.find((i) => i.itemNumber === itemId.trim());
+    const item = data.find((i) => i.itemNumber === autoId.trim());
 
     if (item) {
       let loadedItem = { ...item };
 
       if (item.imageId) {
-        const blob = await getImageBlob(user?.userId,item.imageId);
+        const blob = await getImageBlob(user?.userId, item.imageId);
 
-        loadedItem.imageUrl =
-          URL.createObjectURL(blob);
+        if (blob instanceof Blob) {
+          loadedItem.imageUrl = URL.createObjectURL(blob);
+        } else {
+          loadedItem.imageUrl = "";
+
+          console.error("Image blob not found:", item.imageId);
+        }
       }
 
       setFormData(loadedItem);
       setIsLoaded(true);
-      updateStatus(`Item ${itemId} loaded successfully`, "success");
+      updateStatus(`Item ${autoId} loaded successfully`, "success");
     } else {
-      updateStatus(`Item ${itemId} not found`, "error");
+      updateStatus(`Item ${autoId} not found`, "error");
     }
   };
 
@@ -358,6 +374,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   // Select item from search
   const handleSelectItem = (item) => {
     setItemId(item.itemNumber);
+    loadItem(item.itemNumber);
     setFormData(item);
     setIsLoaded(true);
     setShowSearchModal(false);
@@ -401,6 +418,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           ...formData,
           id: Date.now(),
           itemNumber,
+          // remove temporary blob URL
+          imageUrl: "",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -417,6 +436,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
         if (index !== -1) {
           allData.entertainment_wishlist[index] = {
             ...formData,
+            // remove temporary blob URL
+            imageUrl: "",
             updatedAt: new Date().toISOString(),
           };
           saveAllData(allData);
@@ -441,6 +462,28 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     markAsSaved();
     updateStatus("Form cleared", "info");
   };
+
+  useEffect(() => {
+    const loadImages = async () => {
+      const cache = {};
+
+      for (const item of searchResults) {
+        if (item.imageId) {
+          const blob = await getImageBlob(user?.userId, item.imageId);
+
+          if (blob) {
+            cache[item.itemNumber] = URL.createObjectURL(blob);
+          }
+        }
+      }
+
+      setImageCache(cache);
+    };
+
+    if (searchResults.length) {
+      loadImages();
+    }
+  }, [searchResults, user?.userId]);
 
   // Register a custom back handler that closes the editor first
   useEffect(() => {
@@ -517,6 +560,9 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     );
     if (confirmed) {
       const allData = getAllData();
+      if (formData.imageId) {
+        await deleteImageBlob(user?.userId, formData.imageId);
+      }
       allData.entertainment_wishlist = (
         allData.entertainment_wishlist || []
       ).filter((i) => i.id !== formData.id);
@@ -539,6 +585,9 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       const expenses = getTableData("entertainment_wishlist");
       const filtered = expenses.filter((e) => e.id !== id);
       const allData = getAllData();
+      if (formData.imageId) {
+        await deleteImageBlob(user?.userId, formData.imageId);
+      }
       allData.entertainment_wishlist = filtered;
       saveAllData(allData);
       clearRef.current?.();
@@ -1024,6 +1073,12 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 <img
                   src={formData.imageUrl}
                   alt="cover preview"
+                  onLoad={() => console.log("loaded")}
+                  onError={(e) => {
+                    console.log("failed");
+                    console.log(formData.imageUrl);
+                    // console.log(e);
+                  }}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -1169,16 +1224,17 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 }}
               >
                 <span
-                  className={`sap-badge ${formData.status === "completed"
-                    ? "success"
-                    : formData.status === "in_progress"
-                      ? "info"
-                      : formData.status === "dropped"
-                        ? "error"
-                        : formData.status === "on_hold"
-                          ? "warning"
-                          : ""
-                    }`}
+                  className={`sap-badge ${
+                    formData.status === "completed"
+                      ? "success"
+                      : formData.status === "in_progress"
+                        ? "info"
+                        : formData.status === "dropped"
+                          ? "error"
+                          : formData.status === "on_hold"
+                            ? "warning"
+                            : ""
+                  }`}
                   style={{
                     fontSize: isDisplayMode ? "12px" : "11px",
 
@@ -1231,12 +1287,12 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                   ...(isDisplayMode
                     ? {}
                     : {
-                      maxHeight: isMobile ? "none" : "90px",
-                      overflow: "hidden",
-                      display: "-webkit-box",
-                      WebkitLineClamp: isMobile ? 5 : 2,
-                      WebkitBoxOrient: "vertical",
-                    }),
+                        maxHeight: isMobile ? "none" : "90px",
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: isMobile ? 5 : 2,
+                        WebkitBoxOrient: "vertical",
+                      }),
                 }}
               >
                 {formData.description}
@@ -1728,16 +1784,17 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           </div>
           <div>
             <span
-              className={`sap-badge ${formData.status === "completed"
-                ? "success"
-                : formData.status === "dropped"
-                  ? "error"
-                  : formData.status === "in_progress"
-                    ? "info"
-                    : formData.status === "on_hold"
-                      ? "warning"
-                      : ""
-                }`}
+              className={`sap-badge ${
+                formData.status === "completed"
+                  ? "success"
+                  : formData.status === "dropped"
+                    ? "error"
+                    : formData.status === "in_progress"
+                      ? "info"
+                      : formData.status === "on_hold"
+                        ? "warning"
+                        : ""
+              }`}
               style={{
                 fontSize: "11px",
                 padding: "2px 8px",
@@ -1864,9 +1921,12 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     ]}
                     getSuggestionValue={(item) => item.itemNumber}
                     onSelect={(item) => {
-                      setItemId(item.itemNumber);
                       setFormData(item);
+                      setItemId(item.itemNumber);
                       setIsLoaded(true);
+
+                      console.log(item.itemNumber);
+                      loadItem(item.itemNumber);
 
                       updateStatus(
                         `Item ${item.itemNumber} loaded successfully`,
@@ -1888,7 +1948,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     )}
                   />
                 </div>
-                <SapButton onClick={loadItem} type="neo" icon="📂">
+                <SapButton onClick={() => loadItem()} type="neo" icon="📂">
                   Load
                 </SapButton>
                 <SapButton
@@ -2110,7 +2170,9 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     <td>
                       {item.imageUrl ? (
                         <img
-                          src={item.imageUrl}
+                          src={
+                            imageCache[item.itemNumber] || item.imageUrl || ""
+                          }
                           alt=""
                           style={{
                             width: "32px",
@@ -2193,16 +2255,17 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     </td>
                     <td>
                       <span
-                        className={`sap-badge ${item.status === "completed"
-                          ? "success"
-                          : item.status === "in_progress"
-                            ? "info"
-                            : item.status === "dropped"
-                              ? "error"
-                              : item.status === "on_hold"
-                                ? "warning"
-                                : ""
-                          }`}
+                        className={`sap-badge ${
+                          item.status === "completed"
+                            ? "success"
+                            : item.status === "in_progress"
+                              ? "info"
+                              : item.status === "dropped"
+                                ? "error"
+                                : item.status === "on_hold"
+                                  ? "warning"
+                                  : ""
+                        }`}
                         style={{
                           fontSize: "11px",
                           padding: "2px 8px",
@@ -2385,7 +2448,8 @@ const generateMediaReport = (mediaItems) => {
 
     return `
     ${'<span style="color: gold;font-size: 1rem;">★</span>'.repeat(fullStars)}
-    ${halfStar
+    ${
+      halfStar
         ? `
       <span style="
         background: linear-gradient(90deg, gold 50%, #ccc 50%);
@@ -2395,7 +2459,7 @@ const generateMediaReport = (mediaItems) => {
       ">★</span>
     `
         : ""
-      }
+    }
     ${'<span style="color: #ccc;font-size: 1rem;">★</span>'.repeat(emptyStars)}
   `;
   };
@@ -2450,14 +2514,15 @@ const generateMediaReport = (mediaItems) => {
               <span class="meta-item"><strong>Platform:</strong> ${item.platform || "—"}</span>
             </div>
             
-            ${item.genres && item.genres.length > 0
-          ? `
+            ${
+              item.genres && item.genres.length > 0
+                ? `
               <div class="genres">
                 ${item.genres.map((genre) => `<span class="genre-tag">${genre}</span>`).join("")}
               </div>
             `
-          : ""
-        }
+                : ""
+            }
             
             <div class="info-row">
               ${item.cast ? `<div class="info-item"><strong>Cast:</strong> ${item.cast}</div>` : ""}
@@ -2465,24 +2530,26 @@ const generateMediaReport = (mediaItems) => {
               ${item.studio ? `<div class="info-item"><strong>Studio:</strong> ${item.studio}</div>` : ""}
             </div>
             
-            ${item.description
-          ? `
+            ${
+              item.description
+                ? `
               <div class="description">
                 <p>${item.description}</p>
               </div>
             `
-          : ""
-        }
+                : ""
+            }
             
-            ${item.notes
-          ? `
+            ${
+              item.notes
+                ? `
               <div class="notes">
                 <strong>Notes:</strong>
                 <p>${item.notes}</p>
               </div>
             `
-          : ""
-        }
+                : ""
+            }
             
             <div class="media-footer">
               <span class="item-number">${item.itemNumber || `#${index + 1}`}</span>
@@ -2836,16 +2903,16 @@ const generateMediaReport = (mediaItems) => {
           <h1>🎬 My Media Collection</h1>
           <p class="subtitle">Movies • TV Shows • Anime • Games • Books</p>
           <p class="generated">Generated on ${new Date().toLocaleDateString(
-    "en-US",
-    {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  )}</p>
+            "en-US",
+            {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            },
+          )}</p>
         </div>
 
         <div class="stats-grid">

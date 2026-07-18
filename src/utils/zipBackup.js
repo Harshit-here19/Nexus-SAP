@@ -122,7 +122,6 @@ export const restoreFullBackupZip = async ({
     }
 
     const blob = await file.async("blob");
-
     await saveImageBlob(userId, id, blob);
   }
 

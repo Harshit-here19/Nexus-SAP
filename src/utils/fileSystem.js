@@ -1,6 +1,12 @@
 // src/utils/fileSystem.js
 
-import { initializeDB, getAllData, saveAllData } from "./storage";
+import {
+  initializeDB,
+  getAllData,
+  saveAllData,
+  imageBlobToBase64,
+  base64ToImageBlob,
+} from "./storage";
 
 // ========== INDEXEDDB HELPERS (local to this file) ==========
 

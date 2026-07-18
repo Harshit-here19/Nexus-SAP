@@ -875,6 +875,34 @@ export const deleteImageBlob = async (userId, id) => {
   await idbSetItem(key, filtered);
 };
 
+/**
+ * Convert Blob image into Base64 string.
+ * Needed because JSON cannot store Blob objects.
+ */
+export const imageBlobToBase64 = (blob) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      resolve(reader.result);
+    };
+
+    reader.onerror = reject;
+
+    reader.readAsDataURL(blob);
+  });
+};
+
+/**
+ * Convert Base64 string back into Blob.
+ * Used when restoring images after import.
+ */
+export const base64ToImageBlob = async (base64) => {
+  const response = await fetch(base64);
+
+  return await response.blob();
+};
+
 export const loadUserAvatar = async (avatar) => {
   if (avatar?.style === "custom" && avatar.imageId) {
     const blob = await getImageBlob(avatar.imageId);

@@ -62,11 +62,14 @@ const CollectionEditor = ({
     setDeleteCandidate(null);
   };
 
-  const handleCardClick = (event, item) => {
-    if (isReadOnly) return;
+  const handleCardClick = async (event, item) => {
+    if (isReadOnly) {
+      await navigator.clipboard.writeText(item.name);
+      console.log("Copied:", item.name);
+      return;
+    }
 
     const card = event.currentTarget;
-
     const rect = card.getBoundingClientRect();
 
     // click position inside card
@@ -79,7 +82,6 @@ const CollectionEditor = ({
       handleCompleteClick(item.id);
       return;
     }
-
     handleDeleteClick(item.id);
   };
 

@@ -22,7 +22,16 @@ import {
   saveTableData,
   idbGetItem,
   idbSetItem,
+  getImageBlob,
+  saveImageBlob,
+  deleteImageBlob,
+  imageBlobToBase64,
+  base64ToImageBlob,
 } from "../../utils/storage";
+import {
+  exportFullBackupZip,
+  restoreFullBackupZip,
+} from "../../utils/zipBackup";
 
 import { useConfirm } from "../../context/ConfirmContext";
 import { useAuth } from "../../context/AuthContext";
@@ -31,11 +40,11 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
   const [activeTab, setActiveTab] = useState("");
   const [selectedTable, setSelectedTable] = useState("all");
   const [selectedTables, setSelectedTables] = useState([
-  "entertainment_wishlist",
-  "notes",
-  "expenses",
-  "collections",
-]);
+    "entertainment_wishlist",
+    "notes",
+    "expenses",
+    "collections",
+  ]);
   const [exportFormat, setExportFormat] = useState("json");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [importPreviews, setImportPreviews] = useState([]);
@@ -223,6 +232,25 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
           return;
         }
 
+        // ==============================
+        // ZIP EXPORT FOR MULTIPLE TABLES
+        // If wishlist is included export as ZIP
+        // ==============================
+
+        if (selectedTables.includes("entertainment_wishlist")) {
+          await exportFullBackupZip({
+            userId: user.userId,
+            tables: selectedTables,
+            getTableData,
+          });
+
+          onStatusMessage("ZIP backup exported successfully", "success");
+
+          onClose();
+          return;
+        }
+
+        // Existing multi table export logic continues
         for (const table of selectedTables) {
           let data = getTableData(table);
 
@@ -268,15 +296,37 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
           data = data.filter((item) => item.id !== "system_collection");
         }
 
+        let exportPayload = {
+          version: "1.0",
+          type: "table",
+          table: selectedTable,
+          createdAt: new Date().toISOString(),
+          application: "SAP GUI Clone",
+          data: data,
+        };
+
+        // Only wishlist has images
+        if (selectedTable === "entertainment_wishlist") {
+          const images = [];
+
+          for (const item of data) {
+            if (!item.imageId) continue;
+
+            const blob = await getImageBlob(user.userId, item.imageId);
+
+            if (!blob) continue;
+
+            images.push({
+              id: item.imageId,
+              base64: await imageBlobToBase64(blob),
+            });
+          }
+
+          exportPayload.images = images;
+        }
+
         result = exportToJSON(
-          {
-            version: "1.0",
-            type: "table",
-            table: selectedTable,
-            createdAt: new Date().toISOString(),
-            application: "SAP GUI Clone",
-            data: data,
-          },
+          exportPayload,
           `${selectedTable}-${timestamp}.json`,
         );
       } else {
@@ -327,6 +377,19 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
       for (const file of files) {
         const extension = file.name.split(".").pop().toLowerCase();
 
+        if (extension === "zip") {
+          previews.push({
+            file,
+            type: "zip",
+            filename: file.name,
+            size: formatFileSize(file.size),
+            recordCount: "ZIP Backup",
+            backupType: "zip",
+          });
+
+          continue;
+        }
+
         if (extension === "json") {
           const result = await importFromJSON(file);
 
@@ -340,6 +403,7 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
               filename: file.name,
               size: formatFileSize(file.size),
               data: json.data,
+              images: json.images || [],
               detectedTable: json.table,
               recordCount: json.data.length,
             });
@@ -423,8 +487,21 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
       for (const preview of importPreviews) {
         const tableName = preview.detectedTable || selectedTable;
         const importData = preview.data;
+        const importImages = preview?.images || [];
 
         // Full backup
+        if (preview.backupType === "zip") {
+          await restoreFullBackupZip({
+            userId: user.userId,
+            file: preview.file,
+            saveTableData,
+            saveImageBlob
+          });
+
+          onStatusMessage("ZIP backup restored successfully", "success");
+
+          return;
+        }
         if (
           importData.version &&
           importData.data &&
@@ -515,6 +592,15 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
 
         saveTableData(tableName, [...existingData, ...processedData]);
 
+        // Restore images if this file contains them
+        if (tableName === "entertainment_wishlist" && importImages) {
+          for (const image of importImages) {
+            const blob = await base64ToImageBlob(image.base64);
+
+            await saveImageBlob(user.userId, image.id, blob);
+          }
+        }
+
         onStatusMessage(
           `Imported ${processedData.length} new records to ${tableName}. Skipped ${
             newData.length - processedData.length
@@ -544,12 +630,12 @@ const ImportExportModal = ({ isOpen, onClose, onStatusMessage, tab }) => {
     setImportPreviews([]);
 
     setSelectedTable("all");
-setSelectedTables([
-  "entertainment_wishlist",
-  "notes",
-  "expenses",
-  "collections",
-]);
+    setSelectedTables([
+      "entertainment_wishlist",
+      "notes",
+      "expenses",
+      "collections",
+    ]);
 
     setExportFormat("json");
     if (fileInputRef.current) {
@@ -575,10 +661,21 @@ setSelectedTables([
 
       if (rawData[tableName] && confirmed) {
         const tableLength = rawData[tableName].length;
+        const tableData = rawData[tableName];
         // 3. Delete the 'Selected' key
         delete rawData[tableName];
         // 4. Save it back to localStorage
         idbSetItem(userKey, rawData);
+
+        // delete images
+
+        if (tableName === "entertainment_wishlist") {
+          for (const item of tableData) {
+            if (item.imageId) {
+              await deleteImageBlob(user.userId, item.imageId);
+            }
+          }
+        }
 
         onStatusMessage(
           `Erased ${tableLength} records of ${selectedTable}`,
