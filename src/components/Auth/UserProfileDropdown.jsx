@@ -11,6 +11,7 @@ import { AvatarSVG } from "../Common/Avatar/Avatarpicker";
 
 const UserProfileDropdown = () => {
   const { user, logout } = useAuth();
+
   const { navigateToTransaction, isTransactionActive, currentTransaction } =
     useTransaction();
   const { settings, updateSetting } = useSettings();
@@ -27,21 +28,27 @@ const UserProfileDropdown = () => {
 
   useEffect(() => {
     const loadAvatar = async () => {
-      if (user?.userId) {
-        const users = getUsers();
+      if (!user?.userId) return;
 
-        const currentUser = users.find((u) => u.id === user.userId);
+      const users = getUsers();
+      const currentUser = users.find((u) => u.id === user.userId);
 
-        if (currentUser?.avatar) {
-          const avatar = await loadUserAvatar(currentUser.avatar);
-
-          setUserAvatar(avatar);
-        }
+      if (currentUser?.avatar) {
+        setUserAvatar(await loadUserAvatar(currentUser.avatar));
       }
     };
 
     loadAvatar();
-  }, [user, users]);
+
+    const handler = () => {
+      console.log("Event received");
+      loadAvatar();
+    };
+
+    window.addEventListener("user-profile-updated", handler);
+
+    return () => window.removeEventListener("user-profile-updated", handler);
+  }, [user?.userId]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

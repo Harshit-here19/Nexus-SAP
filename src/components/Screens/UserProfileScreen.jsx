@@ -16,7 +16,7 @@ import {
   changePassword,
   saveImageBlob,
   getImageBlob,
-  deleteImageBlob
+  deleteImageBlob,
 } from "../../utils/storage";
 
 const UserProfileScreen = () => {
@@ -54,7 +54,7 @@ const UserProfileScreen = () => {
 
   const loadAvatar = async (avatar) => {
     if (avatar?.style === "custom" && avatar.imageId) {
-      const blob = await getImageBlob(user?.userId,avatar.imageId);
+      const blob = await getImageBlob(user?.userId, avatar.imageId);
 
       if (!blob) {
         return {
@@ -75,7 +75,6 @@ const UserProfileScreen = () => {
       }
     );
   };
-
   // Load user profile data
   useEffect(() => {
     const loadProfile = async () => {
@@ -111,47 +110,35 @@ const UserProfileScreen = () => {
   }, [user?.userId]);
 
   const handleAvatarChange = async (avatar) => {
-
     let savedAvatar = {
-      style: avatar.style
+      style: avatar.style,
     };
-
 
     if (avatar.style === "custom" && avatar.blob) {
       const oldAvatar = profileData.avatar;
 
       // delete previous avatar image
       if (oldAvatar?.imageId) {
-        await deleteImageBlob(
-          user?.userId,
-          oldAvatar.imageId
-        );
+        await deleteImageBlob(user?.userId, oldAvatar.imageId);
       }
 
       const imageId = crypto.randomUUID();
-      await saveImageBlob(
-        user?.userId,
-        imageId,
-        avatar.blob
-      );
+      await saveImageBlob(user?.userId, imageId, avatar.blob);
 
       savedAvatar = {
         style: "custom",
-        imageId
+        imageId,
       };
     }
 
-    setProfileData(prev => ({
+    setProfileData((prev) => ({
       ...prev,
-      avatar: savedAvatar
+      avatar: savedAvatar,
     }));
 
     markAsChanged();
 
-    updateStatus(
-      "Avatar updated successfully",
-      "success"
-    );
+    updateStatus("Avatar updated successfully", "success");
   };
 
   // Handle profile field change
@@ -171,6 +158,8 @@ const UserProfileScreen = () => {
         setOriginalData(profileData);
         markAsSaved();
         updateStatus("Profile updated successfully", "success");
+
+        window.dispatchEvent(new Event("user-profile-updated"));
       } else {
         updateStatus(result.message || "Failed to update profile", "error");
       }
