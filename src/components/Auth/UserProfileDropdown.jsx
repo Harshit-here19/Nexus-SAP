@@ -4,13 +4,13 @@ import { useAuth } from "../../context/AuthContext";
 import { useTransaction } from "../../context/TransactionContext";
 import { useSettings } from "../../context/SettingsContext";
 import { useConfirm } from "../../context/ConfirmContext";
-import { getUsers, loadUserAvatar } from "../../utils/storage";
+import { getUsers, loadUserAvatar, getImageBlob } from "../../utils/storage";
 import "./UserProfileDropdown.css";
 
 import { AvatarSVG } from "../Common/Avatar/Avatarpicker";
 
 const UserProfileDropdown = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
 
   const { navigateToTransaction, isTransactionActive, currentTransaction } =
     useTransaction();
@@ -18,6 +18,7 @@ const UserProfileDropdown = () => {
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [userAvatar, setUserAvatar] = useState({ style: "cyber" });
+  const [profileUser, setProfileUser] = useState(user);
 
   const dropdownRef = useRef(null);
 
@@ -27,27 +28,59 @@ const UserProfileDropdown = () => {
   const isProfile = currentTransaction === "SU01";
 
   useEffect(() => {
-    const loadAvatar = async () => {
-      if (!user?.userId) return;
+    const loadAvatar = async (avatar, userId) => {
+      if (avatar?.style === "custom" && avatar.imageId) {
+        const blob = await getImageBlob(userId, avatar.imageId);
 
+        if (!blob) {
+          setUserAvatar({ style: "cyber" });
+          return;
+        }
+
+        const imageUrl = URL.createObjectURL(blob);
+
+        setUserAvatar({
+          style: "custom",
+          image: imageUrl,
+          imageId: avatar.imageId,
+        });
+
+        return;
+      }
+
+      setUserAvatar(
+        avatar || {
+          style: "cyber",
+        },
+      );
+    };
+
+    const syncUser = () => {
       const users = getUsers();
-      const currentUser = users.find((u) => u.id === user.userId);
+      const currentUser = users.find((u) => u.id === user?.userId);
 
-      if (currentUser?.avatar) {
-        setUserAvatar(await loadUserAvatar(currentUser.avatar));
+      console.log(currentUser)
+
+      if (currentUser) {
+        setProfileUser(currentUser);
+        loadAvatar(currentUser.avatar, currentUser.id);
       }
     };
 
-    loadAvatar();
+    // initial load
+    syncUser();
 
     const handler = () => {
-      console.log("Event received");
-      loadAvatar();
+      console.log("User profile updated");
+
+      syncUser();
     };
 
     window.addEventListener("user-profile-updated", handler);
 
-    return () => window.removeEventListener("user-profile-updated", handler);
+    return () => {
+      window.removeEventListener("user-profile-updated", handler);
+    };
   }, [user?.userId]);
 
   // Close dropdown when clicking outside
@@ -95,13 +128,11 @@ const UserProfileDropdown = () => {
   };
 
   const getInitials = () => {
-    if (user) {
-      return `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase();
+    if (profileUser) {
+      return `${profileUser?.firstName?.[0] || ""}${profileUser?.lastName?.[0] || ""}`.toUpperCase();
     }
     return "U";
   };
-
-  // console.log(settings);
 
   const formatName = (name = "") => {
     if (name.length > 10) {
@@ -127,8 +158,8 @@ const UserProfileDropdown = () => {
 
         {!isMobile && (
           <>
-            <span className="sap-user-name" title={user?.firstName}>
-              {formatName(user?.firstName)}
+            <span className="sap-user-name" title={profileUser?.firstName}>
+              {formatName(profileUser?.firstName)}
             </span>
             <span className="sap-user-caret">▾</span>
           </>
@@ -151,15 +182,17 @@ const UserProfileDropdown = () => {
             </div>
 
             <div className="sap-user-info">
-              <div className="sap-user-fullname">{user?.fullName}</div>
-              <div className="sap-user-email">{user?.email}</div>
+              <div className="sap-user-fullname">{profileUser?.fullName || `${profileUser.firstName} ${profileUser.lastName}`}</div>
+              <div className="sap-user-email">{profileUser?.email}</div>
 
               <div className="sap-user-meta">
-                <span className={`sap-badge ${user?.isAdmin ? "admin" : ""}`}>
-                  {user?.isAdmin ? "🔐 " : ""}
-                  {user?.role}
+                <span
+                  className={`sap-badge ${profileUser?.isAdmin ? "admin" : ""}`}
+                >
+                  {profileUser?.isAdmin ? "🔐 " : ""}
+                  {profileUser?.role}
                 </span>
-                <span className="sap-badge">{user?.department}</span>
+                <span className="sap-badge">{profileUser?.department}</span>
               </div>
             </div>
           </div>
@@ -261,8 +294,8 @@ const UserProfileDropdown = () => {
           </div>
 
           <div className="sap-user-footer">
-            Client {user?.client} • Session{" "}
-            {new Date(user?.loginTime).toLocaleTimeString()}
+            Client {profileUser?.client} • Session{" "}
+            {new Date(profileUser?.loginTime).toLocaleTimeString()}
           </div>
         </div>
       )}
