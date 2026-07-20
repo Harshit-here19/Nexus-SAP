@@ -416,7 +416,7 @@ const HomeScreen = () => {
               color: "var(--sap-text-secondary)",
             }}
           >
-            View analytics and track your spending
+            View analytics and track your spending, Extract images of Charts by Right Clicking
           </div>
         </div>
         <div

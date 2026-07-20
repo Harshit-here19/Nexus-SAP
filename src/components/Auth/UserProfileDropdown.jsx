@@ -58,8 +58,7 @@ const UserProfileDropdown = () => {
     const syncUser = () => {
       const users = getUsers();
       const currentUser = users.find((u) => u.id === user?.userId);
-
-      console.log(currentUser)
+      // console.log(currentUser)
 
       if (currentUser) {
         setProfileUser(currentUser);

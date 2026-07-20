@@ -6,6 +6,8 @@ import SapInput from "../Common/SapInput";
 import SapSelect from "../Common/SapSelect";
 import SapModal from "../Common/SapModal";
 import { AvatarPicker, AvatarSVG } from "../Common/Avatar/Avatarpicker";
+import NotificationModule from "../Common/NotificationModule";
+
 import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
 import { useSettings } from "../../context/SettingsContext";
@@ -138,7 +140,8 @@ const UserProfileScreen = () => {
 
     markAsChanged();
 
-    updateStatus("Avatar updated successfully", "success");
+    // updateStatus("Avatar updated successfully", "success");
+    NotificationModule.notify("success", "Avatar updated successfully", { type: 'success' });
   };
 
   // Handle profile field change
@@ -157,11 +160,13 @@ const UserProfileScreen = () => {
       if (result.success) {
         setOriginalData(profileData);
         markAsSaved();
-        updateStatus("Profile updated successfully", "success");
+        // updateStatus("Profile updated successfully", "success");
+        NotificationModule.notify("success", "Profile updated successfully", { type: 'success' });
 
         window.dispatchEvent(new Event("user-profile-updated"));
       } else {
-        updateStatus(result.message || "Failed to update profile", "error");
+        // updateStatus(result.message || "Failed to update profile", "error");
+        NotificationModule.notify("error", result.message || "Failed to update profile", { type: 'error' });
       }
     }, 600);
   };
@@ -170,7 +175,8 @@ const UserProfileScreen = () => {
   const handleResetProfile = () => {
     setProfileData(originalData);
     markAsSaved();
-    updateStatus("Changes discarded", "info");
+    // updateStatus("Changes discarded", "info");
+    NotificationModule.notify("info", "Changes discarded", { type: 'info' });
   };
 
   // Handle password change
@@ -210,7 +216,8 @@ const UserProfileScreen = () => {
         newPassword: "",
         confirmPassword: "",
       });
-      updateStatus("Password changed successfully", "success");
+      // updateStatus("Password changed successfully", "success");
+      NotificationModule.notify("success", "Password changed successfully", { type: 'success' });
     } else {
       setPasswordError(result.message);
     }
@@ -219,7 +226,8 @@ const UserProfileScreen = () => {
   // Handle settings change
   const handleSettingChange = (key, value) => {
     updateSetting(key, value);
-    updateStatus(`Setting updated: ${key}`, "success");
+    // updateStatus(`Setting updated: ${key}`, "success");
+    NotificationModule.notify("success", `Setting updated: ${key}`, { type: 'success' });
   };
 
   // Calculate session duration
@@ -855,7 +863,8 @@ const UserProfileScreen = () => {
                   );
                   if (confirmed) {
                     resetSettings();
-                    updateStatus("Settings reset to default", "success");
+                    // updateStatus("Settings reset to default", "success");
+                    NotificationModule.notify("success", "Settings reset to default", { type: 'success' });
                   }
                 }}
               >

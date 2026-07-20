@@ -6,6 +6,7 @@ import SapSelect from "../Common/SapSelect";
 import SapTabs from "../Common/SapTabs";
 import SapModal from "../Common/SapModal";
 import Autocomplete from "../Common/Autocomplete";
+import NotificationModule from "../Common/NotificationModule";
 
 import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
@@ -166,13 +167,15 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     setIsLoaded(false);
     setErrors({});
     markAsSaved();
-    updateStatus("Form cleared", "info");
+    // updateStatus("Form cleared", "info");
+    NotificationModule.notify("info", "Form cleared", { type: 'info' });
   };
 
   // Save expense
   saveRef.current = () => {
     if (!validateForm()) {
-      updateStatus("Please fill in all required fields", "error");
+      // updateStatus("Please fill in all required fields", "error");
+      NotificationModule.notify("error", "Please fill in all required fields", { type: 'error' });
       return;
     }
 
@@ -191,20 +194,20 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
         setFormData((prev) => ({ ...prev, expenseNumber: expNumber }));
         markAsSaved();
         clearRef.current?.();
-        updateStatus(`Expense ${expNumber} created successfully`, "success");
+        // updateStatus(`Expense ${expNumber} created successfully`, "success");
+        NotificationModule.notify("success", `Expense ${expNumber} created successfully`, { type: 'success' });
       } else if (mode === "change") {
         updateRecord("expenses", formData.id, {
           ...formData,
           amount: parseFloat(formData.amount).toFixed(2),
         });
         markAsSaved();
-        updateStatus(
-          `Expense ${formData.expenseNumber} updated successfully`,
-          "success",
-        );
+        // updateStatus(`Expense ${formData.expenseNumber} updated successfully`, "success",);
+        NotificationModule.notify("success", `Expense ${formData.expenseNumber} updated successfully`, { type: 'success' });
       }
     } catch (error) {
-      updateStatus(`Error saving expense: ${error.message}`, "error");
+      // updateStatus(`Error saving expense: ${error.message}`, "error");
+      NotificationModule.notify("error", `Error saving expense: ${error.message}`, { type: 'error' });
     }
   };
 
@@ -276,7 +279,8 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     setFormData(expense);
     setIsLoaded(true);
     setShowSearchModal(false);
-    updateStatus(`Expense ${expense.expenseNumber} selected`, "success");
+    // updateStatus(`Expense ${expense.expenseNumber} selected`, "success");
+    NotificationModule.notify("success", `Expense ${expense.expenseNumber} selected`, { type: 'success' });
   };
 
   // =========================================================
@@ -286,7 +290,8 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
   // Load expense for edit/view
   const loadExpense = () => {
     if (!expenseId.trim()) {
-      updateStatus("Enter an expense ID", "warning");
+      // updateStatus("Enter an expense ID", "warning");
+      NotificationModule.notify("warning", "Enter an expense ID", { type: 'warning' });
       return;
     }
 
@@ -294,9 +299,11 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     if (expense) {
       setFormData(expense);
       setIsLoaded(true);
-      updateStatus(`Expense ${expenseId} loaded successfully`, "success");
+      // updateStatus(`Expense ${expenseId} loaded successfully`, "success");
+      NotificationModule.notify("success", `Expense ${expenseId} loaded successfully`, { type: 'success' });
     } else {
-      updateStatus(`Expense ${expenseId} not found`, "error");
+      // updateStatus(`Expense ${expenseId} not found`, "error");
+      NotificationModule.notify("error", `Expense ${expenseId} not found`, { type: 'error' });
     }
   };
 
@@ -316,7 +323,8 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
       saveAllData(allData);
       clearRef.current?.();
       goBack();
-      updateStatus("Expense deleted successfully", "success");
+      // updateStatus("Expense deleted successfully", "success");
+      NotificationModule.notify("success", "Expense deleted successfully", { type: 'success' });
     }
   };
 
@@ -335,7 +343,8 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
       allData.expenses = filtered;
       saveAllData(allData);
       clearRef.current?.();
-      updateStatus("Expense deleted successfully", "success");
+      // updateStatus("Expense deleted successfully", "success");
+      NotificationModule.notify("success", "Expense deleted successfully", { type: 'success' });
       setSearchResults(filtered);
     }
     markAsSaved();
@@ -362,7 +371,6 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
           return newHistory;
         });
 
-        updateStatus("Close the Opened Note", "info");
         return true; // Signal that we handled the back — don't do default back
       });
     } else {
@@ -875,17 +883,16 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
           </div>
           <div>
             <span
-              className={`sap-badge ${
-                formData.status === "approved"
-                  ? "success"
-                  : formData.status === "rejected"
-                    ? "error"
-                    : formData.status === "reimbursed"
-                      ? "success"
-                      : formData.status === "pending"
-                        ? "warning"
-                        : "info"
-              }`}
+              className={`sap-badge ${formData.status === "approved"
+                ? "success"
+                : formData.status === "rejected"
+                  ? "error"
+                  : formData.status === "reimbursed"
+                    ? "success"
+                    : formData.status === "pending"
+                      ? "warning"
+                      : "info"
+                }`}
             >
               {t(`expenseForm.${formData.status || "recorded"}`)}
             </span>
@@ -900,12 +907,12 @@ const ExpenseTrackerScreen = ({ mode = "create" }) => {
     { label: t("expenseForm.notesTab"), icon: "🏷️", content: notesTab },
     ...(formData.id
       ? [
-          {
-            label: t("expenseForm.historyTab"),
-            icon: "📋",
-            content: historyTab,
-          },
-        ]
+        {
+          label: t("expenseForm.historyTab"),
+          icon: "📋",
+          content: historyTab,
+        },
+      ]
       : []),
   ];
 
@@ -1372,16 +1379,15 @@ const generateExpenseReport = (expenses) => {
         <div class="detail-row">
           <div class="detail-field">
             <span class="field-label">Date</span>
-            <span class="field-value">${
-              expense.date
-                ? new Date(expense.date).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })
-                : "—"
-            }</span>
+            <span class="field-value">${expense.date
+          ? new Date(expense.date).toLocaleDateString("en-US", {
+            weekday: "short",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+          : "—"
+        }</span>
           </div>
           <div class="detail-field">
             <span class="field-label">Category</span>
@@ -1392,52 +1398,47 @@ const generateExpenseReport = (expenses) => {
             <span class="field-value amount">${formatCurrency(expense.amount)}</span>
           </div>
         </div>
-        ${
-          expense.description
-            ? `
+        ${expense.description
+          ? `
           <div class="detail-description">
             <span class="field-label">Description</span>
             <p>${expense.description}</p>
           </div>
         `
-            : ""
+          : ""
         }
-        ${
-          expense.vendor
-            ? `
+        ${expense.vendor
+          ? `
           <div class="detail-extra">
             <span><strong>Vendor:</strong> ${expense.vendor}</span>
           </div>
         `
-            : ""
+          : ""
         }
-        ${
-          expense.paymentMethod
-            ? `
+        ${expense.paymentMethod
+          ? `
           <div class="detail-extra">
             <span><strong>Payment Method:</strong> ${expense.paymentMethod}</span>
           </div>
         `
-            : ""
+          : ""
         }
-        ${
-          expense.receipt
-            ? `
+        ${expense.receipt
+          ? `
           <div class="detail-extra">
             <span><strong>Receipt:</strong> ✓ Attached</span>
           </div>
         `
-            : ""
+          : ""
         }
-        ${
-          expense.notes
-            ? `
+        ${expense.notes
+          ? `
           <div class="detail-notes">
             <span class="field-label">Notes</span>
             <p>${expense.notes}</p>
           </div>
         `
-            : ""
+          : ""
         }
       </div>
     `,
@@ -1811,20 +1812,20 @@ const generateExpenseReport = (expenses) => {
           <div class="info">
             <div><strong>Report ID:</strong> RPT-${Date.now().toString().slice(-8)}</div>
             <div><strong>Generated:</strong> ${new Date().toLocaleDateString(
-              "en-US",
-              {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              },
-            )}</div>
+    "en-US",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    },
+  )}</div>
             <div><strong>Time:</strong> ${new Date().toLocaleTimeString(
-              "en-US",
-              {
-                hour: "2-digit",
-                minute: "2-digit",
-              },
-            )}</div>
+    "en-US",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  )}</div>
           </div>
         </div>
 

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import ExpenseSelection from "./ExpenseSelection";
 import ExpenseALVGrid from "./ExpenseALVGrid";
 
+import NotificationModule from "../../Common/NotificationModule";
+
 import { getTableData } from "../../../utils/storage";
 import { useTransaction } from "../../../context/TransactionContext";
 
@@ -24,7 +26,8 @@ const ZExpReport = () => {
 
         markAsSaved();
 
-        updateStatus("Returned to Selection Screen", "info");
+        // updateStatus("Returned to Selection Screen", "info");
+        NotificationModule.notify("info", "Returned to Selection Screen", { type: 'info' });
 
         return true;
       });

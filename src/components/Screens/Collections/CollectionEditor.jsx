@@ -1,11 +1,15 @@
 import { useMemo, useState } from "react";
 import { useConfirm } from "../../../context/ConfirmContext";
 
+import NotificationModule from "../../Common/NotificationModule";
+
 const CollectionEditor = ({
   formData,
   onChange,
   onToggleCompleted,
   isReadOnly,
+  filter,
+  sortBy
 }) => {
   const [itemText, setItemText] = useState("");
   const [deleteCandidate, setDeleteCandidate] = useState(null);
@@ -20,6 +24,49 @@ const CollectionEditor = ({
       delay: `${i * 0.7}s`,
     }));
   }, []);
+
+  const displayedItems = useMemo(() => {
+    let items = [...formData.items];
+
+    // Filter
+    switch (filter) {
+      case "completed":
+        items = items.filter((item) => item.completed);
+        break;
+
+      case "pending":
+        items = items.filter((item) => !item.completed);
+        break;
+
+      default:
+        break;
+    }
+
+    // Sort
+    switch (sortBy) {
+      case "az":
+        items.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+
+      case "za":
+        items.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+
+      case "completed":
+        items.sort((a, b) => b.completed - a.completed);
+        break;
+
+      case "pending":
+        items.sort((a, b) => a.completed - b.completed);
+        break;
+
+      default:
+        // Keep original order
+        break;
+    }
+
+    return items;
+  }, [formData.items, filter, sortBy]);
 
   const addItem = () => {
     if (!itemText.trim()) return;
@@ -66,6 +113,7 @@ const CollectionEditor = ({
     if (isReadOnly) {
       await navigator.clipboard.writeText(item.name);
       console.log("Copied:", item.name);
+      NotificationModule.notify("info", `${formData.collectionNumber} Copied!`, { type: 'info' });
       return;
     }
 
@@ -88,6 +136,7 @@ const CollectionEditor = ({
   return (
     <div className="collection-editor">
       {/* TITLE */}
+      
 
       <div className="collection-title-section">
         <label className="collection-label">Collection Title</label>
@@ -143,10 +192,10 @@ const CollectionEditor = ({
       {/* ITEMS */}
 
       <div className="collection-grid">
-        {formData.items.length === 0 ? (
+        {displayedItems.length === 0 ? (
           <div className="collection-empty">No items added yet</div>
         ) : (
-          formData.items.map((item) => (
+          displayedItems.map((item) => (
             <div
               key={item.id}
               className={`

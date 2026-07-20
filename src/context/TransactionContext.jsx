@@ -1,5 +1,6 @@
 // src/context/TransactionContext.jsx
 import React, { createContext, useContext, useState, useCallback } from "react";
+import NotificationModule from "../components/Common/NotificationModule"
 
 const TransactionContext = createContext();
 
@@ -78,14 +79,15 @@ export const TransactionProvider = ({ children }) => {
           setShowExitConfirm(true);
           return false;
         } else {
-          setStatusMessage(
-            `Please go back (F3) before entering another transaction`,
-          );
-          setStatusType("warning");
-          setTimeout(() => {
-            setStatusMessage("Ready");
-            setStatusType("info");
-          }, 4000);
+          // setStatusMessage(
+          //   `Please go back (F3) before entering another transaction`,
+          // );
+          // setStatusType("warning");
+          // setTimeout(() => {
+          //   setStatusMessage("Ready");
+          //   setStatusType("info");
+          // }, 4000);
+          NotificationModule.notify("warning", "Please go back (F3) before entering another transaction.", {type:"warning"});
           return false;
         }
       }
@@ -105,6 +107,7 @@ export const TransactionProvider = ({ children }) => {
 
       setStatusMessage(`Transaction ${cleanTcode} started`);
       setStatusType("success");
+      NotificationModule.notify("success", `Transaction ${cleanTcode} started`, {type:"success"});
 
       // Call the history callback if set
       if (onTransactionExecute && cleanTcode !== "HOME") {

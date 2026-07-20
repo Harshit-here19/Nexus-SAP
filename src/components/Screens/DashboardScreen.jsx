@@ -5,7 +5,10 @@ import { useAuth } from "../../context/AuthContext";
 import { useAction } from "../../context/ActionContext";
 import { useFavorites } from "../../context/FavoritesContext";
 import { useSettings } from "../../context/SettingsContext";
+
 import SapButton from "../Common/SapButton";
+import NotificationModule from "./EntertainmentWishlistScreen";
+
 import {
   getTableData,
   getUsers,
@@ -147,7 +150,7 @@ const DashboardScreen = () => {
       setStats(expenseStats);
     } catch (error) {
       console.error("Error loading dashboard:", error);
-      updateStatus("Error loading dashboard data", "error");
+      NotificationModule.notify("error", "Error loading dashboard data", { type: 'error' });
     }
     setLoading(false);
   };
@@ -377,12 +380,10 @@ const DashboardScreen = () => {
 
     try {
       if (!exportOptions.fromDate || !exportOptions.toDate) {
-        // updateStatus("Please select posting date range", "error");
         throw new Error("Please select posting date range");
       }
 
       if (new Date(exportOptions.fromDate) > new Date(exportOptions.toDate)) {
-        // updateStatus("From date cannot be greater than To date", "error");
         throw new Error("From date cannot be greater than To date");
       }
 
@@ -390,10 +391,10 @@ const DashboardScreen = () => {
 
       setShowExportModal(false);
 
-      updateStatus("Spreadsheet exported successfully", "success");
+      NotificationModule.notify("success", "Spreadsheet exported successfully", { type: 'success' });
     } catch (err) {
       console.log(err.message);
-      updateStatus(err.message, "error");
+      NotificationModule.notify("error", err.message, { type: 'error' });
     }
   };
 

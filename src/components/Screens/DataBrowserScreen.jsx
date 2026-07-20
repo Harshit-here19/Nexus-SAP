@@ -4,6 +4,7 @@ import SapButton from "../Common/SapButton";
 import SapSelect from "../Common/SapSelect";
 import SapInput from "../Common/SapInput";
 import SapModal from "../Common/SapModal";
+import NotificationModule from "../Common/NotificationModule";
 import { useTransaction } from "../../context/TransactionContext";
 import { getAllData, getExpenseCategories } from "../../utils/storage";
 import { parseMarkdown } from "./Notes/NotesUtils";
@@ -219,7 +220,8 @@ const DataBrowserScreen = () => {
         setFilters({});
         setSelectedRows([]);
         setCurrentPage(1);
-        updateStatus("Back to table selection", "info");
+        // updateStatus("Back to table selection", "info");
+        NotificationModule.notify("info", "Back to table selection", { type: 'info' });
         return true; // handled internally
       }
 
@@ -255,7 +257,8 @@ const DataBrowserScreen = () => {
   // Load table data
   const handleLoadTable = () => {
     if (!selectedTable) {
-      updateStatus("Please select a table", "warning");
+      // updateStatus("Please select a table", "warning");
+      NotificationModule.notify("warning", "Please select a table", { type: 'warning' });
       return;
     }
 
@@ -293,9 +296,9 @@ const DataBrowserScreen = () => {
             .replace(/(\w{3}) (\d{4})/, "$1, $2"),
           amount: item?.amount
             ? "₹ " +
-              parseFloat(item.amount)
-                .toFixed(1)
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            parseFloat(item.amount)
+              .toFixed(1)
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
             : "₹ 0.0",
           category: (
             categoryObj?.label?.en ||
@@ -333,18 +336,18 @@ const DataBrowserScreen = () => {
 
         createdAt: item.createdAt
           ? new Date(item.createdAt).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
           : "",
 
         updatedAt: item.updatedAt
           ? new Date(item.updatedAt).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
           : "",
 
         items: item.items?.map((x) => x.name).join(", ") || "",
@@ -357,18 +360,18 @@ const DataBrowserScreen = () => {
 
         createdOn: item.createdOn
           ? new Date(item.createdOn).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
           : "",
 
         date: item.date
           ? new Date(item.date).toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })
           : "",
       }));
     }
@@ -381,10 +384,8 @@ const DataBrowserScreen = () => {
     setFilters({});
     setSortConfig({ key: null, direction: "asc" });
 
-    updateStatus(
-      `Table ${selectedTable.toUpperCase()} loaded: ${data.length} entries`,
-      "success",
-    );
+    // updateStatus(`Table ${selectedTable.toUpperCase()} loaded: ${data.length} entries`, "success",);
+    NotificationModule.notify("success", `Table ${selectedTable.toUpperCase()} loaded: ${data.length} entries`, { type: 'success' });
   };
 
   // Filter and sort data
@@ -513,7 +514,8 @@ const DataBrowserScreen = () => {
         : processedData;
 
     if (dataToExport.length === 0) {
-      updateStatus("No data to export", "warning");
+      // updateStatus("No data to export", "warning");
+      NotificationModule.notify("warning", "No data to export", { type: 'warning' });
       return;
     }
 
@@ -535,7 +537,8 @@ const DataBrowserScreen = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    updateStatus(`Exported ${dataToExport.length} records to CSV`, "success");
+    // updateStatus(`Exported ${dataToExport.length} records to CSV`, "success");
+    NotificationModule.notify("success", `Exported ${dataToExport.length} records to CSV`, { type: 'success' });
   };
 
   // Export to JSON
@@ -547,7 +550,8 @@ const DataBrowserScreen = () => {
         : processedData;
 
     if (dataToExport.length === 0) {
-      updateStatus("No data to export", "warning");
+      // updateStatus("No data to export", "warning");
+      NotificationModule.notify("warning", "No data to export", { type: 'warning' });
       return;
     }
 
@@ -564,7 +568,8 @@ const DataBrowserScreen = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    updateStatus(`Exported ${dataToExport.length} records to JSON`, "success");
+    // updateStatus(`Exported ${dataToExport.length} records to JSON`, "success");
+    NotificationModule.notify("success", `Exported ${dataToExport.length} records to JSON`, { type: 'success' });
   };
 
   // Get sort icon
@@ -760,8 +765,8 @@ const DataBrowserScreen = () => {
                             setShowExportDropdown(false);
                           }}
                           onMouseOver={(e) =>
-                            (e.currentTarget.style.background =
-                              "var(--sap-highlight)")
+                          (e.currentTarget.style.background =
+                            "var(--sap-highlight)")
                           }
                           onMouseOut={(e) =>
                             (e.currentTarget.style.background = "transparent")
@@ -776,8 +781,8 @@ const DataBrowserScreen = () => {
                           }}
                           className={styles["export-dropdown-item"]}
                           onMouseOver={(e) =>
-                            (e.currentTarget.style.background =
-                              "var(--sap-highlight)")
+                          (e.currentTarget.style.background =
+                            "var(--sap-highlight)")
                           }
                           onMouseOut={(e) =>
                             (e.currentTarget.style.background = "transparent")

@@ -7,6 +7,7 @@ import SapButton from "../../Common/SapButton";
 import SapInput from "../../Common/SapInput";
 import SapTabs from "../../Common/SapTabs";
 import Autocomplete from "../../Common/Autocomplete";
+import NotificationModule from "../../Common/NotificationModule";
 
 import CollectionEditor from "./CollectionEditor";
 import CollectionSearchModal from "./CollectionSearchModal";
@@ -42,6 +43,9 @@ export const CollectionScreen = ({ mode = "create" }) => {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [filter, setFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("default");
 
   const saveRef = useRef();
   const clearRef = useRef();
@@ -87,7 +91,8 @@ export const CollectionScreen = ({ mode = "create" }) => {
       `COLLECTION_${collection.collectionNumber}`,
     ]);
 
-    updateStatus(`${collection.collectionNumber} loaded`, "success");
+    // updateStatus(`${collection.collectionNumber} loaded`, "success");
+    NotificationModule.notify("success", `${collection.collectionNumber} loaded`, { type: 'success' });
   };
 
   /*
@@ -102,7 +107,8 @@ export const CollectionScreen = ({ mode = "create" }) => {
     );
 
     if (!collection) {
-      updateStatus("Collection not found", "error");
+      // updateStatus("Collection not found", "error");
+      NotificationModule.notify("error", "Collection not found", { type: 'error' });
       return;
     }
 
@@ -114,7 +120,8 @@ export const CollectionScreen = ({ mode = "create" }) => {
       `COLLECTION_${collection.collectionNumber}`,
     ]);
 
-    updateStatus(`Collection ${collection.collectionNumber} loaded`, "success");
+    // updateStatus(`Collection ${collection.collectionNumber} loaded`, "success");
+    NotificationModule.notify("success", `Collection ${collection.collectionNumber} loaded`, { type: 'success' });
   };
 
   const toggleItemCompleted = (id) => {
@@ -124,36 +131,37 @@ export const CollectionScreen = ({ mode = "create" }) => {
       items: prev.items.map((item) =>
         item.id === id
           ? {
-              ...item,
-              completed: item.completed === true ? false : true,
-            }
+            ...item,
+            completed: item.completed === true ? false : true,
+          }
           : item,
       ),
     }));
   };
 
   const DeleteInSearchModal = async (id) => {
-      if (!id) return;
-  
-      const confirmed = await confirm(
-        "Are you sure you want to delete this Expense?",
-        "danger",
-      );
-      if (confirmed) {
-        const collections = getTableData("collections");
-        const filtered = collections.filter((e) => e.id !== id);
-        const allData = getAllData();
+    if (!id) return;
 
-        allData.collections = filtered;
-        saveAllData(allData);
+    const confirmed = await confirm(
+      "Are you sure you want to delete this Expense?",
+      "danger",
+    );
+    if (confirmed) {
+      const collections = getTableData("collections");
+      const filtered = collections.filter((e) => e.id !== id);
+      const allData = getAllData();
 
-        clearRef.current?.();
+      allData.collections = filtered;
+      saveAllData(allData);
 
-        updateStatus("Collection deleted successfully", "success");
-        setSearchResults(filtered);
-      }
-      markAsSaved();
-    };
+      clearRef.current?.();
+
+      // updateStatus("Collection deleted successfully", "success");
+      NotificationModule.notify("success", "Collection deleted successfully", { type: 'success' });
+      setSearchResults(filtered);
+    }
+    markAsSaved();
+  };
 
   /*   * SAVE   */
 
@@ -165,7 +173,8 @@ export const CollectionScreen = ({ mode = "create" }) => {
     }
 
     if (formData.system) {
-      updateStatus("System collection cannot be modified", "error");
+      // updateStatus("System collection cannot be modified", "error");
+      NotificationModule.notify("error", "System collection cannot be modified", { type: 'error' });
 
       return;
     }
@@ -189,7 +198,8 @@ export const CollectionScreen = ({ mode = "create" }) => {
 
       saveAllData(allData);
 
-      updateStatus(`${collectionNumber} created`, "success");
+      // updateStatus(`${collectionNumber} created`, "success");
+      NotificationModule.notify("success", `${collectionNumber} created`, { type: 'success' });
 
       // Reset form after successful save
       setFormData(INITIAL_COLLECTION);
@@ -208,7 +218,8 @@ export const CollectionScreen = ({ mode = "create" }) => {
 
         saveAllData(allData);
 
-        updateStatus(`${formData.collectionNumber} updated`, "success");
+        // updateStatus(`${formData.collectionNumber} updated`, "success");
+        NotificationModule.notify("success", `${formData.collectionNumber} updated`, { type: 'success' });
       }
     }
   };
@@ -227,7 +238,8 @@ export const CollectionScreen = ({ mode = "create" }) => {
     const allData = getAllData();
 
     if (formData.system) {
-      updateStatus("System collection cannot be deleted", "error");
+      // updateStatus("System collection cannot be deleted", "error");
+      NotificationModule.notify("error", "System collection cannot be deleted", { type: 'error' });
 
       return;
     }
@@ -246,7 +258,8 @@ export const CollectionScreen = ({ mode = "create" }) => {
 
       clearRef.current();
 
-      updateStatus("Collection deleted", "success");
+      // updateStatus("Collection deleted", "success");
+      NotificationModule.notify("success", "Collection deleted", { type: 'success' });
     }
   };
 
@@ -274,8 +287,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
         <td class="col-num">${index + 1}</td>
         <td class="col-name">${item.title || "Unnamed Item"}</td>
         <td class="col-date">
-          ${
-            item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"
+          ${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"
           }
         </td>
       </tr>
@@ -309,11 +321,10 @@ export const CollectionScreen = ({ mode = "create" }) => {
           <span>
             Created:
             <strong>
-            ${
-              item.createdAt
-                ? new Date(item.createdAt).toLocaleString()
-                : "Unknown"
-            }
+            ${item.createdAt
+            ? new Date(item.createdAt).toLocaleString()
+            : "Unknown"
+          }
             </strong>
           </span>
 
@@ -321,19 +332,18 @@ export const CollectionScreen = ({ mode = "create" }) => {
 
         <div class="detail-content">
 
-          ${
-            item.items
-              ? item.items
-                  .map(
-                    (row, rowNo) => `
+          ${item.items
+            ? item.items
+              .map(
+                (row, rowNo) => `
                 <div class="collectionRow">
                   <span class="rowNo">${rowNo + 1}</span>
                   <span class="rowName">${row.name}</span>
                 </div>
               `,
-                  )
-                  .join("")
-              : "No content"
+              )
+              .join("")
+            : "No content"
           }
         </div>
 
@@ -666,8 +676,6 @@ export const CollectionScreen = ({ mode = "create" }) => {
           return newHistory;
         });
 
-        updateStatus("Close the Opened Collection", "info");
-
         return true; // stop default back
       });
     } else {
@@ -719,6 +727,8 @@ export const CollectionScreen = ({ mode = "create" }) => {
           onChange={handleChange}
           onToggleCompleted={toggleItemCompleted}
           isReadOnly={mode === "display"}
+          filter={filter}
+          sortBy={sortBy}
         />
       ),
     },
@@ -727,20 +737,47 @@ export const CollectionScreen = ({ mode = "create" }) => {
   return (
     <div className="sap-panel">
       <div className="sap-panel-header">
-        <span>📚 Collection Manager</span>
+        <div style={{
+          display: "flex",
+          gap: "1rem",
+          flexWrap: "wrap"
+        }}>
+          <span>📚 Collection Manager</span>
 
-        <div>
-          <span
-            className={`sap-badge ${
-              mode === "create"
+          <div>
+            <span
+              className={`sap-badge ${mode === "create"
                 ? "info"
                 : mode === "change"
                   ? "warning"
                   : "success"
-            }`}
+                }`}
+            >
+              {mode === "create" ? "NEW" : mode === "change" ? "EDIT" : "VIEW"}
+            </span>
+          </div>
+        </div>
+
+        <div className="collection-controls">
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
           >
-            {mode === "create" ? "NEW" : mode === "change" ? "EDIT" : "VIEW"}
-          </span>
+            <option value="all">All</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="default">Default</option>
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+            <option value="completed">Completed First</option>
+            <option value="pending">Pending First</option>
+          </select>
         </div>
       </div>
 
@@ -766,10 +803,8 @@ export const CollectionScreen = ({ mode = "create" }) => {
                     `COLLECTION_${collection.collectionNumber}`,
                   ]);
 
-                  updateStatus(
-                    `${collection.collectionNumber} loaded`,
-                    "success",
-                  );
+                  // updateStatus(`${collection.collectionNumber} loaded`, "success",);
+                  NotificationModule.notify("success", `${collection.collectionNumber} loaded`, { type: 'success' });
                 }}
                 renderSuggestion={(collection) => (
                   <>

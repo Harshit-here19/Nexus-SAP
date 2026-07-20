@@ -7,6 +7,7 @@ import SapTabs from "../Common/SapTabs";
 import SapModal from "../Common/SapModal";
 import SapToggleBox from "../Common/SapToggleBox";
 import Autocomplete from "../Common/Autocomplete";
+import NotificationModule from "../Common/NotificationModule"
 
 import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
@@ -211,12 +212,14 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      updateStatus("Please select an image file", "error");
+      // updateStatus("Please select an image file", "error");
+      NotificationModule.notify("error", "Please select an image file", { type: 'error' });
       return;
     }
 
     if (file.size > MAX_IMAGE_SIZE) {
-      updateStatus("Image size must be below 8 MB", "error");
+      // updateStatus("Image size must be below 8 MB", "error");
+      NotificationModule.notify("error", "Image size must be below 8 MB", { type: 'error' });
       return;
     }
 
@@ -237,10 +240,12 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       handleChange("imageId", imageId);
       handleChange("imageUrl", previewUrl);
 
-      updateStatus("Cover image processed successfully", "success");
+      // updateStatus("Cover image processed successfully", "success");
+      NotificationModule.notify("success", "Cover image processed successfully", { type: 'success' });
     } catch (err) {
       console.error(err);
-      updateStatus("Unable to process image", "error");
+      // updateStatus("Unable to process image", "error");
+      NotificationModule.notify("error", "Unable to process image", { type: 'error' });
     }
   };
 
@@ -296,11 +301,13 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   // Load item for edit/view
   const loadItem = async (autoId = itemId) => {
     if (!user?.userId) {
-      updateStatus("User data not loaded yet", "warning");
+      // updateStatus("User data not loaded yet", "warning");
+      NotificationModule.notify("warning", "User data not loaded yet", { type: 'warning' });
       return;
     }
     if (!autoId.trim()) {
-      updateStatus("Enter an item ID", "warning");
+      // updateStatus("Enter an item ID", "warning");
+      NotificationModule.notify("warning", "Enter an item ID", { type: 'warning' });
       return;
     }
 
@@ -324,9 +331,11 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
 
       setFormData(loadedItem);
       setIsLoaded(true);
-      updateStatus(`Item ${autoId} loaded successfully`, "success");
+      // updateStatus(`Item ${autoId} loaded successfully`, "success");
+      NotificationModule.notify("success", `Item ${autoId} loaded successfully`, { type: 'success' });
     } else {
-      updateStatus(`Item ${autoId} not found`, "error");
+      // updateStatus(`Item ${autoId} not found`, "error");
+      NotificationModule.notify("error", `Item ${autoId} not found`, { type: 'error' });
     }
   };
 
@@ -378,7 +387,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     setFormData(item);
     setIsLoaded(true);
     setShowSearchModal(false);
-    updateStatus(`Item ${item.itemNumber} selected`, "success");
+    // updateStatus(`Item ${item.itemNumber} selected`, "success");
+    // NotificationModule.notify("success", `Item ${item.itemNumber} selected`, { type: 'success' });
   };
 
   // Validate form
@@ -402,7 +412,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
   // Save item
   saveRef.current = () => {
     if (!validateForm()) {
-      updateStatus("Please fill in all required fields", "error");
+      // updateStatus("Please fill in all required fields", "error");
+      NotificationModule.notify("error", "Please fill in all required fields", { type: 'error' });
       return;
     }
 
@@ -428,7 +439,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
         setFormData((prev) => ({ ...prev, itemNumber, id: newItem.id }));
         markAsSaved();
         clearRef.current?.();
-        updateStatus(`Item ${itemNumber} created successfully`, "success");
+        // updateStatus(`Item ${itemNumber} created successfully`, "success");
+        NotificationModule.notify("success", `Item ${itemNumber} created successfully`, { type: 'success' });
       } else if (mode === "change") {
         const index = allData.entertainment_wishlist.findIndex(
           (i) => i.id === formData.id,
@@ -442,14 +454,13 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           };
           saveAllData(allData);
           markAsSaved();
-          updateStatus(
-            `Item ${formData.itemNumber} updated successfully`,
-            "success",
-          );
+          // updateStatus(`Item ${formData.itemNumber} updated successfully`, "success",);
+          NotificationModule.notify("success", `Item ${formData.itemNumber} updated successfully`, { type: 'success' });
         }
       }
     } catch (error) {
-      updateStatus(`Error saving item: ${error.message}`, "error");
+      // updateStatus(`Error saving item: ${error.message}`, "error");
+      NotificationModule.notify("error", `Error saving item: ${error.message}`, { type: 'error' });
     }
   };
 
@@ -460,7 +471,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
     setIsLoaded(false);
     setErrors({});
     markAsSaved();
-    updateStatus("Form cleared", "info");
+    // updateStatus("Form cleared", "info");
+    NotificationModule.notify("info", "Form cleared", { type: 'info' });
   };
 
   useEffect(() => {
@@ -506,7 +518,6 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           return newHistory;
         });
 
-        updateStatus("Close the Opened Note", "info");
         return true; // Signal that we handled the back — don't do default back
       });
     } else {
@@ -569,7 +580,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       saveAllData(allData);
       clearRef.current?.();
       goBack();
-      updateStatus("Item deleted successfully", "success");
+      // updateStatus("Item deleted successfully", "success");
+      NotificationModule.notify("success", "Item deleted Successfully", { type: 'success' });
     }
   };
 
@@ -591,7 +603,8 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
       allData.entertainment_wishlist = filtered;
       saveAllData(allData);
       clearRef.current?.();
-      updateStatus("Item deleted successfully", "success");
+      // updateStatus("Item deleted successfully", "success");
+      NotificationModule.notify("success", "Item deleted successfully", { type: 'success' });
       setSearchResults(filtered);
     }
     markAsSaved();
@@ -1224,17 +1237,16 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                 }}
               >
                 <span
-                  className={`sap-badge ${
-                    formData.status === "completed"
-                      ? "success"
-                      : formData.status === "in_progress"
-                        ? "info"
-                        : formData.status === "dropped"
-                          ? "error"
-                          : formData.status === "on_hold"
-                            ? "warning"
-                            : ""
-                  }`}
+                  className={`sap-badge ${formData.status === "completed"
+                    ? "success"
+                    : formData.status === "in_progress"
+                      ? "info"
+                      : formData.status === "dropped"
+                        ? "error"
+                        : formData.status === "on_hold"
+                          ? "warning"
+                          : ""
+                    }`}
                   style={{
                     fontSize: isDisplayMode ? "12px" : "11px",
 
@@ -1287,12 +1299,12 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                   ...(isDisplayMode
                     ? {}
                     : {
-                        maxHeight: isMobile ? "none" : "90px",
-                        overflow: "hidden",
-                        display: "-webkit-box",
-                        WebkitLineClamp: isMobile ? 5 : 2,
-                        WebkitBoxOrient: "vertical",
-                      }),
+                      maxHeight: isMobile ? "none" : "90px",
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: isMobile ? 5 : 2,
+                      WebkitBoxOrient: "vertical",
+                    }),
                 }}
               >
                 {formData.description}
@@ -1784,17 +1796,16 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
           </div>
           <div>
             <span
-              className={`sap-badge ${
-                formData.status === "completed"
-                  ? "success"
-                  : formData.status === "dropped"
-                    ? "error"
-                    : formData.status === "in_progress"
-                      ? "info"
-                      : formData.status === "on_hold"
-                        ? "warning"
-                        : ""
-              }`}
+              className={`sap-badge ${formData.status === "completed"
+                ? "success"
+                : formData.status === "dropped"
+                  ? "error"
+                  : formData.status === "in_progress"
+                    ? "info"
+                    : formData.status === "on_hold"
+                      ? "warning"
+                      : ""
+                }`}
               style={{
                 fontSize: "11px",
                 padding: "2px 8px",
@@ -1924,14 +1935,7 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                       setFormData(item);
                       setItemId(item.itemNumber);
                       setIsLoaded(true);
-
-                      console.log(item.itemNumber);
                       loadItem(item.itemNumber);
-
-                      updateStatus(
-                        `Item ${item.itemNumber} loaded successfully`,
-                        "success",
-                      );
                     }}
                     renderSuggestion={(item) => (
                       <div>
@@ -2255,17 +2259,16 @@ const EntertainmentWishlistScreen = ({ mode = "create" }) => {
                     </td>
                     <td>
                       <span
-                        className={`sap-badge ${
-                          item.status === "completed"
-                            ? "success"
-                            : item.status === "in_progress"
-                              ? "info"
-                              : item.status === "dropped"
-                                ? "error"
-                                : item.status === "on_hold"
-                                  ? "warning"
-                                  : ""
-                        }`}
+                        className={`sap-badge ${item.status === "completed"
+                          ? "success"
+                          : item.status === "in_progress"
+                            ? "info"
+                            : item.status === "dropped"
+                              ? "error"
+                              : item.status === "on_hold"
+                                ? "warning"
+                                : ""
+                          }`}
                         style={{
                           fontSize: "11px",
                           padding: "2px 8px",
@@ -2448,8 +2451,7 @@ const generateMediaReport = (mediaItems) => {
 
     return `
     ${'<span style="color: gold;font-size: 1rem;">★</span>'.repeat(fullStars)}
-    ${
-      halfStar
+    ${halfStar
         ? `
       <span style="
         background: linear-gradient(90deg, gold 50%, #ccc 50%);
@@ -2459,7 +2461,7 @@ const generateMediaReport = (mediaItems) => {
       ">★</span>
     `
         : ""
-    }
+      }
     ${'<span style="color: #ccc;font-size: 1rem;">★</span>'.repeat(emptyStars)}
   `;
   };
@@ -2514,15 +2516,14 @@ const generateMediaReport = (mediaItems) => {
               <span class="meta-item"><strong>Platform:</strong> ${item.platform || "—"}</span>
             </div>
             
-            ${
-              item.genres && item.genres.length > 0
-                ? `
+            ${item.genres && item.genres.length > 0
+          ? `
               <div class="genres">
                 ${item.genres.map((genre) => `<span class="genre-tag">${genre}</span>`).join("")}
               </div>
             `
-                : ""
-            }
+          : ""
+        }
             
             <div class="info-row">
               ${item.cast ? `<div class="info-item"><strong>Cast:</strong> ${item.cast}</div>` : ""}
@@ -2530,26 +2531,24 @@ const generateMediaReport = (mediaItems) => {
               ${item.studio ? `<div class="info-item"><strong>Studio:</strong> ${item.studio}</div>` : ""}
             </div>
             
-            ${
-              item.description
-                ? `
+            ${item.description
+          ? `
               <div class="description">
                 <p>${item.description}</p>
               </div>
             `
-                : ""
-            }
+          : ""
+        }
             
-            ${
-              item.notes
-                ? `
+            ${item.notes
+          ? `
               <div class="notes">
                 <strong>Notes:</strong>
                 <p>${item.notes}</p>
               </div>
             `
-                : ""
-            }
+          : ""
+        }
             
             <div class="media-footer">
               <span class="item-number">${item.itemNumber || `#${index + 1}`}</span>
@@ -2903,16 +2902,16 @@ const generateMediaReport = (mediaItems) => {
           <h1>🎬 My Media Collection</h1>
           <p class="subtitle">Movies • TV Shows • Anime • Games • Books</p>
           <p class="generated">Generated on ${new Date().toLocaleDateString(
-            "en-US",
-            {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            },
-          )}</p>
+    "en-US",
+    {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  )}</p>
         </div>
 
         <div class="stats-grid">

@@ -39,6 +39,7 @@ import SapTabs from "../../Common/SapTabs";
 import SapModal from "../../Common/SapModal";
 import { parseMarkdown } from "../../Common/MarkdownPreview";
 import Autocomplete from "../../Common/Autocomplete";
+import NotificationModule from "../../Common/NotificationModule";
 
 import "./NotesStyles.css";
 
@@ -135,7 +136,8 @@ const NotesScreen = ({ mode = "create" }) => {
     setFormData(note);
     setIsLoaded(true);
 
-    updateStatus(`Note ${note.noteNumber} loaded`, "success");
+    // updateStatus(`Note ${note.noteNumber} loaded`, "success");
+    NotificationModule.notify("success", `Note ${note.noteNumber} loaded`, { type: 'success' });
   };
 
   // Insert text at cursor position
@@ -259,7 +261,8 @@ const NotesScreen = ({ mode = "create" }) => {
   // Load note
   const loadNote = () => {
     if (!noteId.trim()) {
-      updateStatus("Enter a note ID", "warning");
+      // updateStatus("Enter a note ID", "warning");
+      NotificationModule.notify("warning", "Enter a note ID", { type: 'warning' });
       return;
     }
 
@@ -269,9 +272,11 @@ const NotesScreen = ({ mode = "create" }) => {
     if (note) {
       setFormData(note);
       setIsLoaded(true);
-      updateStatus(`Note ${noteId} loaded successfully`, "success");
+      // updateStatus(`Note ${noteId} loaded successfully`, "success");
+      NotificationModule.notify("success", `Note ${noteId} loaded successfully`, { type: 'success' });
     } else {
-      updateStatus(`Note ${noteId} not found`, "error");
+      // updateStatus(`Note ${noteId} not found`, "error");
+      NotificationModule.notify("error", `Note ${noteId} not found`, { type: 'error' });
     }
   };
 
@@ -318,7 +323,8 @@ const NotesScreen = ({ mode = "create" }) => {
 
       // Replace this with your real password validation logic
       if (enteredPassword !== note.password) {
-        updateStatus("Incorrect password", "error");
+        // updateStatus("Incorrect password", "error");
+        NotificationModule.notify("error", "Incorrect password", { type: 'error' });
         return;
       }
     }
@@ -327,7 +333,8 @@ const NotesScreen = ({ mode = "create" }) => {
     setFormData(note);
     setIsLoaded(true);
     setShowSearchModal(false);
-    updateStatus(`Note ${note.noteNumber} selected`, "success");
+    // updateStatus(`Note ${note.noteNumber} selected`, "success");
+    NotificationModule.notify("success", `Note ${note.noteNumber} selected`, { type: 'success' });
   };
 
   // Validate form
@@ -367,7 +374,8 @@ const NotesScreen = ({ mode = "create" }) => {
   // Save note
   saveRef.current = () => {
     if (!validateForm()) {
-      updateStatus("Please fill in all required fields", "error");
+      // updateStatus("Please fill in all required fields", "error");
+      NotificationModule.notify("error", "Please fill in all required fields", { type: 'error' });
       return;
     }
 
@@ -390,7 +398,8 @@ const NotesScreen = ({ mode = "create" }) => {
         setFormData((prev) => ({ ...prev, noteNumber, id: newNote.id }));
         markAsSaved();
         clearRef.current?.();
-        updateStatus(`Note ${noteNumber} created successfully`, "success");
+        // updateStatus(`Note ${noteNumber} created successfully`, "success");
+        NotificationModule.notify("success", `Note ${noteNumber} created successfully`, { type: 'success' });
       } else if (mode === "change") {
         const index = allData.notes.findIndex((n) => n.id === formData.id);
         if (index !== -1) {
@@ -400,14 +409,13 @@ const NotesScreen = ({ mode = "create" }) => {
           };
           saveAllData(allData);
           markAsSaved();
-          updateStatus(
-            `Note ${formData.noteNumber} updated successfully`,
-            "success",
-          );
+          // updateStatus(`Note ${formData.noteNumber} updated successfully`, "success",);
+          NotificationModule.notify("success", `Note ${formData.noteNumber} updated successfully`, { type: 'success' });
         }
       }
     } catch (error) {
-      updateStatus(`Error saving note: ${error.message}`, "error");
+      // updateStatus(`Error saving note: ${error.message}`, "error");
+      NotificationModule.notify("error", `Error saving note: ${error.message}`, { type: 'error' });
     }
   };
 
@@ -422,7 +430,8 @@ const NotesScreen = ({ mode = "create" }) => {
     setErrors({});
     setShowPreview(false);
     markAsSaved();
-    updateStatus("Form cleared", "info");
+    // updateStatus("Form cleared", "info");
+    NotificationModule.notify("info", "Form cleared", { type: 'info' });
   };
 
   // Delete note
@@ -439,7 +448,8 @@ const NotesScreen = ({ mode = "create" }) => {
       saveAllData(allData);
       clearRef.current?.();
       goBack();
-      updateStatus("Note deleted successfully", "success");
+      // updateStatus("Note deleted successfully", "success");
+      NotificationModule.notify("success", "Note deleted successfully", { type: 'success' });
     }
   };
 
@@ -458,7 +468,8 @@ const NotesScreen = ({ mode = "create" }) => {
       allData.notes = filtered;
       saveAllData(allData);
       clearRef.current?.();
-      updateStatus("Note deleted successfully", "success");
+      // updateStatus("Note deleted successfully", "success");
+      NotificationModule.notify("success", "Note deleted successfully", { type: 'success' });
       setSearchResults(filtered);
     }
     markAsSaved();
@@ -478,7 +489,8 @@ const NotesScreen = ({ mode = "create" }) => {
       isPinned: true,
       ...counts,
     }));
-    updateStatus("Demo note loaded! Explore all the features.", "success");
+    // updateStatus("Demo note loaded! Explore all the features.", "success");
+    NotificationModule.notify("success", "Demo note loaded! Explore all the features.", { type: 'success' });
   };
 
   // Print Function
@@ -686,7 +698,6 @@ const NotesScreen = ({ mode = "create" }) => {
           return newHistory;
         });
 
-        updateStatus("Close the Opened Note", "info");
         return true; // Signal that we handled the back — don't do default back
       });
     } else {
@@ -704,7 +715,6 @@ const NotesScreen = ({ mode = "create" }) => {
     clearBackHandler,
     setTransactionHistory,
     markAsSaved,
-    updateStatus,
     user?.username,
   ]);
 
@@ -765,12 +775,12 @@ const NotesScreen = ({ mode = "create" }) => {
     },
     ...(formData.id
       ? [
-          {
-            label: "History",
-            icon: "🕐",
-            content: <NotesHistory formData={formData} />,
-          },
-        ]
+        {
+          label: "History",
+          icon: "🕐",
+          content: <NotesHistory formData={formData} />,
+        },
+      ]
       : []),
   ];
 

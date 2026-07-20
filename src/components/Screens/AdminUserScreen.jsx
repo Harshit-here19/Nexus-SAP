@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import SapButton from "../Common/SapButton";
 import SapModal from "../Common/SapModal";
+import NotificationModule from "../Common/NotificationModule";
 import { useTransaction } from "../../context/TransactionContext";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -98,12 +99,11 @@ const AdminUserScreen = () => {
     const result = updateUser(user.id, { isActive: !user.isActive });
     if (result.success) {
       loadUsers();
-      updateStatus(
-        `User ${user.username} ${user.isActive ? "deactivated" : "activated"}`,
-        "success",
-      );
+      // updateStatus(`User ${user.username} ${user.isActive ? "deactivated" : "activated"}`, "success",);
+      NotificationModule.notify("success", `User ${user.username} ${user.isActive ? "deactivated" : "activated"}`, { type: 'success' });
     } else {
-      updateStatus(result.message, "error");
+      // updateStatus(result.message, "error");
+      NotificationModule.notify("error", result.message, { type: 'error' });
     }
   };
 
@@ -112,16 +112,19 @@ const AdminUserScreen = () => {
     const result = unlockUser(user.id);
     if (result.success) {
       loadUsers();
-      updateStatus(`User ${user.username} unlocked`, "success");
+      // updateStatus(`User ${user.username} unlocked`, "success");
+      NotificationModule.notify("success", `User ${user.username} unlocked`, { type: 'success' });
     } else {
-      updateStatus(result.message, "error");
+      // updateStatus(result.message, "error");
+      NotificationModule.notify("error", result.message, { type: 'error' });
     }
   };
 
   // Handle password reset
   const handleResetPassword = () => {
     if (!newPassword || newPassword.length < 6) {
-      updateStatus("Password must be at least 6 characters", "warning");
+      // updateStatus("Password must be at least 6 characters", "warning");
+      NotificationModule.notify("warning", "Password must be at least 6 characters", { type: 'warning' });
       return;
     }
 
@@ -130,9 +133,11 @@ const AdminUserScreen = () => {
       loadUsers();
       setShowPasswordModal(false);
       setNewPassword("");
-      updateStatus(`Password reset for ${selectedUser.username}`, "success");
+      // updateStatus(`Password reset for ${selectedUser.username}`, "success");
+      NotificationModule.notify("success", `Password reset for ${selectedUser.username}`, { type: 'success' });
     } else {
-      updateStatus(result.message, "error");
+      // updateStatus(result.message, "error");
+      NotificationModule.notify("error", result.message, { type: 'error' });
     }
   };
 
@@ -143,9 +148,11 @@ const AdminUserScreen = () => {
       loadUsers();
       setShowDeleteConfirm(false);
       setSelectedUser(null);
-      updateStatus(`User ${selectedUser.username} deleted`, "success");
+      // updateStatus(`User ${selectedUser.username} deleted`, "success");
+      NotificationModule.notify("success", `User ${selectedUser.username} deleted`, { type: 'success' });
     } else {
-      updateStatus(result.message, "error");
+      // updateStatus(result.message, "error");
+      NotificationModule.notify("error", result.message, { type: 'error' });
     }
   };
 
@@ -158,7 +165,8 @@ const AdminUserScreen = () => {
       !newUser.lastName ||
       !newUser.email
     ) {
-      updateStatus("Please fill in all required fields", "warning");
+      // updateStatus("Please fill in all required fields", "warning");
+      NotificationModule.notify("warning", "Please fill in all required fields", { type: 'warning' });
       return;
     }
 
@@ -186,28 +194,30 @@ const AdminUserScreen = () => {
         department: "",
         isActive: true,
       });
-      updateStatus("User created successfully", "success");
+      // updateStatus("User created successfully", "success");
+      NotificationModule.notify("success", "User created successfully", { type: 'success' });
     } else {
-      updateStatus(result.message, "error");
+      // updateStatus(result.message, "error");
+      NotificationModule.notify("error", result.message, { type: 'error' });
     }
   };
 
   // Handle role change
   const handleRoleChange = (user, newRole) => {
     if (user.id === currentUser.userId && newRole !== "Admin") {
-      updateStatus("Cannot change your own role", "warning");
+      // updateStatus("Cannot change your own role", "warning");
+      NotificationModule.notify("warning", "Cannot change your own role", { type: 'warning' });
       return;
     }
 
     const result = updateUser(user.id, { role: newRole });
     if (result.success) {
       loadUsers();
-      updateStatus(
-        `User ${user.username} role changed to ${newRole}`,
-        "success",
-      );
+      // updateStatus(`User ${user.username} role changed to ${newRole}`, "success",);
+      NotificationModule.notify("success", `User ${user.username} role changed to ${newRole}`, { type: 'success' });
     } else {
-      updateStatus(result.message, "error");
+      // updateStatus(result.message, "error");
+      NotificationModule.notify("error", result.message, { type: 'error' });
     }
   };
 
