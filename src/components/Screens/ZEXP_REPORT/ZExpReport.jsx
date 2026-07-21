@@ -11,6 +11,7 @@ import { useTransaction } from "../../../context/TransactionContext";
 const ZExpReport = () => {
   const [screen, setScreen] = useState("selection");
   const [data, setData] = useState([]);
+  const [encoded, setEncoded] = useState("");
 
   const { registerBackHandler, clearBackHandler, updateStatus, markAsSaved } =
     useTransaction();
@@ -41,11 +42,11 @@ const ZExpReport = () => {
     registerBackHandler,
     clearBackHandler,
     markAsSaved,
-    updateStatus,
   ]);
 
   const executeReport = (filters) => {
     let expenses = getTableData("expenses") || [];
+    // console.log(filters.fromDate, filters.toDate)
 
     if (filters.fromDate) {
       expenses = expenses.filter(
@@ -71,6 +72,20 @@ const ZExpReport = () => {
       );
     }
 
+    const payload = {
+      version: "1.0",
+      type: "expense_report",
+      table: "expenses",
+      createdAt: new Date().toISOString(),
+      data: expenses
+    };
+
+    // const payload = { msg : "Hello world"}
+
+    const encoded = btoa(JSON.stringify(payload));
+
+    setEncoded(encoded);
+
     setData(expenses);
     setScreen("alv");
   };
@@ -78,7 +93,7 @@ const ZExpReport = () => {
   return (
     <>
       {screen === "alv" ? (
-        <ExpenseALVGrid data={data} />
+        <ExpenseALVGrid data={data} encoded={encoded} />
       ) : (
         <ExpenseSelection onExecute={executeReport} />
       )}

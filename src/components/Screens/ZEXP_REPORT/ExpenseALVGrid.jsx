@@ -1,8 +1,11 @@
 import React, { useMemo, useState } from "react";
+import QRCode from "react-qr-code";
+
 import styles from "./ExpenseALVGrid.module.css";
 
 import SapButton from "../../Common/SapButton";
 import SapModal from "../../Common/SapModal";
+import NotificationModule from "../../Common/NotificationModule";
 
 const DEFAULT_COLUMNS = [
   {
@@ -69,7 +72,7 @@ const formatCurrency = (amount, currency = "INR") => {
   }).format(Number(amount || 0));
 };
 
-const ExpenseALVGrid = ({ data = [] }) => {
+const ExpenseALVGrid = ({ data = [], encoded }) => {
   const [columns, setColumns] = useState(() => {
     const saved = localStorage.getItem("expenseALVLayout");
 
@@ -84,6 +87,24 @@ const ExpenseALVGrid = ({ data = [] }) => {
   const [showChooser, setShowChooser] = useState(false);
   const [groupByCategory, setGroupByCategory] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState(null);
+  const [showQR, setShowQR] = useState(false)
+
+
+  const handleShowQR = () => {
+    const MAX_QR_LENGTH = 2500;
+
+    if (encoded.length > MAX_QR_LENGTH) {
+      NotificationModule.notify(
+        "warning",
+        `QR transfer supports up to ${MAX_QR_LENGTH} characters. Refine your filters or transfer fewer records.`,
+        { type: "warning" }
+      );
+
+      return;
+    }
+
+    setShowQR(prev => !prev)
+  }
 
   // SORT
 
@@ -124,9 +145,9 @@ const ExpenseALVGrid = ({ data = [] }) => {
       prev.map((c) =>
         c.key === key
           ? {
-              ...c,
-              visible: !c.visible,
-            }
+            ...c,
+            visible: !c.visible,
+          }
           : c,
       ),
     );
@@ -156,206 +177,219 @@ const ExpenseALVGrid = ({ data = [] }) => {
   }, [sortedData]);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.toolbar}>
-        <div className={styles.titleArea}>
-          <h2>Expense ALV Report</h2>
-          <span>{data.length} Records</span>
-        </div>
+    <>
+      <div className={styles.container}>
+        <div className={styles.toolbar}>
+          <div className={styles.titleArea}>
+            <h2>Expense ALV Report</h2>
+            <span>{data.length} Records</span>
+          </div>
 
-        <div className={styles.toolbarActions}>
-          <SapButton
-            type="glass"
-            onClick={() => {
-              if (!selectedColumn) return;
+          <div className={styles.toolbarActions}>
+            <SapButton type="glass-active" onClick={handleShowQR} disabled={data?.length > 10}>
+              QR
+            </SapButton>
+            <SapButton
+              type="glass"
+              onClick={() => {
+                if (!selectedColumn) return;
 
-              setSort({
-                field: selectedColumn,
-                direction: "asc",
-              });
-            }}
-          >
-            ↑ Asc
-          </SapButton>
-
-          <SapButton
-            type="glass"
-            onClick={() => {
-              if (!selectedColumn) return;
-
-              setSort({
-                field: selectedColumn,
-                direction: "desc",
-              });
-            }}
-          >
-            ↓ Desc
-          </SapButton>
-
-          <SapButton type="glass" onClick={() => setShowChooser(!showChooser)}>
-            Columns
-          </SapButton>
-
-          <SapButton type="primary" onClick={saveLayout}>
-            Save Layout
-          </SapButton>
-
-          <label className={styles.checkbox}>
-            <input
-              type="checkbox"
-              checked={groupByCategory}
-              onChange={(e) => setGroupByCategory(e.target.checked)}
-            />
-            Group by Category
-          </label>
-        </div>
-      </div>
-
-      <SapModal
-        isOpen={showChooser}
-        onClose={() => setShowChooser(false)}
-        title="Change Layout"
-        width="520px"
-        footer={
-          <>
-            <SapButton type="close" onClick={() => setShowChooser(false)}>
-              Cancel
+                setSort({
+                  field: selectedColumn,
+                  direction: "asc",
+                });
+              }}
+            >
+              ↑ Asc
             </SapButton>
 
             <SapButton
-              type="primary"
+              type="glass"
               onClick={() => {
-                saveLayout();
-                setShowChooser(false);
+                if (!selectedColumn) return;
+
+                setSort({
+                  field: selectedColumn,
+                  direction: "desc",
+                });
               }}
             >
-              Apply
+              ↓ Desc
             </SapButton>
-          </>
-        }
-      >
-        <div className={styles.layoutChooser}>
-          {columns.map((column) => (
-            <div
-              key={column.key}
-              className={`${styles.layoutRow}
-                    ${column.visible ? styles.layoutRowSelected : ""}`}
-              onClick={() => toggleColumn(column.key)}
-            >
-              <span>{column.label}</span>
-            </div>
-          ))}
+
+            <SapButton type="glass" onClick={() => setShowChooser(!showChooser)}>
+              Columns
+            </SapButton>
+
+            <SapButton type="primary" onClick={saveLayout}>
+              Save Layout
+            </SapButton>
+
+            <label className={styles.checkbox}>
+              <input
+                type="checkbox"
+                checked={groupByCategory}
+                onChange={(e) => setGroupByCategory(e.target.checked)}
+              />
+              Group by Category
+            </label>
+          </div>
         </div>
-      </SapModal>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              {columns
-                .filter((c) => c.visible)
-                .map((col) => (
-                  <th
-                    key={col.key}
-                    onClick={() =>
-                      setSelectedColumn((prev) =>
-                        prev === col.key ? null : col.key,
-                      )
-                    }
-                    className={
-                      selectedColumn === col.key ? styles.selectedHeader : ""
-                    }
-                  >
-                    <div className={styles.headerCell}>
-                      <span>{col.label}</span>
+        <SapModal
+          isOpen={showChooser}
+          onClose={() => setShowChooser(false)}
+          title="Change Layout"
+          width="520px"
+          footer={
+            <>
+              <SapButton type="close" onClick={() => setShowChooser(false)}>
+                Cancel
+              </SapButton>
 
-                      {sort.field === col.key && (
-                        <span className={styles.sortArrow}>
-                          {sort.direction === "asc" ? "▲" : "▼"}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {Object.entries(groupedData).map(([category, rows]) => (
-              <React.Fragment key={category}>
-                {groupByCategory && (
-                  <tr className={styles.groupRow}>
-                    <td colSpan={columns.filter((c) => c.visible).length}>
-                      📂 {category}
-                    </td>
-                  </tr>
-                )}
-
-                {rows.map((item) => (
-                  <tr className={styles.dataRow} key={item.expenseNumber}>
-                    {columns
-                      .filter((c) => c.visible)
-                      .map((col) => (
-                        <td
-                          key={col.key}
-                          className={
-                            selectedColumn === col.key
-                              ? styles.selectedColumn
-                              : ""
-                          }
-                        >
-                          {col.key === "date"
-                            ? formatDate(item.date)
-                            : col.key === "amount"
-                              ? formatCurrency(item.amount, item.currency)
-                              : item[col.key] || "-"}
-                        </td>
-                      ))}
-                  </tr>
-                ))}
-
-                {groupByCategory && (
-                  <tr className={styles.subtotal}>
-                    <td>Subtotal</td>
-
-                    <td colSpan={columns.filter((c) => c.visible).length - 2} />
-
-                    <td className={styles.subtotalValue}>
-                      {formatCurrency(
-                        rows.reduce((sum, x) => sum + Number(x.amount || 0), 0),
-                      )}
-                    </td>
-                  </tr>
-                )}
-              </React.Fragment>
+              <SapButton
+                type="primary"
+                onClick={() => {
+                  saveLayout();
+                  setShowChooser(false);
+                }}
+              >
+                Apply
+              </SapButton>
+            </>
+          }
+        >
+          <div className={styles.layoutChooser}>
+            {columns.map((column) => (
+              <div
+                key={column.key}
+                className={`${styles.layoutRow}
+                    ${column.visible ? styles.layoutRowSelected : ""}`}
+                onClick={() => toggleColumn(column.key)}
+              >
+                <span>{column.label}</span>
+              </div>
             ))}
-            <tr className={styles.totalRow}>
-              {columns
-                .filter((c) => c.visible)
-                .map((col, index, visibleColumns) => {
-                  if (index === 0) {
-                    return (
-                      <td key={col.key} className={styles.totalLabel}>
-                        Total
-                      </td>
-                    );
-                  }
+          </div>
+        </SapModal>
 
-                  if (col.key === "amount") {
-                    return (
-                      <td key={col.key} className={styles.totalValue}>
-                        {formatCurrency(grandTotal)}
-                      </td>
-                    );
-                  }
+        <div className={styles.tableWrapper}>
 
-                  return <td key={col.key}></td>;
-                })}
-            </tr>
-          </tbody>
-        </table>
+
+          {showQR ?
+            encoded && <QRCode
+              value={encoded}
+              size={500}
+            /> :
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  {columns
+                    .filter((c) => c.visible)
+                    .map((col) => (
+                      <th
+                        key={col.key}
+                        onClick={() =>
+                          setSelectedColumn((prev) =>
+                            prev === col.key ? null : col.key,
+                          )
+                        }
+                        className={
+                          selectedColumn === col.key ? styles.selectedHeader : ""
+                        }
+                      >
+                        <div className={styles.headerCell}>
+                          <span>{col.label}</span>
+
+                          {sort.field === col.key && (
+                            <span className={styles.sortArrow}>
+                              {sort.direction === "asc" ? "▲" : "▼"}
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {Object.entries(groupedData).map(([category, rows]) => (
+                  <React.Fragment key={category}>
+                    {groupByCategory && (
+                      <tr className={styles.groupRow}>
+                        <td colSpan={columns.filter((c) => c.visible).length}>
+                          📂 {category}
+                        </td>
+                      </tr>
+                    )}
+
+                    {rows.map((item) => (
+                      <tr className={styles.dataRow} key={item.expenseNumber}>
+                        {columns
+                          .filter((c) => c.visible)
+                          .map((col) => (
+                            <td
+                              key={col.key}
+                              className={
+                                selectedColumn === col.key
+                                  ? styles.selectedColumn
+                                  : ""
+                              }
+                            >
+                              {col.key === "date"
+                                ? formatDate(item.date)
+                                : col.key === "amount"
+                                  ? formatCurrency(item.amount, item.currency)
+                                  : item[col.key] || "-"}
+                            </td>
+                          ))}
+                      </tr>
+                    ))}
+
+                    {groupByCategory && (
+                      <tr className={styles.subtotal}>
+                        <td>Subtotal</td>
+
+                        <td colSpan={columns.filter((c) => c.visible).length - 2} />
+
+                        <td className={styles.subtotalValue}>
+                          {formatCurrency(
+                            rows.reduce((sum, x) => sum + Number(x.amount || 0), 0),
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+                <tr className={styles.totalRow}>
+                  {columns
+                    .filter((c) => c.visible)
+                    .map((col, index, visibleColumns) => {
+                      if (index === 0) {
+                        return (
+                          <td key={col.key} className={styles.totalLabel}>
+                            Total
+                          </td>
+                        );
+                      }
+
+                      if (col.key === "amount") {
+                        return (
+                          <td key={col.key} className={styles.totalValue}>
+                            {formatCurrency(grandTotal)}
+                          </td>
+                        );
+                      }
+
+                      return <td key={col.key}></td>;
+                    })}
+                </tr>
+              </tbody>
+            </table>
+          }
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

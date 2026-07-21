@@ -1,9 +1,17 @@
 import React, { useState } from "react";
+
 import styles from "./ExpenseSelection.module.css";
+import ExpenseQRScanner from "./ExpenseQRScanner";
 
 import { getExpenseCategories } from "../../../utils/storage";
+
 import SapInput from "../../Common/SapInput";
 import SapSelect from "../../Common/SapSelect";
+import SapButton from "../../Common/SapButton";
+import SapModal from "../../Common/SapModal";
+import NotificationModule from "../../Common/NotificationModule";
+
+import { importExpenses } from "../../../utils/importExpense";
 
 const ExpenseSelection = ({ onExecute }) => {
   const categories = getExpenseCategories();
@@ -14,12 +22,37 @@ const ExpenseSelection = ({ onExecute }) => {
     category: "ALL",
     vendor: "",
   });
+  const [showScanner, setShowScanner] = useState(false);
 
   const handleChange = (field, value) => {
     setFilters((prev) => ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleQRScan = (decodedText) => {
+    try {
+      const payload = JSON.parse(atob(decodedText));
+
+      if (payload.type !== "expense_report") {
+        throw new Error("Invalid Expense QR.");
+      }
+
+      importExpenses(payload.data);
+
+      // Give html5-qrcode a moment to finish
+      setTimeout(() => {
+        setShowScanner(false);
+      }, 200);
+
+    } catch (err) {
+      NotificationModule.notify(
+        "error",
+        err.message,
+        { type: "error" }
+      );
+    }
   };
 
   return (
@@ -35,14 +68,14 @@ const ExpenseSelection = ({ onExecute }) => {
             label="Posting Date From"
             type="date"
             value={filters.fromDate}
-            onChange={(val) => {handleChange("fromDate", val)}}
+            onChange={(val) => { handleChange("fromDate", val) }}
           />
 
           <SapInput
             label="Posting Date to"
             type="date"
             value={filters.toDate}
-            onChange={(val) => {handleChange("toDate", val)}}
+            onChange={(val) => { handleChange("toDate", val) }}
           />
 
           <SapSelect
@@ -68,14 +101,30 @@ const ExpenseSelection = ({ onExecute }) => {
         </div>
 
         <div className={styles.footer}>
-          <button
-            className={styles.executeButton}
+          <SapButton
+            type="neo"
             onClick={() => onExecute(filters)}
           >
             ▶ Execute (F8)
-          </button>
+          </SapButton>
+          <SapButton
+            type="neo-active"
+            onClick={() => setShowScanner(true)}
+          >
+            📷 Scan QR
+          </SapButton>
         </div>
       </div>
+
+      <SapModal
+        isOpen={showScanner}
+        onClose={() => setShowScanner(false)}
+        title="Scan Expense QR"
+      >
+        <ExpenseQRScanner
+          onScan={handleQRScan}
+        />
+      </SapModal>
     </div>
   );
 };

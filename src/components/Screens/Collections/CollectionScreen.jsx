@@ -758,6 +758,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
           </div>
         </div>
 
+        {mode !== "create" && 
         <div className="collection-controls">
           <select
             value={filter}
@@ -779,6 +780,7 @@ export const CollectionScreen = ({ mode = "create" }) => {
             <option value="pending">Pending First</option>
           </select>
         </div>
+        }
       </div>
 
       <div className="sap-panel-content">
