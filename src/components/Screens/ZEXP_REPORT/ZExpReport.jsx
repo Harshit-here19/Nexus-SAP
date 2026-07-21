@@ -72,8 +72,19 @@ const ZExpReport = () => {
       );
     }
 
-    // const payload = { msg : "Hello world"}
+    if (filters.expenseNumber.trim()) {
+      expenses = expenses.filter((e) =>
+        e.expenseNumber?.toLowerCase().includes(filters.expenseNumber.toLowerCase()),
+      );
+    }
 
+    if (filters.description.trim()) {
+      expenses = expenses.filter((e) =>
+        e.description?.toLowerCase().includes(filters.description.toLowerCase()),
+      );
+    }
+
+    // const payload = { msg : "Hello world"}
     const QR_COLUMNS = [
       "expenseNumber",
       "date",

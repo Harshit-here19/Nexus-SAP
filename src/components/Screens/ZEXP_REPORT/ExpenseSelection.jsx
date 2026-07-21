@@ -21,6 +21,8 @@ const ExpenseSelection = ({ onExecute }) => {
     toDate: "",
     category: "ALL",
     vendor: "",
+    expenseNumber:"",
+    description: "",
   });
   const [showScanner, setShowScanner] = useState(false);
 
@@ -109,6 +111,20 @@ const ExpenseSelection = ({ onExecute }) => {
             type="text"
             value={filters.vendor}
             onChange={(val) => handleChange("vendor", val)}
+          />
+
+          <SapInput
+            label="Expense ID"
+            type="text"
+            value={filters.expenseNumber}
+            onChange={(val) => handleChange("expenseNumber", val)}
+          />
+
+          <SapInput
+            label="Description"
+            type="text"
+            value={filters.description}
+            onChange={(val) => handleChange("description", val)}
           />
         </div>
 
