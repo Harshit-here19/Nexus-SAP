@@ -42,7 +42,7 @@ const ExpenseSelection = ({ onExecute }) => {
       ) {
         throw new Error("Invalid Expense QR.");
       }
-
+      
       const expenses = payload.d.map(row => {
         const obj = {};
         payload.c.forEach((key, index) => {
@@ -51,11 +51,7 @@ const ExpenseSelection = ({ onExecute }) => {
         return obj;
       });
 
-      if (payload.type !== "expense_report") {
-        throw new Error("Invalid Expense QR.");
-      }
-
-      importExpenses(payload.data);
+      importExpenses(expenses);
 
       // Give html5-qrcode a moment to finish
       setTimeout(() => {
