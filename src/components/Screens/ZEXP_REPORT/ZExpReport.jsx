@@ -72,17 +72,33 @@ const ZExpReport = () => {
       );
     }
 
-    const payload = {
-      version: "1.0",
-      type: "expense_report",
-      table: "expenses",
-      createdAt: new Date().toISOString(),
-      data: expenses
-    };
-
     // const payload = { msg : "Hello world"}
 
-    const encoded = btoa(JSON.stringify(payload));
+    const QR_COLUMNS = [
+      "expenseNumber",
+      "date",
+      "category",
+      "description",
+      "vendor",
+      "paymentMethod",
+      "amount",
+      "status",
+    ];
+
+
+    const compactPayload = {
+      v: 1,
+      t: "expense_report",
+      c: QR_COLUMNS,
+      d: expenses.map(row =>
+        QR_COLUMNS.map(col => row[col] ?? "")
+      )
+    };
+
+
+    const encoded = btoa(
+      JSON.stringify(compactPayload)
+    );
 
     setEncoded(encoded);
 

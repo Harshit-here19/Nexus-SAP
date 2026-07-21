@@ -35,6 +35,22 @@ const ExpenseSelection = ({ onExecute }) => {
     try {
       const payload = JSON.parse(atob(decodedText));
 
+      if (
+        payload.t !== "expense_report" ||
+        !payload.c ||
+        !payload.d
+      ) {
+        throw new Error("Invalid Expense QR.");
+      }
+
+      const expenses = payload.d.map(row => {
+        const obj = {};
+        payload.c.forEach((key, index) => {
+          obj[key] = row[index];
+        });
+        return obj;
+      });
+
       if (payload.type !== "expense_report") {
         throw new Error("Invalid Expense QR.");
       }

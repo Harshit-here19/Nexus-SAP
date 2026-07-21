@@ -7,7 +7,10 @@ const ExpenseQRScanner = ({ onScan }) => {
             "expense-qr-reader",
             {
                 fps: 10,
-                qrbox: 250,
+                qrbox: {
+                    width: 350,
+                    height: 350
+                },
             },
             false
         );

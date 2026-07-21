@@ -178,6 +178,14 @@ const ExpenseALVGrid = ({ data = [], encoded }) => {
 
   return (
     <>
+      <SapModal isOpen={showQR} onClose={() => setShowQR(false)} width="auto" title={`QR Code for ${data.length} Records.`}>
+        <QRCode
+          value={encoded}
+          size={500}
+          level="L"
+        />
+      </SapModal>
+
       <div className={styles.container}>
         <div className={styles.toolbar}>
           <div className={styles.titleArea}>
@@ -276,117 +284,111 @@ const ExpenseALVGrid = ({ data = [], encoded }) => {
         <div className={styles.tableWrapper}>
 
 
-          {showQR ?
-            encoded && <QRCode
-              value={encoded}
-              size={500}
-            /> :
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  {columns
-                    .filter((c) => c.visible)
-                    .map((col) => (
-                      <th
-                        key={col.key}
-                        onClick={() =>
-                          setSelectedColumn((prev) =>
-                            prev === col.key ? null : col.key,
-                          )
-                        }
-                        className={
-                          selectedColumn === col.key ? styles.selectedHeader : ""
-                        }
-                      >
-                        <div className={styles.headerCell}>
-                          <span>{col.label}</span>
-
-                          {sort.field === col.key && (
-                            <span className={styles.sortArrow}>
-                              {sort.direction === "asc" ? "▲" : "▼"}
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                    ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {Object.entries(groupedData).map(([category, rows]) => (
-                  <React.Fragment key={category}>
-                    {groupByCategory && (
-                      <tr className={styles.groupRow}>
-                        <td colSpan={columns.filter((c) => c.visible).length}>
-                          📂 {category}
-                        </td>
-                      </tr>
-                    )}
-
-                    {rows.map((item) => (
-                      <tr className={styles.dataRow} key={item.expenseNumber}>
-                        {columns
-                          .filter((c) => c.visible)
-                          .map((col) => (
-                            <td
-                              key={col.key}
-                              className={
-                                selectedColumn === col.key
-                                  ? styles.selectedColumn
-                                  : ""
-                              }
-                            >
-                              {col.key === "date"
-                                ? formatDate(item.date)
-                                : col.key === "amount"
-                                  ? formatCurrency(item.amount, item.currency)
-                                  : item[col.key] || "-"}
-                            </td>
-                          ))}
-                      </tr>
-                    ))}
-
-                    {groupByCategory && (
-                      <tr className={styles.subtotal}>
-                        <td>Subtotal</td>
-
-                        <td colSpan={columns.filter((c) => c.visible).length - 2} />
-
-                        <td className={styles.subtotalValue}>
-                          {formatCurrency(
-                            rows.reduce((sum, x) => sum + Number(x.amount || 0), 0),
-                          )}
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-                <tr className={styles.totalRow}>
-                  {columns
-                    .filter((c) => c.visible)
-                    .map((col, index, visibleColumns) => {
-                      if (index === 0) {
-                        return (
-                          <td key={col.key} className={styles.totalLabel}>
-                            Total
-                          </td>
-                        );
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                {columns
+                  .filter((c) => c.visible)
+                  .map((col) => (
+                    <th
+                      key={col.key}
+                      onClick={() =>
+                        setSelectedColumn((prev) =>
+                          prev === col.key ? null : col.key,
+                        )
                       }
-
-                      if (col.key === "amount") {
-                        return (
-                          <td key={col.key} className={styles.totalValue}>
-                            {formatCurrency(grandTotal)}
-                          </td>
-                        );
+                      className={
+                        selectedColumn === col.key ? styles.selectedHeader : ""
                       }
+                    >
+                      <div className={styles.headerCell}>
+                        <span>{col.label}</span>
 
-                      return <td key={col.key}></td>;
-                    })}
-                </tr>
-              </tbody>
-            </table>
-          }
+                        {sort.field === col.key && (
+                          <span className={styles.sortArrow}>
+                            {sort.direction === "asc" ? "▲" : "▼"}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+              </tr>
+            </thead>
+
+            <tbody>
+              {Object.entries(groupedData).map(([category, rows]) => (
+                <React.Fragment key={category}>
+                  {groupByCategory && (
+                    <tr className={styles.groupRow}>
+                      <td colSpan={columns.filter((c) => c.visible).length}>
+                        📂 {category}
+                      </td>
+                    </tr>
+                  )}
+
+                  {rows.map((item) => (
+                    <tr className={styles.dataRow} key={item.expenseNumber}>
+                      {columns
+                        .filter((c) => c.visible)
+                        .map((col) => (
+                          <td
+                            key={col.key}
+                            className={
+                              selectedColumn === col.key
+                                ? styles.selectedColumn
+                                : ""
+                            }
+                          >
+                            {col.key === "date"
+                              ? formatDate(item.date)
+                              : col.key === "amount"
+                                ? formatCurrency(item.amount, item.currency)
+                                : item[col.key] || "-"}
+                          </td>
+                        ))}
+                    </tr>
+                  ))}
+
+                  {groupByCategory && (
+                    <tr className={styles.subtotal}>
+                      <td>Subtotal</td>
+
+                      <td colSpan={columns.filter((c) => c.visible).length - 2} />
+
+                      <td className={styles.subtotalValue}>
+                        {formatCurrency(
+                          rows.reduce((sum, x) => sum + Number(x.amount || 0), 0),
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+              <tr className={styles.totalRow}>
+                {columns
+                  .filter((c) => c.visible)
+                  .map((col, index, visibleColumns) => {
+                    if (index === 0) {
+                      return (
+                        <td key={col.key} className={styles.totalLabel}>
+                          Total
+                        </td>
+                      );
+                    }
+
+                    if (col.key === "amount") {
+                      return (
+                        <td key={col.key} className={styles.totalValue}>
+                          {formatCurrency(grandTotal)}
+                        </td>
+                      );
+                    }
+
+                    return <td key={col.key}></td>;
+                  })}
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </>
