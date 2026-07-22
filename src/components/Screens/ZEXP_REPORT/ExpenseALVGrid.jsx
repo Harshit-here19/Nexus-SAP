@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import QRCode from "react-qr-code";
 
 import styles from "./ExpenseALVGrid.module.css";
+import { exportALV } from "./alvExport";
 
 import SapButton from "../../Common/SapButton";
 import SapModal from "../../Common/SapModal";
@@ -70,6 +71,12 @@ const formatCurrency = (amount, currency = "INR") => {
     style: "currency",
     currency,
   }).format(Number(amount || 0));
+};
+
+const formatTitleCase = (text = "") => {
+  return text
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 const ExpenseALVGrid = ({ data = [], encoded }) => {
@@ -194,7 +201,7 @@ const ExpenseALVGrid = ({ data = [], encoded }) => {
           </div>
 
           <div className={styles.toolbarActions}>
-            <SapButton type="glass-active" onClick={handleShowQR} disabled={data?.length > 10}>
+            <SapButton type="korean-save" onClick={handleShowQR} disabled={data?.length > 10}>
               QR
             </SapButton>
             <SapButton
@@ -229,18 +236,30 @@ const ExpenseALVGrid = ({ data = [], encoded }) => {
               Columns
             </SapButton>
 
-            <SapButton type="primary" onClick={saveLayout}>
+            {/* <SapButton type="primary" onClick={saveLayout}>
               Save Layout
+            </SapButton> */}
+
+            <SapButton
+              type="korean-save"
+              onClick={() =>
+                exportALV({
+                  title: "Expense ALV Report",
+                  data: sortedData,
+                  columns: columns.filter(c => c.visible),
+                  format: "txt",
+                })
+              }
+            >
+              Export TXT
             </SapButton>
 
-            <label className={styles.checkbox}>
-              <input
-                type="checkbox"
-                checked={groupByCategory}
-                onChange={(e) => setGroupByCategory(e.target.checked)}
-              />
-              Group by Category
-            </label>
+            <SapButton
+              type={groupByCategory ? "neo" : "neo-active"}
+              onClick={() => setGroupByCategory((prev) => !prev)}
+            >
+              {groupByCategory ? "✓ Group by Category" : "Group by Category"}
+            </SapButton>
           </div>
         </div>
 
@@ -343,7 +362,9 @@ const ExpenseALVGrid = ({ data = [], encoded }) => {
                               ? formatDate(item.date)
                               : col.key === "amount"
                                 ? formatCurrency(item.amount, item.currency)
-                                : item[col.key] || "-"}
+                                : ["category", "paymentMethod", "status"].includes(col.key)
+                                  ? formatTitleCase(item[col.key])
+                                  : item[col.key] || "-"}
                           </td>
                         ))}
                     </tr>
