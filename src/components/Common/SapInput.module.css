@@ -191,6 +191,61 @@
   margin-top: 4px;
   font-weight: 500;
 }
+/* Container positioning for icon layering */
+.inputIconWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Icon button styles */
+.icon {
+  position: absolute;
+  right: 8px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.icon:hover {
+  opacity: 1;
+}
+
+.dateIcon {
+  font-size: 15px;
+}
+
+/* Hidden native picker used for native calendar drawer invocation */
+.hiddenNativeDatePicker {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Red error state indicator */
+.inputError {
+  border-color: #e53e3e !important;
+  background-color: #fff5f5 !important;
+  outline: none;
+}
+
+.errorText {
+  color: #e53e3e;
+  font-size: 11px;
+  margin-top: 2px;
+}
 
 /* ========================================
    RESPONSIVE (Mobile & Tablet)

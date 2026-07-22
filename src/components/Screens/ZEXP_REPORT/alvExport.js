@@ -191,6 +191,54 @@ const generateSAPText = ({
 };
 
 /* ---------------------------------------------------------- */
+/* CSV                                                        */
+/* ---------------------------------------------------------- */
+
+const generateCSV = ({ data, columns }) => {
+    const escapeCSV = (value) => {
+        if (value === null || value === undefined) return "";
+
+        let formatted = value;
+
+        if (typeof value === "number") {
+            formatted = value.toString();
+        } else if (String(value).match(/date/i)) {
+            formatted = formatDate(value);
+        }
+
+        formatted = String(formatted);
+
+        if (
+            formatted.includes(",") ||
+            formatted.includes('"') ||
+            formatted.includes("\n")
+        ) {
+            formatted = `"${formatted.replace(/"/g, '""')}"`;
+        }
+
+        return formatted;
+    };
+
+    const header = columns.map((c) => c.label).join(",");
+
+    const rows = data.map((row) =>
+        columns
+            .map((column) => {
+                let value = row[column.key];
+
+                if (column.key.toLowerCase().includes("date")) {
+                    value = formatDate(value);
+                }
+
+                return escapeCSV(value);
+            })
+            .join(",")
+    );
+
+    return [header, ...rows].join("\n");
+};
+
+/* ---------------------------------------------------------- */
 /* Public Export Function                                     */
 /* ---------------------------------------------------------- */
 
@@ -200,17 +248,33 @@ export const exportALV = ({
     columns = [],
     format = "txt",
 }) => {
-    if (format !== "txt") return;
 
-    const text = generateSAPText({
-        title,
-        data,
-        columns,
-    });
+    if (format === "txt") {
+        const text = generateSAPText({
+            title,
+            data,
+            columns,
+        });
 
-    downloadFile(
-        `${title}.txt`,
-        text,
-        "text/plain;charset=utf-8"
-    );
+        downloadFile(
+            `${title}.txt`,
+            text,
+            "text/plain;charset=utf-8"
+        );
+
+        return;
+    }
+
+    if (format === "csv") {
+        const csv = generateCSV({
+            data,
+            columns,
+        });
+
+        downloadFile(
+            `${title}.csv`,
+            csv,
+            "text/csv;charset=utf-8"
+        );
+    }
 };

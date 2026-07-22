@@ -1,5 +1,5 @@
 // src/components/Layout/Toolbar.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { useTransaction } from "../../context/TransactionContext";
 import { useFavorites } from "../../context/FavoritesContext";
 import QuickExport from "../Common/QuickExport";
@@ -12,11 +12,10 @@ const Toolbar = ({ children }) => {
     isTransactionActive,
     goBack,
     exitTransaction,
-    cancelOperation,
     navigateToTransaction,
   } = useTransaction();
+  
   const { triggerAction } = useAction();
-
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const currentIsFavorite =
@@ -25,13 +24,10 @@ const Toolbar = ({ children }) => {
   const handleToggleFavorite = () => {
     if (currentTransaction === "HOME") return;
 
-    console.log("Toggling favorite for transaction:", currentTransaction);
-    const result = toggleFavorite({
+    toggleFavorite({
       tcode: currentTransaction,
       label: currentTransaction,
     });
-
-    console.log("Toggle favorite result:", result);
   };
 
   const toolbarButtons = [
@@ -39,7 +35,6 @@ const Toolbar = ({ children }) => {
       icon: "💾",
       title: "Save (Ctrl+S)",
       action: "save",
-      always: true,
       highlight:
         isTransactionActive &&
         ["MM01", "VA01", "WS01", "NT01", "MM02", "VA02", "WS02", "NT02"].includes(
@@ -74,16 +69,7 @@ const Toolbar = ({ children }) => {
     { icon: "🖨️", title: "Print (Ctrl+P)", action: "print" },
     { icon: "🔍", title: "Find (Ctrl+F)", action: "find" },
     { separator: true },
-    // { icon: '⏮️', title: 'First Page', action: 'firstPage' },
-    // { icon: '◀️', title: 'Previous Page', action: 'prevPage' },
-    // { icon: '▶️', title: 'Next Page', action: 'nextPage' },
-    // { icon: '⏭️', title: 'Last Page', action: 'lastPage' },
-    // { separator: true },
-    // { icon: "🆕", title: "Create (F5)", action: "create" },
-    // { icon: "✏️", title: "Change (F6)", action: "change" },
-    // { icon: "👁️", title: "Display (F7)", action: "display" },
     {
-      // icon: "🗑️♻️",
       icon: "♻️",
       title: "Delete (Shift+F2)",
       action: "delete",
@@ -92,7 +78,6 @@ const Toolbar = ({ children }) => {
         ["VA02", "WS02", "NT02"].includes(currentTransaction),
       disabled: !isTransactionActive,
     },
-    // { separator: true },
     { separator: true },
     {
       icon: currentIsFavorite ? "⭐" : "☆",
@@ -139,18 +124,14 @@ const Toolbar = ({ children }) => {
       case "print":
         triggerAction("PRINT");
         break;
-      // case "find":
-      //   triggerAction("FIND");
-      //   break;
       default:
         console.log("Toolbar action:", action);
     }
   };
 
   // Keyboard shortcuts
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e) => {
-
       if (e.key === "F3" && !e.shiftKey) {
         e.preventDefault();
         goBack();
@@ -169,9 +150,6 @@ const Toolbar = ({ children }) => {
       } else if (e.key === "p" && e.ctrlKey) {
         e.preventDefault();
         triggerAction("PRINT");
-      // } else if (e.key === "f" && e.ctrlKey) {
-      //   e.preventDefault();
-      //   triggerAction("FIND");
       }
     };
 
@@ -180,27 +158,32 @@ const Toolbar = ({ children }) => {
   }, [goBack, exitTransaction, triggerAction, isTransactionActive]);
 
   return (
-    <>
-      <div className={styles.sapToolbar}>
-        <div style={{ order: 0 }}>
-          {children}
-        </div>
+    <div className={styles.sapToolbar}>
+      {children && <div className={styles.toolbarChildren}>{children}</div>}
 
-        <div className={styles.sapToolbarSeparator} />
+      {children && <div className={styles.sapToolbarSeparator} />}
 
+      <div className={styles.toolbarActionsGroup}>
         {toolbarButtons.map((btn, index) => {
           if (btn.separator) {
             return <div key={index} className={styles.sapToolbarSeparator} />;
           }
 
           if (btn.component === "quickExport") {
-            return <QuickExport key={index} />;
+            return (
+              <div key={index} className={styles.exportWrapper}>
+                <QuickExport />
+              </div>
+            );
           }
 
           return (
             <button
               key={index}
-              className={`${styles.sapToolbarButton} ${btn.highlight ? styles.highlighted : ""} ${btn.disabled ? styles.disabled : ""}`}
+              type="button"
+              className={`${styles.sapToolbarButton} ${
+                btn.highlight ? styles.highlighted : ""
+              }`}
               title={btn.title}
               onClick={() => handleButtonClick(btn.action)}
               disabled={btn.disabled}
@@ -210,7 +193,7 @@ const Toolbar = ({ children }) => {
           );
         })}
       </div>
-    </>
+    </div>
   );
 };
 

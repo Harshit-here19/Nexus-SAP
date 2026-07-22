@@ -255,6 +255,20 @@ const ExpenseALVGrid = ({ data = [], encoded }) => {
             </SapButton>
 
             <SapButton
+              type="korean-save"
+              onClick={() =>
+                exportALV({
+                  title: "Expense ALV Report",
+                  data: sortedData,
+                  columns: columns.filter(c => c.visible),
+                  format: "csv",
+                })
+              }
+            >
+              Export CSV
+            </SapButton>
+
+            <SapButton
               type={groupByCategory ? "neo" : "neo-active"}
               onClick={() => setGroupByCategory((prev) => !prev)}
             >

@@ -189,7 +189,13 @@ const Autocomplete = ({
   };
 
   const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      event.target.blur();
+    }
+
     if (!suggestions.length) return;
+
+    console.log(event.key)
 
     // Move selection down
     if (event.key === "ArrowDown") {
@@ -246,6 +252,7 @@ const Autocomplete = ({
         placeholder={placeholder}
         icon={icon}
         onKeyDown={handleKeyDown}
+        autoFocus
       />
 
       {showSuggestions && suggestions.length > 0 && (
